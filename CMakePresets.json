@@ -12,7 +12,9 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_CXX_FLAGS": "-march=native",
-        "CMAKE_CXX_STANDARD": "23"
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+        "CMAKE_CXX_SCAN_FOR_MODULES": "ON"
       }
     }
   ],

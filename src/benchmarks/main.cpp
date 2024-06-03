@@ -1,8 +1,11 @@
 #include "benchmark/benchmark.h"
+#include "file.h"
+
+constexpr auto mandelbrot_filename = "tests/mandelbrot.b";
 
 static void BM_StringCreation(benchmark::State& state) {
   for (auto _ : state)
-    std::string empty_string;
+    std::string fileContents = file::read_1(mandelbrot_filename);
 }
 // Register the function as a benchmark
 BENCHMARK(BM_StringCreation);
