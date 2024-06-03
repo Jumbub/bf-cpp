@@ -11,8 +11,7 @@ std::vector<char> read(const char* filename) {
   std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
   std::vector<char> buffer(size);
-  if (file.read(buffer.data(), size)) {
-  }
+  file.read(buffer.data(), size);
   return buffer;
 }
 
