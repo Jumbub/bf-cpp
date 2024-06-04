@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-namespace file {
+namespace brainfuck {
 
 std::optional<std::vector<char>> read(const std::string filename) {
   std::ifstream file(filename, std::ios::binary | std::ios::ate);
@@ -16,4 +16,4 @@ std::optional<std::vector<char>> read(const std::string filename) {
   return buffer;
 }
 
-}  // namespace file
+}  // namespace brainfuck

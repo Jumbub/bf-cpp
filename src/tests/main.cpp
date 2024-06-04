@@ -1,6 +1,7 @@
 #define APPROVALS_GOOGLETEST  // This tells Approval Tests to provide a main() - only do this in one cpp file
 #include "ApprovalTests.hpp"
 
+#include <iostream>
 #include "../brainfuck/file.h"
 #include "../brainfuck/go.h"
 #include "../brainfuck/parse.h"
@@ -20,11 +21,33 @@ std::ostream& operator<<(std::ostream& os, const std::vector<brainfuck::Instruct
   }
   return os;
 }
+
 }  // namespace brainfuck
 
-TEST(GoogleTestStarter, Sample) {
-  const std::vector<char> x = {'+'};
-  const auto output = brainfuck::parse(x);
+namespace std {
+
+template <class T>
+ostream& operator<<(ostream& os, const optional<T>& value) {
+  if (!value.has_value()) {
+    os << "<empty-vector>";
+  } else {
+    os << value;
+  }
+  return os;
+}
+
+template <class T>
+ostream& operator<<(ostream& os, const vector<T>& value) {
+  for (const auto& element : value) {
+    os << " " << element;
+  }
+  return os;
+}
+
+}  // namespace std
+
+TEST(file, read) {
+  const auto output = brainfuck::read("src/tests/snapshots/main.file.read.approved.txt");
   ApprovalTests::Approvals::verify(output);
 }
 
@@ -42,9 +65,9 @@ TEST(GoogleTestStarter, Sample) {
 /*   return {expectVector.value().begin(), expectVector.value().end()}; */
 /* } */
 
-TEST(file, read) {
-  /* (file::read("src/tests/programs/hello_world.b"), readFile("src/tests/programs/hello_world.txt")); */
-}
+/* TEST(file, read) { */
+/*   /1* (file::read("src/tests/programs/hello_world.b"), readFile("src/tests/programs/hello_world.txt")); *1/ */
+/* } */
 
 /* TEST(programs, empty) { */
 /*   EXPECT_EQ(executeFile("src/tests/programs/empty.b"), readFile("src/tests/programs/empty.txt")); */

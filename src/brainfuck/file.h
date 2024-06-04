@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-namespace file {
+namespace brainfuck {
 
 std::optional<std::vector<char>> read(const std::string filename);
 
-}  // namespace file
+}  // namespace brainfuck

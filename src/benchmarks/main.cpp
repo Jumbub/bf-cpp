@@ -8,7 +8,7 @@ constexpr auto mandelbrot_filename = "src/tests/programs/mandelbrot.b";
 
 static void file_read(benchmark::State& state) {
   for (auto _ : state) {
-    auto maybeContents = file::read(mandelbrot_filename);
+    auto maybeContents = brainfuck::read(mandelbrot_filename);
     if (!maybeContents.has_value()) {
       state.SkipWithError("bad filename");
       return;
@@ -25,7 +25,7 @@ static void file_read(benchmark::State& state) {
 BENCHMARK(file_read);
 
 static void brainfuck_parse(benchmark::State& state) {
-  const auto code = file::read(mandelbrot_filename);
+  const auto code = brainfuck::read(mandelbrot_filename);
   if (!code.has_value()) {
     state.SkipWithError("bad filename");
     return;
@@ -39,7 +39,7 @@ static void brainfuck_parse(benchmark::State& state) {
 BENCHMARK(brainfuck_parse);
 
 /* static void brainfuck_execute(benchmark::State& state) { */
-/*   const auto code = file::read(mandelbrot_filename); */
+/*   const auto code = brainfuck::read(mandelbrot_filename); */
 /*   if (!code.has_value()) { */
 /*     state.SkipWithError("bad filename"); */
 /*     return; */

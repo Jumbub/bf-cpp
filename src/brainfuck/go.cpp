@@ -8,7 +8,7 @@
 namespace brainfuck {
 
 void go(const char* filename) {
-  const auto data = file::read(filename);
+  const auto data = brainfuck::read(filename);
   if (!data.has_value()) {
     std::cout << "bad filename" << std::endl;
     return;
