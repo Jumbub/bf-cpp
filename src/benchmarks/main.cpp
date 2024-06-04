@@ -1,8 +1,13 @@
 #include <iostream>
 #include "benchmark/benchmark.h"
+#include "execute.h"
 #include "file.h"
+#include "parse.h"
 
 constexpr auto mandelbrot_filename = "tests/mandelbrot.b";
+constexpr auto bitwidth_filename = "tests/bitwidth.b";
+constexpr auto helloworld_filename = "tests/hello-world.b";
+constexpr auto simplesthelloworld_filename = "tests/simplest-hello-world.b";
 
 static void file_read(benchmark::State& state) {
   for (auto _ : state) {
@@ -14,5 +19,14 @@ static void file_read(benchmark::State& state) {
   }
 }
 BENCHMARK(file_read);
+
+static void code_parse(benchmark::State& state) {
+  const auto code = file::read(simplesthelloworld_filename);
+  for (auto _ : state) {
+    const auto instructions = brainfuck::parse(code);
+    brainfuck::execute(instructions);
+  }
+}
+BENCHMARK(code_parse);
 
 BENCHMARK_MAIN();

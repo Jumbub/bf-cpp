@@ -5,6 +5,6 @@
 
 namespace file {
 
-std::vector<char> read(const char* filename);
+std::vector<char> read(const std::string filename);
 
 }  // namespace file
