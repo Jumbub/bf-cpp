@@ -14,8 +14,7 @@ int zeroOrOne(unsigned char value) {
 
 // custom way to send this type to an output stream
 std::ostream& operator<<(std::ostream& os, const Instruction& instruction) {
-  return os << "+" << instruction.mutate_data << " >" << instruction.mutate_data_pointer << " if0"
-            << instruction.mutate_instruction_pointer_if[0] << " if!0" << instruction.mutate_instruction_pointer_if[1];
+  return os << (char)instruction.type << " >" << instruction.value;
 }
 
 void execute(std::vector<Instruction> instructions) {
@@ -31,14 +30,30 @@ void execute(std::vector<Instruction> instructions) {
 
     /* std::cout << "[" << instruction_pointer << "] " << instruction << " (" << (int)memory[data_pointer] << ")\n"; */
 
-    instruction_pointer += instruction.mutate_instruction_pointer_if[zeroOrOne(memory[data_pointer])];
-    memory[data_pointer] += instruction.mutate_data;
-    data_pointer += instruction.mutate_data_pointer;
-    if (instruction.io == WRITE) {
-      std::cout << (char)memory[data_pointer];
-    } else if (instruction.io == READ) {
-      std::cin >> memory[data_pointer];
+    switch (instruction.type) {
+      case MUTATE_DATA:
+        memory[data_pointer] += instruction.value;
+        break;
+      case MUTATE_DATA_POINTER:
+        data_pointer += instruction.value;
+        break;
+      case MUTATE_INSTRUCTION_POINTER_IF_ZERO:
+        if (memory[data_pointer] == 0) {
+          data_pointer = instruction.value;
+        }
+        break;
+      case MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO:
+        if (memory[data_pointer] != 0) {
+          data_pointer = instruction.value;
+        }
+        break;
+      case WRITE:
+        std::cout << (char)memory[data_pointer];
+      case READ:
+        std::cin >> memory[data_pointer];
     }
+
+    instruction_pointer++;
   }
 };
 

@@ -11,38 +11,58 @@ bool is(First&& first, T&&... t) {
 }
 
 std::vector<Instruction> parse(std::vector<char> full) {
-  std::vector<Instruction> shorter(full.size());
+  std::vector<Instruction> shorter(full.size() + 1);
   std::stack<int> starting_brace_positions;
 
-  int shorter_i = 0;
+  int shorter_i = 1;  // operates with +1 offset to simplify optimisation logic
   for (int i = 0; i < full.size(); i++) {
     switch (full[i]) {
       case '+':
-        shorter[shorter_i].mutate_data = 1;
-        shorter_i++;
+        if (shorter[shorter_i - 1].type == MUTATE_DATA) {
+          shorter[shorter_i - 1].value += 1;
+        } else {
+          shorter[shorter_i].type = MUTATE_DATA;
+          shorter[shorter_i].value = 1;
+          shorter_i++;
+        }
         break;
       case '-':
-        shorter[shorter_i].mutate_data = -1;
-        shorter_i++;
+        if (shorter[shorter_i - 1].type == MUTATE_DATA) {
+          shorter[shorter_i - 1].value -= 1;
+        } else {
+          shorter[shorter_i].type = MUTATE_DATA;
+          shorter[shorter_i].value = -1;
+          shorter_i++;
+        }
         break;
       case '>':
-        shorter[shorter_i].mutate_data_pointer = 1;
-        shorter_i++;
+        if (shorter[shorter_i - 1].type == MUTATE_DATA_POINTER) {
+          shorter[shorter_i - 1].value += 1;
+        } else {
+          shorter[shorter_i].type = MUTATE_DATA_POINTER;
+          shorter[shorter_i].value = 1;
+          shorter_i++;
+        }
         break;
       case '<':
-        shorter[shorter_i].mutate_data_pointer = -1;
+        if (shorter[shorter_i - 1].type == MUTATE_DATA_POINTER) {
+          shorter[shorter_i - 1].value -= 1;
+        } else {
+          shorter[shorter_i].type = MUTATE_DATA_POINTER;
+          shorter[shorter_i].value = -1;
+          shorter_i++;
+        }
+        break;
+      case '.':
+        shorter[shorter_i].type = WRITE;
+        shorter_i++;
+        break;
+      case ',':
+        shorter[shorter_i].type = READ;
         shorter_i++;
         break;
       case '[':
         starting_brace_positions.push(shorter_i);
-        shorter_i++;
-        break;
-      case '.':
-        shorter[shorter_i].io = WRITE;
-        shorter_i++;
-        break;
-      case ',':
-        shorter[shorter_i].io = READ;
         shorter_i++;
         break;
       case ']':
@@ -51,11 +71,10 @@ std::vector<Instruction> parse(std::vector<char> full) {
         const int starting_brace_position = starting_brace_positions.top();
         starting_brace_positions.pop();
 
-        shorter[starting_brace_position].mutate_instruction_pointer_if[0] = shorter_i - starting_brace_position + 1;
-        shorter[starting_brace_position].mutate_instruction_pointer_if[1] = 1;
-
-        shorter[shorter_i].mutate_instruction_pointer_if[0] = 1;
-        shorter[shorter_i].mutate_instruction_pointer_if[1] = starting_brace_position - shorter_i;
+        shorter[starting_brace_position].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
+        shorter[starting_brace_position].value = shorter_i + 1;
+        shorter[shorter_i].type = MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO;
+        shorter[shorter_i].value = starting_brace_position + 1;
 
         shorter_i++;
         break;
