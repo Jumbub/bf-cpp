@@ -7,6 +7,6 @@ this is my official entry
 #### Build
 
 ```sh
-cmake --preset benchmark
-cmake --build --preset benchmark
+cmake --preset all
+cmake --build --preset all
 ```

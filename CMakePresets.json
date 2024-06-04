@@ -7,7 +7,7 @@
   },
   "configurePresets": [
     {
-      "name": "benchmark",
+      "name": "all",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
@@ -21,8 +21,8 @@
   ],
   "buildPresets": [
     {
-      "name": "benchmark",
-      "configurePreset": "benchmark"
+      "name": "all",
+      "configurePreset": "all"
     }
   ]
 }

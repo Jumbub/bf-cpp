@@ -12,11 +12,6 @@ int zeroOrOne(unsigned char value) {
   return 1;
 }
 
-// custom way to send this type to an output stream
-std::ostream& operator<<(std::ostream& os, const Instruction& instruction) {
-  return os << (char)instruction.type << " >" << instruction.value;
-}
-
 void execute(std::vector<Instruction> instructions) {
   const auto instruction_count = instructions.size();
 
@@ -27,8 +22,6 @@ void execute(std::vector<Instruction> instructions) {
 
   while (instruction_pointer < instruction_count) {
     const auto instruction = instructions[instruction_pointer];
-
-    /* std::cout << "[" << instruction_pointer << "] " << instruction << " (" << (int)memory[data_pointer] << ")\n"; */
 
     switch (instruction.type) {
       case MUTATE_DATA:
@@ -49,8 +42,12 @@ void execute(std::vector<Instruction> instructions) {
         break;
       case WRITE:
         std::cout << (char)memory[data_pointer];
+        break;
       case READ:
         std::cin >> memory[data_pointer];
+        break;
+      case NOOP:
+        break;
     }
 
     instruction_pointer++;

@@ -10,7 +10,7 @@ bool is(First&& first, T&&... t) {
   return ((first == t) || ...);
 }
 
-std::vector<Instruction> parse(std::vector<char> full) {
+std::vector<Instruction> parse(const std::vector<char> full) {
   std::vector<Instruction> shorter(full.size() + 1);
   std::stack<int> starting_brace_positions;
 
