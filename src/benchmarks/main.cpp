@@ -1,8 +1,8 @@
 #include <iostream>
+#include "../brainfuck/execute.h"
+#include "../brainfuck/file.h"
+#include "../brainfuck/parse.h"
 #include "benchmark/benchmark.h"
-#include "execute.h"
-#include "file.h"
-#include "parse.h"
 
 constexpr auto mandelbrot_filename = "tests/mandelbrot.b";
 constexpr auto bitwidth_filename = "tests/bitwidth.b";
