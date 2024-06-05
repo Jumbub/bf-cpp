@@ -1,0 +1,1 @@
+namespace brainfuck {}  // namespace brainfuck

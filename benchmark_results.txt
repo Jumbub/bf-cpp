@@ -1,0 +1,54 @@
+{
+  "context": {
+    "date": "2024-06-04T23:36:24-07:00",
+    "host_name": "tv",
+    "executable": "./build/src/benchmarks/benchmarks",
+    "num_cpus": 32,
+    "mhz_per_cpu": 800,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 49152,
+        "num_sharing": 2
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 32768,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 2097152,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 3,
+        "size": 37748736,
+        "num_sharing": 32
+      }
+    ],
+    "load_avg": [1.3418,0.813477,0.852051],
+    "library_version": "v1.8.4",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "file_read",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "file_read",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 154528,
+      "real_time": 4.5758807141711359e+03,
+      "cpu_time": 4.4994597548664324e+03,
+      "time_unit": "ns"
+    }
