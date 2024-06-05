@@ -76,9 +76,6 @@ std::vector<Instruction> parse(const std::vector<char> full) {
     }
   }
 
-  const Instruction value;
-  const std::string x = std::format("hi {}", value);
-
   shorter.resize(shorter_i);
   return shorter;
 };

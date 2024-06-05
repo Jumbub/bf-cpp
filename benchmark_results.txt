@@ -1,11 +1,11 @@
 {
   "context": {
-    "date": "2024-06-04T23:36:24-07:00",
+    "date": "2024-06-05T01:23:44-07:00",
     "host_name": "tv",
     "executable": "./build/src/benchmarks/benchmarks",
     "num_cpus": 32,
-    "mhz_per_cpu": 800,
-    "cpu_scaling_enabled": false,
+    "mhz_per_cpu": 5200,
+    "cpu_scaling_enabled": true,
     "caches": [
       {
         "type": "Data",
@@ -32,23 +32,109 @@
         "num_sharing": 32
       }
     ],
-    "load_avg": [1.3418,0.813477,0.852051],
+    "load_avg": [0.895996,1.02783,1.29639],
     "library_version": "v1.8.4",
     "library_build_type": "release",
     "json_schema_version": 1
   },
   "benchmarks": [
     {
-      "name": "file_read",
+      "name": "file_read_non_existent",
       "family_index": 0,
       "per_family_instance_index": 0,
-      "run_name": "file_read",
+      "run_name": "file_read_non_existent",
       "run_type": "iteration",
       "repetitions": 1,
       "repetition_index": 0,
       "threads": 1,
-      "iterations": 154528,
-      "real_time": 4.5758807141711359e+03,
-      "cpu_time": 4.4994597548664324e+03,
+      "iterations": 631136,
+      "real_time": 1.1849078629698147e+03,
+      "cpu_time": 1.1033301491279217e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "file_read_empty",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "file_read_empty",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 240162,
+      "real_time": 2.9749834112021922e+03,
+      "cpu_time": 2.9001306618032827e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "file_read_hello_world",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "file_read_hello_world",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 182861,
+      "real_time": 3.9856295109574339e+03,
+      "cpu_time": 3.9063793044990462e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "file_read_mandelbrot",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "file_read_mandelbrot",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 161391,
+      "real_time": 4.3981590733023431e+03,
+      "cpu_time": 4.3216103562156504e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "parse_read_empty",
+      "family_index": 4,
+      "per_family_instance_index": 0,
+      "run_name": "parse_read_empty",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 18434856,
+      "real_time": 3.7515146524562915e+01,
+      "cpu_time": 3.7498995110132661e+01,
+      "time_unit": "ns"
+    },
+    {
+      "name": "parse_read_hello_world",
+      "family_index": 5,
+      "per_family_instance_index": 0,
+      "run_name": "parse_read_hello_world",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 176017,
+      "real_time": 3.9442391587173875e+03,
+      "cpu_time": 3.9419822176267039e+03,
+      "time_unit": "ns"
+    },
+    {
+      "name": "parse_read_mandelbrot",
+      "family_index": 6,
+      "per_family_instance_index": 0,
+      "run_name": "parse_read_mandelbrot",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 15733,
+      "real_time": 4.4993093688653826e+04,
+      "cpu_time": 4.4971451725672167e+04,
       "time_unit": "ns"
     }
+  ]
+}
