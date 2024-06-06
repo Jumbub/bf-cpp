@@ -6,4 +6,5 @@ const auto frontLoadedReportDisposer =
     ApprovalTests::Approvals::useAsFrontLoadedReporter(ApprovalTests::BlockingReporter::onMachinesNotNamed(""));
 
 #include "file.cpp"
+#include "go.cpp"
 #include "parse.cpp"

@@ -1,10 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 namespace brainfuck {
 
-void go(const char* filename);
+int go(const std::string filename);
 
 }  // namespace brainfuck

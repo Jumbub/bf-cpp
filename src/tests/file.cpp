@@ -11,11 +11,11 @@ void runSnapshotTest(std::string filename) {
   ApprovalTests::Approvals::verify(std::string(content->begin(), content->end()));
 }
 
-TEST(read, empty) {
+TEST(file, empty) {
   runSnapshotTest("samples/tests/empty_file.b");
 }
 
-TEST(read, mandelbrot) {
+TEST(file, mandelbrot) {
   runSnapshotTest("samples/mandelbrot.b");
 }
 

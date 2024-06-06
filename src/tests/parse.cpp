@@ -10,17 +10,15 @@ void runSnapshotTest(const std::string filename) {
   const auto code = brainfuck::read(filename);
   ASSERT_TRUE(code.has_value());
   const auto instructions = brainfuck::parse(code.value());
-
-  std::string humanReadableInstructions;
-  for (const auto instruction : instructions) {
-    humanReadableInstructions += std::format("{}", instruction);
-  }
-
-  ApprovalTests::Approvals::verify(humanReadableInstructions);
+  ApprovalTests::Approvals::verify(std::format("{}", instructions));
 }
 
 TEST(parse, empty_file) {
   runSnapshotTest("samples/tests/empty_file.b");
+}
+
+TEST(parse, echo) {
+  runSnapshotTest("samples/echo.b");
 }
 
 }  // namespace parse_tests

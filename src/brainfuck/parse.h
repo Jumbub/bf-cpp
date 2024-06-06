@@ -8,7 +8,7 @@
 namespace brainfuck {
 
 enum Type {
-  NOOP = 'x',
+  NOOP = 'N',
   READ = ',',
   WRITE = '.',
   MUTATE_DATA = '+',
