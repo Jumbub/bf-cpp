@@ -15,7 +15,7 @@ struct std::formatter<std::vector<brainfuck::Instruction>> : std::formatter<std:
   auto format(const std::vector<brainfuck::Instruction>& value, std::format_context& ctx) const {
     std::string acc;
     for (const auto instruction : value) {
-      acc += std::format("{}", instruction);
+      acc += std::format("{}\n", instruction);
     }
     return std::formatter<string_view>::format(acc, ctx);
   };

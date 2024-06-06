@@ -16,6 +16,17 @@ void runSnapshotTest(const std::string filename) {
   ApprovalTests::Approvals::verify(testing::internal::GetCapturedStdout());
 }
 
+void injectStdin(const std::string data) {
+  // https://stackoverflow.com/a/13081732
+  int fd[2];
+  pipe(fd);
+  close(0);    // 0:stdin
+  dup(fd[0]);  // make read pipe be stdin
+  close(fd[0]);
+  fd[0] = 0;
+  write(fd[1], data.c_str(), data.size());  // write "some text" to stdin
+}
+
 TEST(go, empty_file) {
   runSnapshotTest("samples/tests/empty_file.b");
 }
@@ -25,15 +36,7 @@ TEST(go, no_loop_hello) {
 }
 
 TEST(go, echo) {
-  int fd[2];
-  pipe(fd);
-  close(0);    // 0:stdin
-  dup(fd[0]);  // make read pipe be stdin
-  close(fd[0]);
-  fd[0] = 0;
-
-  write(fd[1], "wow this\nis amaze", 18);  // write "some text" to stdin
-
+  injectStdin("wow this\nis amaze");
   runSnapshotTest("samples/echo.b");
 }
 

@@ -26,31 +26,34 @@ void execute(std::vector<Instruction> instructions) {
     switch (instruction.type) {
       case MUTATE_DATA:
         memory[data_pointer] += instruction.value;
+        instruction_pointer++;
         break;
       case MUTATE_DATA_POINTER:
         data_pointer += instruction.value;
+        instruction_pointer++;
         break;
       case MUTATE_INSTRUCTION_POINTER_IF_ZERO:
         if (memory[data_pointer] == 0) {
-          data_pointer = instruction.value;
+          instruction_pointer = instruction.value;
         }
         break;
       case MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO:
         if (memory[data_pointer] != 0) {
-          data_pointer = instruction.value;
+          instruction_pointer = instruction.value;
         }
         break;
       case WRITE:
         std::cout << (char)memory[data_pointer];
+        instruction_pointer++;
         break;
       case READ:
         std::cin >> memory[data_pointer];
+        instruction_pointer++;
         break;
       case NOOP:
+        instruction_pointer++;
         break;
     }
-
-    instruction_pointer++;
   }
 };
 
