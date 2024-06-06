@@ -14,9 +14,9 @@ cmake --build --preset all
 #### Run
 
 ```
-./build/src/tests/tests
+./build/src/standalone/brainfuck
 ./build/src/benchmarks/benchmarks
-./build/src/brainfuck/brainfuck
+./build/src/tests/tests
 ```
 
 ## References
