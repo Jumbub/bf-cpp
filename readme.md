@@ -1,8 +1,8 @@
-# b
+# fast as fuck
 
-ive always wanted to write the fastest solution to brainfuck,
-</br>
-this is my official entry
+ive always wanted to write the fastest [brainfuck](https://en.wikipedia.org/wiki/Brainfuck) interpreter
+
+this is my attempt
 
 #### Build
 
@@ -10,3 +10,21 @@ this is my official entry
 cmake --preset all
 cmake --build --preset all
 ```
+
+#### Run
+
+```
+./build/src/tests/tests
+./build/src/benchmarks/benchmarks
+./build/src/brainfuck/brainfuck
+```
+
+## References
+
+- [brainfuck optimization strategies](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html)
+- [some brainfuck fluff](http://braifuck.org/)
+- [Brainf***](http://www.iwriteiam.nl/Ha_BF.html)
+
+### Notable Competitors
+
+- [Tritium "This is the fastest brainfuck interpreter around"](https://github.com/rdebath/Brainfuck/tree/master/tritium)
