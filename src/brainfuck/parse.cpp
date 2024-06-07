@@ -5,8 +5,8 @@
 
 namespace brainfuck {
 
-std::vector<Instruction> parse(const std::vector<char> full) {
-  std::vector<Instruction> shorter(full.size() + 1);
+Instructions parse(const std::vector<char> full) {
+  Instructions shorter(full.size() + 1);
   std::stack<int> starting_brace_positions;
 
   int shorter_i = 1;  // operates with +1 offset to simplify optimisation logic

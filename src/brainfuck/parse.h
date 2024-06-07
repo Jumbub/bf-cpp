@@ -22,6 +22,8 @@ struct Instruction {
   int value = 0;
 };
 
-std::vector<Instruction> parse(std::vector<char> full);
+using Instructions = std::vector<Instruction>;
+
+Instructions parse(std::vector<char> full);
 
 }  // namespace brainfuck

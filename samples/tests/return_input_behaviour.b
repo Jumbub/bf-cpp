@@ -1,4 +1,4 @@
-[Source: http://brainfuck.org/tests.b]
+[Credit: http://brainfuck.org/tests.b]
 
 >,>+++++++++,>+++++++++++[<++++++<++++++<+>>>-]<<.>.<<-.>.>.<<.
 This is for testing i/o; give it a return followed by an EOF. (Try it both
