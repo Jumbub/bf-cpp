@@ -5,13 +5,6 @@
 
 namespace brainfuck {
 
-int zeroOrOne(unsigned char value) {
-  if (value == 0) {
-    return 0;
-  }
-  return 1;
-}
-
 void execute(std::vector<Instruction> instructions) {
   const auto instruction_count = instructions.size();
 
