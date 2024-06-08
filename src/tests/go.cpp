@@ -1,16 +1,10 @@
 #include "../brainfuck/go.h"
-#include "ApprovalTests.hpp"
-#include "gtest/gtest.h"
-
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "pch.h"
 
 namespace go_tests {
 
 void runSnapshotTest(const std::string filename) {
-  testing::internal::CaptureStdout();
+  /* testing::internal::CaptureStdout(); */
   /* const int result = brainfuck::go(filename); */
   /* ASSERT_EQ(result, 0); */
   /* ApprovalTests::Approvals::verify(testing::internal::GetCapturedStdout()); */

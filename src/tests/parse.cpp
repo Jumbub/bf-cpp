@@ -1,8 +1,7 @@
 #include "../brainfuck/file.h"
 #include "../brainfuck/format.h"
 #include "../brainfuck/parse.h"
-#include "ApprovalTests.hpp"
-#include "gtest/gtest.h"
+#include "pch.h"
 
 namespace parse_tests {
 

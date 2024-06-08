@@ -11,5 +11,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(google_test approval_tests)
 
-add_executable(tests main.cpp)
+add_executable(tests main.cpp file.cpp go.cpp parse.cpp)
+# target_precompile_headers(tests PRIVATE pch.h)
 target_link_libraries(tests brainfuck gtest ApprovalTests::ApprovalTests)
