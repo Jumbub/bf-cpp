@@ -9,21 +9,14 @@ namespace brainfuck {
 enum class EOFBehaviour { SET_ZERO, SET_NEGATIVE_ONE, NOOP };
 enum class DataPointerOverflowBehaviour { UNDEFINED };
 
-constexpr uint64_t DEFAULT_DATA_SIZE = 30000;
-constexpr EOFBehaviour DEFAULT_EOF_BEHAVIOUR = EOFBehaviour::NOOP;
-constexpr DataPointerOverflowBehaviour DEFAULT_DATA_POINTER_OVERFLOW_BEHAVIOUR =
-    DataPointerOverflowBehaviour::UNDEFINED;
-using DefaultData = char;
-using DefaultDataPointer = uint64_t;
-using DefaultInstructionPointer = uint64_t;
-
 template <
-    uint64_t DATA_SIZE = DEFAULT_DATA_SIZE,
-    EOFBehaviour EOF_BEHAVIOUR = DEFAULT_EOF_BEHAVIOUR,
-    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DEFAULT_DATA_POINTER_OVERFLOW_BEHAVIOUR,
-    std::integral Data = DefaultData,
-    std::integral DataPointer = DefaultDataPointer,
-    std::integral InstructionPointer = DefaultInstructionPointer>
+    uint64_t DATA_SIZE,
+    uint64_t ITERATION_LIMIT,
+    EOFBehaviour EOF_BEHAVIOUR,
+    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR,
+    std::integral Data,
+    std::integral DataPointer,
+    std::integral InstructionPointer>
 int execute(Instructions instructions) {
   static_assert(DATA_SIZE <= std::numeric_limits<DataPointer>::max(), "Exceeded maximum allowed memory");
   constexpr auto PROGRAM_SIZE_LIMIT = std::numeric_limits<InstructionPointer>::max();
@@ -36,8 +29,16 @@ int execute(Instructions instructions) {
   InstructionPointer instruction_pointer = 0;
   DataPointer data_pointer = 0;
   Data data[DATA_SIZE] = {0};
+  uint64_t iteration = 0;
 
   while (instruction_pointer < instruction_count) {
+    if constexpr (ITERATION_LIMIT > 0) {
+      if (++iteration > ITERATION_LIMIT) {
+        std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
+        break;
+      }
+    }
+
     const auto instruction = instructions[instruction_pointer];
 
     switch (instruction.type) {
@@ -68,14 +69,13 @@ int execute(Instructions instructions) {
         instruction_pointer++;
         break;
       case READ:
+        std::cin >> std::noskipws >> data[data_pointer];
         if (std::cin.eof()) {
           if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_ZERO) {
             data[data_pointer] = 0;
           } else if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_NEGATIVE_ONE) {
             data[data_pointer] = -1;
           }
-        } else {
-          std::cin >> std::noskipws >> data[data_pointer];
         }
         instruction_pointer++;
         break;

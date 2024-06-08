@@ -6,38 +6,44 @@
 #include "../brainfuck/go.h"
 #include "doctest/doctest.h"
 
-namespace go_tests {
-
-void runSnapshotTest(const std::string filename) {
+template <
+    uint64_t DATA_SIZE = 30000,
+    uint64_t ITERATION_LIMIT = 100000,
+    brainfuck::EOFBehaviour EOF_BEHAVIOUR = brainfuck::EOFBehaviour::SET_ZERO,
+    brainfuck::DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR =
+        brainfuck::DataPointerOverflowBehaviour::UNDEFINED,
+    std::integral Data = char,
+    std::integral DataPointer = uint64_t,
+    std::integral InstructionPointer = uint64_t>
+void runSnapshotTest(const std::string filename, const std::optional<std::string> input) {
   std::stringstream newStdout;
+  std::stringstream newStdin;
   std::streambuf* oldStdout = std::cout.rdbuf(newStdout.rdbuf());
-  const auto result = brainfuck::go("samples/" + filename);
-  std::cout.rdbuf(oldStdout);
+  std::streambuf* oldStdin = std::cin.rdbuf(newStdin.rdbuf());
+
+  if (input.has_value()) {
+    newStdin << input.value();
+  }
+
+  brainfuck::go<
+      DATA_SIZE, ITERATION_LIMIT, EOF_BEHAVIOUR, DATA_POINTER_OVERFLOW_BEHAVIOUR, Data, DataPointer,
+      InstructionPointer>("samples/" + filename);
   requireSnapshot("go/" + filename, newStdout.str());
+
+  std::cout.rdbuf(oldStdout);
+  std::cin.rdbuf(oldStdin);
 }
 
-void injectStdin(const std::string data) {
-  // https://stackoverflow.com/a/13081732
-  int fd[2];
-  pipe(fd);
-  close(0);    // 0:stdin
-  dup(fd[0]);  // make read pipe be stdin
-  close(fd[0]);
-  fd[0] = 0;
-  write(fd[1], data.c_str(), data.size() + 1);  // write "some text" to stdin
-}
+TEST_SUITE("go") {
+  TEST_CASE("empty_file") {
+    runSnapshotTest("tests/empty_file.b", std::nullopt);
+  }
 
-TEST_CASE("empty_file") {
-  runSnapshotTest("tests/empty_file.b");
-}
+  TEST_CASE("no_loop_hello") {
+    runSnapshotTest("tests/no_loop_hello.b", std::nullopt);
+  }
 
-TEST_CASE("no_loop_hello") {
-  runSnapshotTest("tests/no_loop_hello.b");
+  TEST_CASE("echo") {
+    runSnapshotTest("echo.b", "wow this\nis amaze");
+  }
 }
-
-TEST_CASE("echo") {
-  injectStdin("wow this\nis amaze");
-  runSnapshotTest("echo.b");
-}
-
-}  // namespace go_tests
