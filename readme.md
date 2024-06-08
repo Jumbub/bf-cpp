@@ -28,3 +28,7 @@ cmake --build --preset all
 ### Notable Competitors
 
 - [Tritium "This is the fastest brainfuck interpreter around"](https://github.com/rdebath/Brainfuck/tree/master/tritium)
+
+### Random References
+
+- [Lambda + shared_ptr<> = memory leak](https://floating.io/2017/07/lambda-shared_ptr-memory-leak/)

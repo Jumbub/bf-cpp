@@ -1,11 +1,16 @@
 #include "utils.h"
 
+#include <stdio.h>
 #include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <sstream>
 #include "doctest/doctest.h"
 
 std::string readFile(std::string filename) {
   std::ifstream file(filename);
-  REQUIRE(file.is_open());
+  REQUIRE_MESSAGE(file.is_open(), "Failed to find file: ", filename);
   return {(std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()};
 }
 
@@ -14,8 +19,25 @@ void writeFile(std::string filename, std::string content) {
   file << content;
 }
 
-void requireSnapshot(std::string path, std::string received) {
+void REQUIRE_SNAPSHOT(std::string path, std::string received) {
   const auto expected = readFile("src/tests/snapshots/" + path + ".expected.txt");
   writeFile("src/tests/snapshots/" + path + ".RECEIVED.txt", received);
-  REQUIRE((bool)(expected == received));
+  REQUIRE_MESSAGE((bool)(expected == received), received);
+}
+
+StopCaptureIO startCapturingIO(std::optional<std::string> input) {
+  std::shared_ptr<std::stringstream> newStdout = std::make_shared<std::stringstream>();
+  std::shared_ptr<std::stringstream> newStdin = std::make_shared<std::stringstream>();
+  std::streambuf* oldStdout = std::cout.rdbuf(newStdout->rdbuf());
+  std::streambuf* oldStdin = std::cin.rdbuf(newStdin->rdbuf());
+
+  if (input.has_value()) {
+    (*newStdin) << input.value();
+  }
+
+  return [oldStdout, oldStdin, newStdout, newStdin]() {
+    std::cout.rdbuf(oldStdout);
+    std::cin.rdbuf(oldStdin);
+    return newStdout->str();
+  };
 }

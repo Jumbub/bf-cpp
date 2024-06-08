@@ -1,5 +1,10 @@
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <string>
 
-void requireSnapshot(std::string path, std::string received);
+void REQUIRE_SNAPSHOT(std::string path, std::string received);
+
+using StopCaptureIO = std::function<std::string(void)>;
+StopCaptureIO startCapturingIO(std::optional<std::string> input);

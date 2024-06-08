@@ -35,7 +35,7 @@ int execute(Instructions instructions) {
     if constexpr (ITERATION_LIMIT > 0) {
       if (++iteration > ITERATION_LIMIT) {
         std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-        break;
+        return EXIT_FAILURE;
       }
     }
 

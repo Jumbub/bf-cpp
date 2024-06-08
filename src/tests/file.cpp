@@ -4,8 +4,10 @@
 
 void test(std::string relativePath) {
   const auto content = brainfuck::read("samples/" + relativePath);
-  REQUIRE(content.has_value());
-  requireSnapshot("file/" + relativePath, std::string(content->begin(), content->end()));
+  CHECK_MESSAGE(content.has_value(), "Failed to read file: samples/", relativePath);
+
+  const auto contentOrEmptyString = content.has_value() ? std::string(content->begin(), content->end()) : "";
+  REQUIRE_SNAPSHOT("file/" + relativePath, contentOrEmptyString);
 }
 
 TEST_SUITE("file" * doctest::timeout(10)) {
