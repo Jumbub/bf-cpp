@@ -75,7 +75,7 @@ int execute(Instructions instructions) {
             data[data_pointer] = -1;
           }
         } else {
-          std::cin >> data[data_pointer];
+          std::cin >> std::noskipws >> data[data_pointer];
         }
         instruction_pointer++;
         break;

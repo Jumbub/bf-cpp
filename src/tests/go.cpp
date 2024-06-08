@@ -9,22 +9,11 @@
 namespace go_tests {
 
 void runSnapshotTest(const std::string filename) {
-  /* testing::internal::CaptureStdout(); */
-
-  std::stringstream buffer;
-  // Redirect std::cout to buffer
-  std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());
-
+  std::stringstream newStdout;
+  std::streambuf* oldStdout = std::cout.rdbuf(newStdout.rdbuf());
   const auto result = brainfuck::go("samples/" + filename);
-
-  std::string text = buffer.str();
-
-  // Restore original buffer before exiting
-  std::cout.rdbuf(prevcoutbuf);
-
-  requireSnapshot("go/" + filename, text);
-
-  /* ApprovalTests::Approvals::verify(testing::internal::GetCapturedStdout()); */
+  std::cout.rdbuf(oldStdout);
+  requireSnapshot("go/" + filename, newStdout.str());
 }
 
 void injectStdin(const std::string data) {
