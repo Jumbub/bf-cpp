@@ -28,7 +28,7 @@ int execute(Instructions instructions) {
   static_assert(DATA_SIZE <= std::numeric_limits<DataPointer>::max(), "Exceeded maximum allowed memory");
   constexpr auto PROGRAM_SIZE_LIMIT = std::numeric_limits<InstructionPointer>::max();
   if (instructions.size() > PROGRAM_SIZE_LIMIT) {
-    std::cerr << std::format("Exceeded maximum program size ({} character limit)\n", PROGRAM_SIZE_LIMIT);
+    std::cerr << "Exceeded maximum program size (" << PROGRAM_SIZE_LIMIT << " character limit)\n";
     return EXIT_FAILURE;
   }
 
@@ -69,9 +69,9 @@ int execute(Instructions instructions) {
         break;
       case READ:
         if (std::cin.eof()) {
-          if constexpr (config.eof_behaviour == EOFBehaviour::SET_ZERO) {
+          if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_ZERO) {
             data[data_pointer] = 0;
-          } else if constexpr (config.eof_behaviour == EOFBehaviour::SET_NEGATIVE_ONE) {
+          } else if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_NEGATIVE_ONE) {
             data[data_pointer] = -1;
           }
         } else {

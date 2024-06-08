@@ -1,14 +1,29 @@
-#include "pch.h"
+#include "utils.h"
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sstream>
 #include "../brainfuck/go.h"
-#include "ApprovalTests.hpp"
+#include "doctest/doctest.h"
 
 namespace go_tests {
 
 void runSnapshotTest(const std::string filename) {
   /* testing::internal::CaptureStdout(); */
-  /* const int result = brainfuck::go(filename); */
-  /* ASSERT_EQ(result, 0); */
+
+  std::stringstream buffer;
+  // Redirect std::cout to buffer
+  std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());
+
+  const auto result = brainfuck::go("samples/" + filename);
+
+  std::string text = buffer.str();
+
+  // Restore original buffer before exiting
+  std::cout.rdbuf(prevcoutbuf);
+
+  requireSnapshot("go/" + filename, text);
+
   /* ApprovalTests::Approvals::verify(testing::internal::GetCapturedStdout()); */
 }
 
@@ -23,17 +38,17 @@ void injectStdin(const std::string data) {
   write(fd[1], data.c_str(), data.size() + 1);  // write "some text" to stdin
 }
 
-TEST(go, empty_file) {
-  runSnapshotTest("samples/tests/empty_file.b");
+TEST_CASE("empty_file") {
+  runSnapshotTest("tests/empty_file.b");
 }
 
-TEST(go, no_loop_hello) {
-  runSnapshotTest("samples/tests/no_loop_hello.b");
+TEST_CASE("no_loop_hello") {
+  runSnapshotTest("tests/no_loop_hello.b");
 }
 
-TEST(go, echo) {
+TEST_CASE("echo") {
   injectStdin("wow this\nis amaze");
-  runSnapshotTest("samples/echo.b");
+  runSnapshotTest("echo.b");
 }
 
 }  // namespace go_tests

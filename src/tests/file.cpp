@@ -1,22 +1,19 @@
-#include "pch.h"
-
 #include "../brainfuck/file.h"
-#include "ApprovalTests.hpp"
+#include "doctest/doctest.h"
+#include "utils.h"
 
-namespace file_tests {
-
-void runSnapshotTest(std::string filename) {
-  const auto content = brainfuck::read(filename);
-  ASSERT_TRUE(content.has_value());
-  ApprovalTests::Approvals::verify(std::string(content->begin(), content->end()));
+void test(std::string relativePath) {
+  const auto content = brainfuck::read("samples/" + relativePath);
+  REQUIRE(content.has_value());
+  requireSnapshot("file/" + relativePath, std::string(content->begin(), content->end()));
 }
 
-TEST(file, empty) {
-  runSnapshotTest("samples/tests/empty_file.b");
-}
+TEST_SUITE("file" * doctest::timeout(10)) {
+  TEST_CASE("empty") {
+    test("tests/empty_file.b");
+  }
 
-TEST(file, mandelbrot) {
-  runSnapshotTest("samples/mandelbrot.b");
+  TEST_CASE("mandelbrot") {
+    test("mandelbrot.b");
+  }
 }
-
-}  // namespace file_tests
