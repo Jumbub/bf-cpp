@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <vector>
+#include "error.h"
 #include "parse.h"
 
 namespace brainfuck {
@@ -17,12 +18,12 @@ template <
     std::integral Data,
     std::integral DataPointer,
     std::integral InstructionPointer>
-int execute(Instructions instructions) {
+Error execute(Instructions instructions) {
   static_assert(DATA_SIZE <= std::numeric_limits<DataPointer>::max(), "Exceeded maximum allowed memory");
   constexpr auto PROGRAM_SIZE_LIMIT = std::numeric_limits<InstructionPointer>::max();
   if (instructions.size() > PROGRAM_SIZE_LIMIT) {
     std::cerr << "Exceeded maximum program size (" << PROGRAM_SIZE_LIMIT << " character limit)\n";
-    return EXIT_FAILURE;
+    return Error::PROGRAM_TOO_LONG;
   }
 
   const auto instruction_count = instructions.size();
@@ -35,7 +36,7 @@ int execute(Instructions instructions) {
     if constexpr (ITERATION_LIMIT > 0) {
       if (++iteration > ITERATION_LIMIT) {
         std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-        return EXIT_FAILURE;
+        return Error::REACHED_INSRUCTION_LIMIT;
       }
     }
 
@@ -85,7 +86,7 @@ int execute(Instructions instructions) {
     }
   }
 
-  return EXIT_SUCCESS;
+  return Error::NONE;
 };
 
 }  // namespace brainfuck

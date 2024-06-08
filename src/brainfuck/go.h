@@ -13,16 +13,20 @@ template <
     std::integral Data = char,
     std::integral DataPointer = uint64_t,
     std::integral InstructionPointer = uint64_t>
-int go(const std::string filename) {
+Error go(const std::string filename) {
   const auto data = brainfuck::read(filename);
-  if (!data.has_value()) {
-    std::cerr << "bad filename" << std::endl;
-    return EXIT_FAILURE;
+  if (!data) {
+    return Error::PROGRAM_NOT_FOUND;
   }
+
   const auto instructions = brainfuck::parse(data.value());
-  return brainfuck::execute<
+  if (!instructions) {
+    return instructions.error();
+  }
+
+  return execute<
       DATA_SIZE, ITERATION_LIMIT, EOF_BEHAVIOUR, DATA_POINTER_OVERFLOW_BEHAVIOUR, Data, DataPointer,
-      InstructionPointer>(instructions);
+      InstructionPointer>(*instructions);
 }
 
 }  // namespace brainfuck

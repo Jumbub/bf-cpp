@@ -2,25 +2,29 @@
 #include "doctest/doctest.h"
 #include "utils.h"
 
+using namespace brainfuck;
+
 template <
     uint64_t DATA_SIZE = 30000,
     uint64_t ITERATION_LIMIT = 10000000000,
-    brainfuck::EOFBehaviour EOF_BEHAVIOUR = brainfuck::EOFBehaviour::SET_ZERO,
-    brainfuck::DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR =
-        brainfuck::DataPointerOverflowBehaviour::UNDEFINED,
+    EOFBehaviour EOF_BEHAVIOUR = EOFBehaviour::SET_ZERO,
+    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DataPointerOverflowBehaviour::UNDEFINED,
     std::integral Data = char,
     std::integral DataPointer = uint64_t,
     std::integral InstructionPointer = uint64_t>
-void runSnapshotTest(const std::string filename, const std::optional<std::string> input = std::nullopt) {
+void test(
+    const std::string filename,
+    const std::optional<std::string> input = std::nullopt,
+    const Error expectedError = Error::NONE) {
   const auto stopCapturingIO = startCapturingIO(input);
 
   try {
-    const auto result = brainfuck::go<
-        DATA_SIZE, ITERATION_LIMIT, EOF_BEHAVIOUR, DATA_POINTER_OVERFLOW_BEHAVIOUR, Data, DataPointer,
-        InstructionPointer>("samples/" + filename);
+    const auto error =
+        go<DATA_SIZE, ITERATION_LIMIT, EOF_BEHAVIOUR, DATA_POINTER_OVERFLOW_BEHAVIOUR, Data, DataPointer,
+           InstructionPointer>("samples/" + filename);
 
     const auto output = stopCapturingIO();
-    CHECK_MESSAGE(result == EXIT_SUCCESS, "Failed with error code: ", result);
+    CHECK_MESSAGE(error == expectedError, "Unexpected error code: ", error);
     REQUIRE_SNAPSHOT("go/" + filename, output);
   } catch (...) {
     stopCapturingIO();
@@ -30,22 +34,31 @@ void runSnapshotTest(const std::string filename, const std::optional<std::string
 
 TEST_SUITE("go") {
   TEST_CASE("empty_file") {
-    runSnapshotTest("tests/empty_file.b");
+    const auto error = go("this-file-does-not-exist");
+    REQUIRE(error == Error::PROGRAM_NOT_FOUND);
+  }
+
+  TEST_CASE("empty_file") {
+    test("tests/empty_file.b");
   }
 
   TEST_CASE("no_loop_hello") {
-    runSnapshotTest("tests/no_loop_hello.b");
+    test("tests/no_loop_hello.b");
+  }
+
+  TEST_CASE("unmatched_brace_[") {
+    test("tests/unmatched_brace_[.b");
+  }
+
+  TEST_CASE("unmatched_brace_]") {
+    test("tests/unmatched_brace_].b", std::nullopt, Error::NONE_MATCHING_BRACES);
   }
 
   TEST_CASE("echo") {
-    runSnapshotTest("echo.b", "wow this\nis amaze");
+    test("echo.b", "wow this\nis amaze");
   }
 
-  /* TEST_CASE("unmatched_brace") { */
-  /*   runSnapshotTest("unmatched_brace.b"); */
-  /* } */
-
   /* TEST_CASE("mandelbrot") { */
-  /*   runSnapshotTest("mandelbrot.b", std::nullopt); */
+  /*   test("mandelbrot.b", std::nullopt); */
   /* } */
 }

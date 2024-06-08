@@ -1,11 +1,10 @@
 #include "parse.h"
 
-#include <format>
 #include <stack>
 
 namespace brainfuck {
 
-Instructions parse(const std::vector<char> full) {
+std::expected<Instructions, Error> parse(const std::vector<char> full) {
   Instructions shorter(full.size() + 1);
   std::stack<int> starting_brace_positions;
 
@@ -61,8 +60,9 @@ Instructions parse(const std::vector<char> full) {
         shorter_i++;
         break;
       case ']':
-        if (starting_brace_positions.empty())
-          throw std::invalid_argument("brainfuck code has non-matching braces");
+        if (starting_brace_positions.empty()) {
+          return std::unexpected(Error::NONE_MATCHING_BRACES);
+        }
         const int starting_brace_position = starting_brace_positions.top();
         starting_brace_positions.pop();
 

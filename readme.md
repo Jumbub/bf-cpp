@@ -32,3 +32,6 @@ cmake --build --preset all
 ### Random References
 
 - [Lambda + shared_ptr<> = memory leak](https://floating.io/2017/07/lambda-shared_ptr-memory-leak/)
+- Neovim & CCLS config (with latest C++ features)
+  - `lspconfig.ccls.setup({init_options={clang={extraArgs={"-stdlib=libc++","-std=c++2b"}}}})
+  - Requires installing `libc++`

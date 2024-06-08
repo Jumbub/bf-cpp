@@ -1,9 +1,11 @@
 #pragma once
 
+#include <expected>
 #include <format>
 #include <iostream>
 #include <string>
 #include <vector>
+#include "error.h"
 
 namespace brainfuck {
 
@@ -24,6 +26,6 @@ struct Instruction {
 
 using Instructions = std::vector<Instruction>;
 
-Instructions parse(std::vector<char> full);
+std::expected<Instructions, Error> parse(std::vector<char> full);
 
 }  // namespace brainfuck

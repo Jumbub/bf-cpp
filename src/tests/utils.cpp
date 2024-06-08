@@ -10,8 +10,8 @@
 
 std::string readFile(std::string filename) {
   std::ifstream file(filename);
-  REQUIRE_MESSAGE(file.is_open(), "Failed to find file: ", filename);
-  return {(std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()};
+  CHECK_MESSAGE(file.is_open(), "Missing expected snapshot: ", filename);
+  return file.is_open() ? std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()) : "";
 }
 
 void writeFile(std::string filename, std::string content) {
