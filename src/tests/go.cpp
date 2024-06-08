@@ -1,5 +1,7 @@
-#include "../brainfuck/go.h"
 #include "pch.h"
+
+#include "../brainfuck/go.h"
+#include "ApprovalTests.hpp"
 
 namespace go_tests {
 

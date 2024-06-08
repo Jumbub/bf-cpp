@@ -1,5 +1,7 @@
-#include "../brainfuck/file.h"
 #include "pch.h"
+
+#include "../brainfuck/file.h"
+#include "ApprovalTests.hpp"
 
 namespace file_tests {
 
