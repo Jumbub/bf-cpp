@@ -7,5 +7,5 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  return brainfuck::go<brainfuck::Config{}, uint64_t, uint64_t>(argv[1]);
+  return brainfuck::go<>(argv[1]);
 }
