@@ -39,8 +39,8 @@ void execute(benchmark::State& state, Args&&... args) {
 //     "+<<-[>+<[>>+<<-]]]>[<+>-]<]++>>-->[>]>>[>>]]<<[>>+<[[<]<]>[[<<]<[<]+[-<+>>-[<<+>++>-[<->[<<+>>-]]]<[>+<-]>]>[>]>]>"
 //     "[>>]>>]<<[>>+>>+>>]<<[->>>>>>>>]<<[>.>>>>>>>]<<[>->>>>>]<<[>,>>>]<<[>+>]<<[+<<]<]!--[>--->->->++>-<<<<<-------]>--"
 //     ".>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!")
-//     ->Unit(benchmark::kSecond);
-// BENCHMARK_CAPTURE(execute, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kSecond);
+//     ->Unit(benchmark::kMillisecond);
+// BENCHMARK_CAPTURE(execute, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kMillisecond);
 BENCHMARK_CAPTURE(
     execute,
     cgbfi2_cgbfi2_hello_world,
@@ -62,7 +62,13 @@ BENCHMARK_CAPTURE(
     "<+>>+<]+<-[-[[-]>-<]>[-<<<+>>>]<]>[-<<<->>>]>[-<+>]<<<<[>>+<<-]>>]<<<<<<]>>[-<<+[>>>[-<+>>+<]+<-[-[[-]>-<]>[-<<<->"
     ">>]<]>[-<<<+>>>]>[-<+>]<<<<[<<+>>-]<<]]]>>>>>>>]!--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++"
     "++++.<<.+++.------.<-.>>+.!")
-    ->Unit(benchmark::kSecond);
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(
+    execute,
+    life_glider,
+    "samples/life.b",
+    "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nq\n");
 BENCHMARK_CAPTURE(
     execute,
     dbfi_hello_world,
@@ -117,9 +123,3 @@ BENCHMARK_CAPTURE(
 BENCHMARK_CAPTURE(execute, numwarp, "samples/numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
 BENCHMARK_CAPTURE(execute, _392quine, "samples/392quine.b", "");
 BENCHMARK_CAPTURE(execute, bitwidth, "samples/bitwidth.b", "");
-BENCHMARK_CAPTURE(
-    execute,
-    life_glider,
-    "samples/life.b",
-    "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nq\n");

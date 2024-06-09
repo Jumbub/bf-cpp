@@ -14,6 +14,8 @@ void parse(benchmark::State& state, Args&&... args) {
   }
 }
 
-BENCHMARK_CAPTURE(parse, hello_world, std::string("samples/hello_world.b"));
-BENCHMARK_CAPTURE(parse, mandelbrot, std::string("samples/mandelbrot.b"));
-BENCHMARK_CAPTURE(parse, rot13, std::string("samples/rot13.b"));
+BENCHMARK_CAPTURE(parse, mandelbrot, "samples/mandelbrot.b");
+BENCHMARK_CAPTURE(parse, cgbfi, "samples/cgbfi.b");
+BENCHMARK_CAPTURE(parse, dbfi, "samples/dbfi.b");
+BENCHMARK_CAPTURE(parse, hello_world, "samples/hello_world.b");
+BENCHMARK_CAPTURE(parse, rot13, "samples/rot13.b");

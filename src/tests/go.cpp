@@ -4,14 +4,6 @@
 
 using namespace brainfuck;
 
-template <
-    uint64_t DATA_SIZE = 30000,
-    uint64_t ITERATION_LIMIT = 10000000000,
-    EOFBehaviour EOF_BEHAVIOUR = EOFBehaviour::NOOP,
-    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DataPointerOverflowBehaviour::UNDEFINED,
-    std::integral Data = char,
-    std::integral DataPointer = uint64_t,
-    std::integral InstructionPointer = uint64_t>
 void test(
     const std::string filename,
     const std::optional<std::string> input = std::nullopt,
@@ -20,9 +12,7 @@ void test(
   CAPTURE(filename);
 
   try {
-    const auto error =
-        go<DATA_SIZE, ITERATION_LIMIT, EOF_BEHAVIOUR, DATA_POINTER_OVERFLOW_BEHAVIOUR, Data, DataPointer,
-           InstructionPointer>("samples/" + filename);
+    const auto error = go("samples/" + filename);
 
     const auto output = stopCapturingIO();
     CHECK_MESSAGE(error == expectedError, "Unexpected error code: ", error);

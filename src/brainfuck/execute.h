@@ -7,7 +7,7 @@
 
 namespace brainfuck {
 
-enum class EOFBehaviour { SET_ZERO, SET_NEGATIVE_ONE, NOOP };
+enum class EOFBehaviour { NOOP };
 enum class DataPointerOverflowBehaviour { UNDEFINED };
 
 template <
@@ -70,13 +70,10 @@ Error execute(Instructions instructions) {
         instruction_pointer++;
         break;
       case READ:
-        std::cin >> std::noskipws >> data[data_pointer];
-        if (std::cin.eof()) {
-          if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_ZERO) {
-            data[data_pointer] = 0;
-          } else if constexpr (EOF_BEHAVIOUR == EOFBehaviour::SET_NEGATIVE_ONE) {
-            data[data_pointer] = -1;
-          }
+        char input;
+        std::cin >> std::noskipws >> input;
+        if (!std::cin.eof()) {
+          data[data_pointer] = input;
         }
         instruction_pointer++;
         break;

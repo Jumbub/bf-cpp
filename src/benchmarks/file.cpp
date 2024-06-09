@@ -12,8 +12,8 @@ void file(benchmark::State& state, Args&&... args) {
   }
 }
 
-BENCHMARK_CAPTURE(file, mandelbrot, std::string("samples/mandelbrot.b"));
-BENCHMARK_CAPTURE(file, rot13, std::string("samples/rot13.b"));
-BENCHMARK_CAPTURE(file, hello_world, std::string("samples/hello_world.b"));
-BENCHMARK_CAPTURE(file, empty_file, std::string("samples/empty_file.b"));
-BENCHMARK_CAPTURE(file, non_existent_file, std::string("non_existent_file"));
+BENCHMARK_CAPTURE(file, mandelbrot, "samples/mandelbrot.b");
+BENCHMARK_CAPTURE(file, hello_world, "samples/hello_world.b");
+BENCHMARK_CAPTURE(file, rot13, "samples/rot13.b");
+BENCHMARK_CAPTURE(file, empty_file, "samples/empty_file.b");
+BENCHMARK_CAPTURE(file, non_existent_file, "non_existent_file");
