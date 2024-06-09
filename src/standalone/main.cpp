@@ -7,5 +7,5 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  return brainfuck::go<>(argv[1]);
+  return (int)brainfuck::go<>(argv[1]);
 }

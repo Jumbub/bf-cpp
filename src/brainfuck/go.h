@@ -7,7 +7,7 @@ namespace brainfuck {
 
 template <
     uint64_t DATA_SIZE = 30000,
-    uint64_t ITERATION_LIMIT = 100,
+    uint64_t ITERATION_LIMIT = 10000000000,
     EOFBehaviour EOF_BEHAVIOUR = EOFBehaviour::NOOP,
     DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DataPointerOverflowBehaviour::UNDEFINED,
     std::integral Data = char,

@@ -1,34 +1,19 @@
 #include "../brainfuck/file.h"
 #include "benchmark/benchmark.h"
 
-static void file_read_non_existent(benchmark::State& state) {
+template <class... Args>
+void file(benchmark::State& state, Args&&... args) {
+  auto args_tuple = std::make_tuple(std::move(args)...);
+  const std::string filename = std::get<0>(args_tuple);
+
   for (auto _ : state) {
-    auto result = brainfuck::read("this-file-does-not-exist");
+    auto result = brainfuck::read(filename);
     benchmark::DoNotOptimize(result);
   }
 }
-BENCHMARK(file_read_non_existent);
 
-static void file_read_empty(benchmark::State& state) {
-  for (auto _ : state) {
-    auto result = brainfuck::read("samples/tests/empty-file.b");
-    benchmark::DoNotOptimize(result);
-  }
-}
-BENCHMARK(file_read_empty);
-
-/* static void file_read_hello_world(benchmark::State& state) { */
-/*   for (auto _ : state) { */
-/*     auto result = brainfuck::read("samples/hello_world.b"); */
-/*     benchmark::DoNotOptimize(result); */
-/*   } */
-/* } */
-/* BENCHMARK(file_read_hello_world); */
-
-/* static void file_read_mandelbrot(benchmark::State& state) { */
-/*   for (auto _ : state) { */
-/*     auto result = brainfuck::read("samples/mandelbrot.b"); */
-/*     benchmark::DoNotOptimize(result); */
-/*   } */
-/* } */
-/* BENCHMARK(file_read_mandelbrot); */
+BENCHMARK_CAPTURE(file, mandelbrot, std::string("samples/mandelbrot.b"));
+BENCHMARK_CAPTURE(file, rot13, std::string("samples/rot13.b"));
+BENCHMARK_CAPTURE(file, hello_world, std::string("samples/hello_world.b"));
+BENCHMARK_CAPTURE(file, empty_file, std::string("samples/empty_file.b"));
+BENCHMARK_CAPTURE(file, non_existent_file, std::string("non_existent_file"));

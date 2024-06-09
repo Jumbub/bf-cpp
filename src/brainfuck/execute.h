@@ -11,13 +11,13 @@ enum class EOFBehaviour { SET_ZERO, SET_NEGATIVE_ONE, NOOP };
 enum class DataPointerOverflowBehaviour { UNDEFINED };
 
 template <
-    uint64_t DATA_SIZE,
-    uint64_t ITERATION_LIMIT,
-    EOFBehaviour EOF_BEHAVIOUR,
-    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR,
-    std::integral Data,
-    std::integral DataPointer,
-    std::integral InstructionPointer>
+    uint64_t DATA_SIZE = 30000,
+    uint64_t ITERATION_LIMIT = 10000000000,
+    EOFBehaviour EOF_BEHAVIOUR = EOFBehaviour::NOOP,
+    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DataPointerOverflowBehaviour::UNDEFINED,
+    std::integral Data = char,
+    std::integral DataPointer = uint64_t,
+    std::integral InstructionPointer = uint64_t>
 Error execute(Instructions instructions) {
   static_assert(DATA_SIZE <= std::numeric_limits<DataPointer>::max(), "Exceeded maximum allowed memory");
   constexpr auto PROGRAM_SIZE_LIMIT = std::numeric_limits<InstructionPointer>::max();

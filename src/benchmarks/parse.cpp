@@ -2,29 +2,18 @@
 #include "../brainfuck/parse.h"
 #include "benchmark/benchmark.h"
 
-static void parse_read_empty(benchmark::State& state) {
-  const auto code = brainfuck::read("samples/tests/empty.b").value();
-  for (auto _ : state) {
-    auto bytecode = brainfuck::parse({});
-    benchmark::DoNotOptimize(bytecode);
-  }
-}
-BENCHMARK(parse_read_empty);
+template <class... Args>
+void parse(benchmark::State& state, Args&&... args) {
+  auto args_tuple = std::make_tuple(std::move(args)...);
+  const std::string filename = std::get<0>(args_tuple);
 
-static void parse_read_hello_world(benchmark::State& state) {
-  const auto code = brainfuck::read("samples/hello_world.b").value();
+  const auto code = brainfuck::read(filename).value();
   for (auto _ : state) {
     auto bytecode = brainfuck::parse(code);
     benchmark::DoNotOptimize(bytecode);
   }
 }
-BENCHMARK(parse_read_hello_world);
 
-static void parse_read_mandelbrot(benchmark::State& state) {
-  const auto code = brainfuck::read("samples/mandelbrot.b").value();
-  for (auto _ : state) {
-    auto bytecode = brainfuck::parse(code);
-    benchmark::DoNotOptimize(bytecode);
-  }
-}
-BENCHMARK(parse_read_mandelbrot);
+BENCHMARK_CAPTURE(parse, hello_world, std::string("samples/hello_world.b"));
+BENCHMARK_CAPTURE(parse, mandelbrot, std::string("samples/mandelbrot.b"));
+BENCHMARK_CAPTURE(parse, rot13, std::string("samples/rot13.b"));

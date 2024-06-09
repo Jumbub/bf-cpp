@@ -17,6 +17,7 @@ void test(
     const std::optional<std::string> input = std::nullopt,
     const Error expectedError = Error::NONE) {
   const auto stopCapturingIO = startCapturingIO(input);
+  CAPTURE(filename);
 
   try {
     const auto error =
@@ -32,33 +33,25 @@ void test(
   }
 }
 
-TEST_SUITE("go") {
-  TEST_CASE("empty_file") {
-    const auto error = go("this-file-does-not-exist");
-    REQUIRE(error == Error::PROGRAM_NOT_FOUND);
-  }
+TEST_CASE("go") {
+  const auto error = go("this-file-does-not-exist");
+  REQUIRE(error == Error::PROGRAM_NOT_FOUND);
 
-  TEST_CASE("empty_file") {
-    test("tests/empty_file.b");
-  }
-
-  TEST_CASE("no_loop_hello") {
-    test("tests/no_loop_hello.b");
-  }
-
-  TEST_CASE("unmatched_brace_[") {
-    test("tests/unmatched_brace_[.b");
-  }
-
-  TEST_CASE("unmatched_brace_]") {
-    test("tests/unmatched_brace_].b", std::nullopt, Error::NONE_MATCHING_BRACES);
-  }
-
-  TEST_CASE("echo") {
-    test("echo.b", "wow this\nis amaze");
-  }
-
-  /* TEST_CASE("mandelbrot") { */
-  /*   test("mandelbrot.b", std::nullopt); */
-  /* } */
+  test("tests/empty_file.b");
+  test("tests/no_loop_hello.b");
+  test("tests/unmatched_brace_[.b");
+  test("tests/unmatched_brace_].b", std::nullopt, Error::NONE_MATCHING_BRACES);
+  test("tests/loop_til_zero.b");
+  test("hello_world.b");
+  test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
+  test("rot13.b", "~mlk zyx");
+  test("echo.b", "wow this\nis amaze");
+  test("numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
+  test("392quine.b");
+  test("bitwidth.b");
+  const auto glider =
+      "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+      "\n\n\n\n\n\n\n\n\nq\n";
+  test("life.b", glider);
+  /* test("mandelbrot.b"); */
 }
