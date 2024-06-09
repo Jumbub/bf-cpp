@@ -4,60 +4,65 @@
 
 namespace brainfuck {
 
-std::expected<Instructions, Error> parse(const std::vector<char> full) {
-  Instructions shorter(full.size() + 1);
+std::expected<Instructions, Error> parse(const std::vector<char> code) {
+  Instructions instr(code.size() + 1);
   std::stack<int> starting_brace_positions;
 
-  int shorter_i = 1;  // operates with +1 offset to simplify optimisation logic
-  for (int i = 0; i < full.size(); i++) {
-    switch (full[i]) {
+  int instr_i = 1;  // operates with +1 offset to simplify optimisation logic
+  for (int code_i = 0; code_i < code.size(); code_i++) {
+    switch (code[code_i]) {
       case '+':
-        if (shorter[shorter_i - 1].type == MUTATE_DATA) {
-          shorter[shorter_i - 1].value += 1;
+        if (instr[instr_i - 1].type == MUTATE_DATA) {
+          instr[instr_i - 1].value += 1;
         } else {
-          shorter[shorter_i].type = MUTATE_DATA;
-          shorter[shorter_i].value = 1;
-          shorter_i++;
+          instr[instr_i].type = MUTATE_DATA;
+          instr[instr_i].value = 1;
+          instr_i++;
         }
         break;
       case '-':
-        if (shorter[shorter_i - 1].type == MUTATE_DATA) {
-          shorter[shorter_i - 1].value -= 1;
+        if (instr[instr_i - 1].type == MUTATE_DATA) {
+          instr[instr_i - 1].value -= 1;
         } else {
-          shorter[shorter_i].type = MUTATE_DATA;
-          shorter[shorter_i].value = -1;
-          shorter_i++;
+          instr[instr_i].type = MUTATE_DATA;
+          instr[instr_i].value = -1;
+          instr_i++;
         }
         break;
       case '>':
-        if (shorter[shorter_i - 1].type == MUTATE_DATA_POINTER) {
-          shorter[shorter_i - 1].value += 1;
+        if (instr[instr_i - 1].type == MUTATE_DATA_POINTER) {
+          instr[instr_i - 1].value += 1;
         } else {
-          shorter[shorter_i].type = MUTATE_DATA_POINTER;
-          shorter[shorter_i].value = 1;
-          shorter_i++;
+          instr[instr_i].type = MUTATE_DATA_POINTER;
+          instr[instr_i].value = 1;
+          instr_i++;
         }
         break;
       case '<':
-        if (shorter[shorter_i - 1].type == MUTATE_DATA_POINTER) {
-          shorter[shorter_i - 1].value -= 1;
+        if (instr[instr_i - 1].type == MUTATE_DATA_POINTER) {
+          instr[instr_i - 1].value -= 1;
         } else {
-          shorter[shorter_i].type = MUTATE_DATA_POINTER;
-          shorter[shorter_i].value = -1;
-          shorter_i++;
+          instr[instr_i].type = MUTATE_DATA_POINTER;
+          instr[instr_i].value = -1;
+          instr_i++;
         }
         break;
       case '.':
-        shorter[shorter_i].type = WRITE;
-        shorter_i++;
+        instr[instr_i].type = WRITE;
+        instr_i++;
         break;
       case ',':
-        shorter[shorter_i].type = READ;
-        shorter_i++;
+        instr[instr_i].type = READ;
+        instr_i++;
         break;
       case '[':
-        starting_brace_positions.push(shorter_i);
-        shorter_i++;
+        if (code[code_i + 1] == '-' && code[code_i + 2] == ']') {
+          instr[instr_i].type = SET;
+          code_i += 2;
+        } else {
+          starting_brace_positions.push(instr_i);
+        }
+        instr_i++;
         break;
       case ']':
         if (starting_brace_positions.empty()) {
@@ -66,18 +71,18 @@ std::expected<Instructions, Error> parse(const std::vector<char> full) {
         const int starting_brace_position = starting_brace_positions.top();
         starting_brace_positions.pop();
 
-        shorter[starting_brace_position].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
-        shorter[starting_brace_position].value = shorter_i + 1;
-        shorter[shorter_i].type = MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO;
-        shorter[shorter_i].value = starting_brace_position + 1;
+        instr[starting_brace_position].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
+        instr[starting_brace_position].value = instr_i + 1;
+        instr[instr_i].type = MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO;
+        instr[instr_i].value = starting_brace_position + 1;
 
-        shorter_i++;
+        instr_i++;
         break;
     }
   }
 
-  shorter.resize(shorter_i);
-  return shorter;
+  instr.resize(instr_i);
+  return instr;
 };
 
 }  // namespace brainfuck

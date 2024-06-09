@@ -16,7 +16,9 @@ enum Type {
   MUTATE_DATA = '+',
   MUTATE_DATA_POINTER = '>',
   MUTATE_INSTRUCTION_POINTER_IF_ZERO = '[',
-  MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO = ']'
+  MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO = ']',
+
+  SET = '=',  // [-]
 };
 
 struct Instruction {

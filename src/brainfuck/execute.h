@@ -47,6 +47,10 @@ Error execute(Instructions instructions) {
         data[data_pointer] += instruction.value;
         instruction_pointer++;
         break;
+      case SET:
+        data[data_pointer] = instruction.value;
+        instruction_pointer++;
+        break;
       case MUTATE_DATA_POINTER:
         data_pointer += instruction.value;
         instruction_pointer++;
