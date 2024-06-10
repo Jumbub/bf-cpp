@@ -41,7 +41,8 @@ inline void closeBrace(ByteCode& instr, const Code& code, int& code_i, std::stac
 
 std::expected<ByteCode, Error> parse(const Code code) {
   ByteCode instr;
-  instr.reserve(code.size() + 1);
+  const auto size = code.size();
+  instr.reserve(size + size % 2);
   instr.emplace_back(NOOP, 0);
 
   std::stack<int> starting_brace_positions;
@@ -54,9 +55,8 @@ std::expected<ByteCode, Error> parse(const Code code) {
     } else if (code[code_i] == '[') {
       openBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == ']') {
-      if (starting_brace_positions.empty()) {
+      if (starting_brace_positions.empty())
         return std::unexpected(Error::UNMATCHED_BRACE);
-      }
       closeBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == '+') {
       emplaceCumulativeInstruction<MUTATE_DATA, 1, '+'>(instr, code, code_i);
