@@ -13,7 +13,7 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
   int instr_i = 1;  // operates with +1 offset to simplify optimisation logic
   for (int code_i = 0; code_i < code.size(); code_i++) {
     switch (code[code_i]) {
-      case '+':
+      case '+': {
         if (instr[instr_i - 1].type == MUTATE_DATA) {
           instr[instr_i - 1].value += 1;
         } else {
@@ -22,7 +22,8 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
           instr_i++;
         }
         break;
-      case '-':
+      }
+      case '-': {
         if (instr[instr_i - 1].type == MUTATE_DATA) {
           instr[instr_i - 1].value -= 1;
         } else {
@@ -31,7 +32,8 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
           instr_i++;
         }
         break;
-      case '>':
+      }
+      case '>': {
         if (instr[instr_i - 1].type == MUTATE_DATA_POINTER) {
           instr[instr_i - 1].value += 1;
         } else {
@@ -40,7 +42,8 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
           instr_i++;
         }
         break;
-      case '<':
+      }
+      case '<': {
         if (instr[instr_i - 1].type == MUTATE_DATA_POINTER) {
           instr[instr_i - 1].value -= 1;
         } else {
@@ -49,20 +52,14 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
           instr_i++;
         }
         break;
-      case '.':
-        instr[instr_i].type = WRITE;
-        instr_i++;
-        break;
-      case ',':
-        instr[instr_i].type = READ;
-        instr_i++;
-        break;
-      case '[':
+      }
+      case '[': {
         instr[instr_i].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
         starting_brace_positions.push(instr_i);
         instr_i++;
         break;
-      case ']':
+      }
+      case ']': {
         if (starting_brace_positions.empty()) {
           return std::unexpected(Error::UNMATCHED_BRACE);
         }
@@ -75,6 +72,17 @@ std::expected<ByteCode, Error> parse(const std::vector<char> code) {
 
         instr_i++;
         break;
+      }
+      case '.': {
+        instr[instr_i].type = WRITE;
+        instr_i++;
+        break;
+      }
+      case ',': {
+        instr[instr_i].type = READ;
+        instr_i++;
+        break;
+      }
     }
   }
 
