@@ -6,16 +6,12 @@ namespace brainfuck {
 
 template <Type type, int increment, char character>
 void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int& code_i) {
-  if (instr.back().type == type) {
-    int incrementMultiplier = 1;
-    while (code[code_i + 1] == character) {
-      code_i++;
-      incrementMultiplier++;
-    }
-    instr.back().value += increment * incrementMultiplier;
-  } else {
-    instr.emplace_back(type, increment);
+  int incrementMultiplier = 1;
+  while (code[code_i + 1] == character) {
+    code_i++;
+    incrementMultiplier++;
   }
+  instr.emplace_back(type, increment * incrementMultiplier);
 }
 
 inline void openBrace(ByteCode& instr, const Code& code, int& code_i, std::stack<int>& starting_brace_positions) {
