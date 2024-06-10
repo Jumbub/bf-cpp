@@ -18,6 +18,24 @@ inline void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int&
   }
 }
 
+inline void openBrace(ByteCode& instr, const Code& code, int& code_i, std::stack<int>& starting_brace_positions) {
+  if (code[code_i + 2] == ']') {
+    const auto middle = code[code_i + 1];
+    if (middle == '-' || middle == '+') {
+      instr.emplace_back(SET, 0);
+    } else if (middle == '<') {
+      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_TIL_ZERO, -1);
+    } else if (middle == '>') {
+      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_TIL_ZERO, 1);
+    }
+    code_i += 2;
+  }
+
+  instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_ZERO, 0);
+  const auto currentIndex = instr.size() - 1;
+  starting_brace_positions.push(currentIndex);
+}
+
 std::expected<ByteCode, Error> parse(const Code code) {
   ByteCode instr;
   instr.reserve(code.size() + 1);
@@ -35,9 +53,7 @@ std::expected<ByteCode, Error> parse(const Code code) {
     } else if (code[code_i] == '<') {
       emplaceCumulativeInstruction<MUTATE_DATA_POINTER, -1, '<'>(instr, code, code_i);
     } else if (code[code_i] == '[') {
-      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_ZERO, 0);
-      const auto currentIndex = instr.size() - 1;
-      starting_brace_positions.push(currentIndex);
+      openBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == ']') {
       if (starting_brace_positions.empty()) {
         return std::unexpected(Error::UNMATCHED_BRACE);
