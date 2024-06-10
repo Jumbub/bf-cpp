@@ -9,7 +9,7 @@
 
 namespace brainfuck {
 
-enum Type {
+enum Type : uint8_t {
   NOOP = '_',
   READ = ',',
   WRITE = '.',
