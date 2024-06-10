@@ -4,6 +4,15 @@
 
 namespace brainfuck {
 
+template <Type type, int increment>
+void emplaceCumulativeInstruction(ByteCode& instr) {
+  if (instr.back().type == type) {
+    instr.back().value += increment;
+  } else {
+    instr.emplace_back(type, increment);
+  }
+}
+
 std::expected<ByteCode, Error> parse(const Code code) {
   ByteCode instr;
   instr.reserve(code.size() + 1);
@@ -11,32 +20,15 @@ std::expected<ByteCode, Error> parse(const Code code) {
 
   std::stack<int> starting_brace_positions;
 
-  // int instr_i = 1;  // operates with +1 offset to simplify optimisation logic
   for (int code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '+') {
-      if (instr.back().type == MUTATE_DATA) {
-        instr.back().value += 1;
-      } else {
-        instr.emplace_back(MUTATE_DATA, 1);
-      }
+      emplaceCumulativeInstruction<MUTATE_DATA, 1>(instr);
     } else if (code[code_i] == '-') {
-      if (instr.back().type == MUTATE_DATA) {
-        instr.back().value -= 1;
-      } else {
-        instr.emplace_back(MUTATE_DATA, -1);
-      }
+      emplaceCumulativeInstruction<MUTATE_DATA, -1>(instr);
     } else if (code[code_i] == '>') {
-      if (instr.back().type == MUTATE_DATA_POINTER) {
-        instr.back().value += 1;
-      } else {
-        instr.emplace_back(MUTATE_DATA_POINTER, 1);
-      }
+      emplaceCumulativeInstruction<MUTATE_DATA_POINTER, 1>(instr);
     } else if (code[code_i] == '<') {
-      if (instr.back().type == MUTATE_DATA_POINTER) {
-        instr.back().value -= 1;
-      } else {
-        instr.emplace_back(MUTATE_DATA_POINTER, -1);
-      }
+      emplaceCumulativeInstruction<MUTATE_DATA_POINTER, -1>(instr);
     } else if (code[code_i] == '[') {
       instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_ZERO, 0);
       const auto currentIndex = instr.size() - 1;
