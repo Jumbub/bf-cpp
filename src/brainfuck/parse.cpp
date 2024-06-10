@@ -51,11 +51,7 @@ std::expected<ByteCode, Error> parse(const Code code) {
   std::stack<int> starting_brace_positions;
 
   for (int code_i = 0; code_i < code.size(); code_i++) {
-    if (code[code_i] == '+') {
-      emplaceCumulativeInstruction<MUTATE_DATA, 1, '+'>(instr, code, code_i);
-    } else if (code[code_i] == '-') {
-      emplaceCumulativeInstruction<MUTATE_DATA, -1, '-'>(instr, code, code_i);
-    } else if (code[code_i] == '>') {
+    if (code[code_i] == '>') {
       emplaceCumulativeInstruction<MUTATE_DATA_POINTER, 1, '>'>(instr, code, code_i);
     } else if (code[code_i] == '<') {
       emplaceCumulativeInstruction<MUTATE_DATA_POINTER, -1, '<'>(instr, code, code_i);
@@ -66,6 +62,10 @@ std::expected<ByteCode, Error> parse(const Code code) {
         return std::unexpected(Error::UNMATCHED_BRACE);
       }
       closeBrace(instr, code, code_i, starting_brace_positions);
+    } else if (code[code_i] == '+') {
+      emplaceCumulativeInstruction<MUTATE_DATA, 1, '+'>(instr, code, code_i);
+    } else if (code[code_i] == '-') {
+      emplaceCumulativeInstruction<MUTATE_DATA, -1, '-'>(instr, code, code_i);
     } else if (code[code_i] == '.') {
       instr.emplace_back(WRITE, 0);
     } else if (code[code_i] == ',') {
