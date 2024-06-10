@@ -5,7 +5,7 @@
 namespace brainfuck {
 
 template <Type type, int increment, char character>
-inline void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int& code_i) {
+void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int& code_i) {
   if (instr.back().type == type) {
     int incrementMultiplier = 1;
     while (code[code_i + 1] == character) {
@@ -23,17 +23,24 @@ inline void openBrace(ByteCode& instr, const Code& code, int& code_i, std::stack
     const auto middle = code[code_i + 1];
     if (middle == '-' || middle == '+') {
       instr.emplace_back(SET, 0);
-    } else if (middle == '<') {
-      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_TIL_ZERO, -1);
-    } else if (middle == '>') {
-      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_TIL_ZERO, 1);
+      code_i += 2;
+      return;
     }
-    code_i += 2;
   }
 
   instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_ZERO, 0);
   const auto currentIndex = instr.size() - 1;
   starting_brace_positions.push(currentIndex);
+}
+
+inline void closeBrace(ByteCode& instr, const Code& code, int& code_i, std::stack<int>& starting_brace_positions) {
+  const int starting_brace_position = starting_brace_positions.top();
+  starting_brace_positions.pop();
+
+  instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO, starting_brace_position + 1);
+
+  const auto currentIndex = instr.size() - 1;
+  instr[starting_brace_position].value = currentIndex + 1;
 }
 
 std::expected<ByteCode, Error> parse(const Code code) {
@@ -58,13 +65,7 @@ std::expected<ByteCode, Error> parse(const Code code) {
       if (starting_brace_positions.empty()) {
         return std::unexpected(Error::UNMATCHED_BRACE);
       }
-      const int starting_brace_position = starting_brace_positions.top();
-      starting_brace_positions.pop();
-
-      instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO, starting_brace_position + 1);
-
-      const auto currentIndex = instr.size() - 1;
-      instr[starting_brace_position].value = currentIndex + 1;
+      closeBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == '.') {
       instr.emplace_back(WRITE, 0);
     } else if (code[code_i] == ',') {

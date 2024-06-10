@@ -19,7 +19,6 @@ enum Type {
   MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO = ']',
 
   SET = '=',  // [-]
-  MUTATE_INSTRUCTION_POINTER_TIL_ZERO = '^'
 };
 
 struct Instruction {
