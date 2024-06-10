@@ -24,6 +24,8 @@ enum Type {
 struct Instruction {
   Type type = NOOP;
   int value = 0;
+
+  Instruction(Type type, int value);
 };
 
 using ByteCode = std::vector<Instruction>;

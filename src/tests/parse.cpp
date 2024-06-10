@@ -20,6 +20,9 @@ void parseTest(
   for (const auto instruction : *instructions) {
     output += std::format("{} {}\n", (char)instruction.type, instruction.value);
   }
+  if (output.empty()) {
+    output = "<empty bytecode>";
+  }
   REQUIRE_SNAPSHOT("parse/" + filename, output);
 }
 
