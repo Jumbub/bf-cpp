@@ -29,8 +29,8 @@ TEST_CASE("go") {
 
   test("tests/empty_file.b");
   test("tests/no_loop_hello.b");
-  test("tests/unmatched_brace_[.b");
-  test("tests/unmatched_brace_].b", std::nullopt, Error::NONE_MATCHING_BRACES);
+  test("tests/unmatched_brace_[.b", std::nullopt, Error::UNMATCHED_BRACE);
+  test("tests/unmatched_brace_].b", std::nullopt, Error::UNMATCHED_BRACE);
   test("tests/loop_til_zero.b");
   test("hello_world.b");
   test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");

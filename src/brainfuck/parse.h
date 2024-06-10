@@ -10,7 +10,7 @@
 namespace brainfuck {
 
 enum Type {
-  NOOP = 'N',
+  NOOP = '_',
   READ = ',',
   WRITE = '.',
   MUTATE_DATA = '+',
@@ -26,8 +26,9 @@ struct Instruction {
   int value = 0;
 };
 
-using Instructions = std::vector<Instruction>;
+using ByteCode = std::vector<Instruction>;
+using Code = std::vector<char>;
 
-std::expected<Instructions, Error> parse(std::vector<char> full);
+std::expected<ByteCode, Error> parse(Code full);
 
 }  // namespace brainfuck

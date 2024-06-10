@@ -4,8 +4,10 @@
 
 namespace brainfuck {
 
-std::expected<Instructions, Error> parse(const std::vector<char> code) {
-  Instructions instr(code.size() + 1);
+std::expected<ByteCode, Error> parse(const std::vector<char> code) {
+  ByteCode instr;
+  instr.reserve(code.size() + 1);
+
   std::stack<int> starting_brace_positions;
 
   int instr_i = 1;  // operates with +1 offset to simplify optimisation logic
@@ -56,22 +58,17 @@ std::expected<Instructions, Error> parse(const std::vector<char> code) {
         instr_i++;
         break;
       case '[':
-        if (code[code_i + 1] == '-' && code[code_i + 2] == ']') {
-          instr[instr_i].type = SET;
-          code_i += 2;
-        } else {
-          starting_brace_positions.push(instr_i);
-        }
+        instr[instr_i].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
+        starting_brace_positions.push(instr_i);
         instr_i++;
         break;
       case ']':
         if (starting_brace_positions.empty()) {
-          return std::unexpected(Error::NONE_MATCHING_BRACES);
+          return std::unexpected(Error::UNMATCHED_BRACE);
         }
         const int starting_brace_position = starting_brace_positions.top();
         starting_brace_positions.pop();
 
-        instr[starting_brace_position].type = MUTATE_INSTRUCTION_POINTER_IF_ZERO;
         instr[starting_brace_position].value = instr_i + 1;
         instr[instr_i].type = MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO;
         instr[instr_i].value = starting_brace_position + 1;
@@ -81,7 +78,10 @@ std::expected<Instructions, Error> parse(const std::vector<char> code) {
     }
   }
 
-  instr.resize(instr_i);
+  if (!starting_brace_positions.empty()) {
+    return std::unexpected(Error::UNMATCHED_BRACE);
+  }
+
   return instr;
 };
 

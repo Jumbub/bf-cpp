@@ -6,5 +6,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(doctest)
 
-add_executable(tests main.cpp utils.cpp file.cpp go.cpp)
+add_executable(tests main.cpp utils.cpp file.cpp parse.cpp go.cpp)
 target_link_libraries(tests brainfuck doctest::doctest)
