@@ -21,11 +21,13 @@ enum Type : uint8_t {
   SET = '=',  // [-]
 };
 
+using Value = int32_t;
+
 struct Instruction {
   Type type = NOOP;
-  int value = 0;
+  Value value = 0;
 
-  Instruction(Type type, int value);
+  Instruction(Type type, Value value);
 };
 
 using ByteCode = std::vector<Instruction>;
