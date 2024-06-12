@@ -12,7 +12,7 @@ std::optional<std::vector<char>> read(const std::string filename) {
   }
   const auto size = std::filesystem::file_size(filename);
   std::vector<char> buffer(size);
-  file.read(buffer.data(), size);
+  file.read(buffer.data(), static_cast<std::streamsize>(size));
   return buffer;
 }
 

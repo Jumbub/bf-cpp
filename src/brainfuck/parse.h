@@ -22,7 +22,6 @@ enum Type : uint8_t {
 };
 
 using Value = int32_t;
-
 struct Instruction {
   Type type = NOOP;
   Value value = 0;

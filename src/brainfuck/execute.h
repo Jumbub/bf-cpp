@@ -7,30 +7,18 @@
 
 namespace brainfuck {
 
-enum class EOFBehaviour { NOOP };
-enum class DataPointerOverflowBehaviour { UNDEFINED };
+constexpr uint64_t ITERATION_LIMIT = 10000000000;
 
-template <
-    uint64_t DATA_SIZE = 30000,
-    uint64_t ITERATION_LIMIT = 10000000000,
-    EOFBehaviour EOF_BEHAVIOUR = EOFBehaviour::NOOP,
-    DataPointerOverflowBehaviour DATA_POINTER_OVERFLOW_BEHAVIOUR = DataPointerOverflowBehaviour::UNDEFINED,
-    std::integral Data = char,
-    std::integral DataPointer = uint64_t,
-    std::integral InstructionPointer = uint64_t>
 Error execute(ByteCode instructions) {
-  static_assert(DATA_SIZE <= std::numeric_limits<DataPointer>::max(), "Exceeded maximum allowed memory");
-  constexpr auto PROGRAM_SIZE_LIMIT = std::numeric_limits<InstructionPointer>::max();
-  if (instructions.size() > PROGRAM_SIZE_LIMIT) {
-    std::cerr << "Exceeded maximum program size (" << PROGRAM_SIZE_LIMIT << " character limit)\n";
-    return Error::PROGRAM_TOO_LONG;
-  }
-
   const auto instruction_count = instructions.size();
-  InstructionPointer instruction_pointer = 0;
-  DataPointer data_pointer = 0;
-  Data data[DATA_SIZE] = {0};
-  uint64_t iteration = 0;
+  size_t instruction_pointer = 0;
+  size_t data_pointer = 0;
+  char data[30000] = {0};
+
+  uint64_t iteration;
+  if constexpr (ITERATION_LIMIT > 0) {
+    iteration = 0;
+  }
 
   while (instruction_pointer < instruction_count) {
     if constexpr (ITERATION_LIMIT > 0) {
@@ -40,31 +28,31 @@ Error execute(ByteCode instructions) {
       }
     }
 
-    const auto instruction = instructions[instruction_pointer];
+    const Instruction instruction = instructions[instruction_pointer];
 
     switch (instruction.type) {
       case MUTATE_DATA:
-        data[data_pointer] += instruction.value;
+        data[data_pointer] += static_cast<char>(instruction.value);
         instruction_pointer++;
         break;
       case SET:
-        data[data_pointer] = instruction.value;
+        data[data_pointer] = static_cast<char>(instruction.value);
         instruction_pointer++;
         break;
       case MUTATE_DATA_POINTER:
-        data_pointer += instruction.value;
+        data_pointer += static_cast<size_t>(instruction.value);
         instruction_pointer++;
         break;
       case MUTATE_INSTRUCTION_POINTER_IF_ZERO:
         if (data[data_pointer] == 0) {
-          instruction_pointer = instruction.value;
+          instruction_pointer = static_cast<size_t>(instruction.value);
         } else {
           instruction_pointer++;
         }
         break;
       case MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO:
         if (data[data_pointer] != 0) {
-          instruction_pointer = instruction.value;
+          instruction_pointer = static_cast<size_t>(instruction.value);
         } else {
           instruction_pointer++;
         }

@@ -6,10 +6,7 @@
 
 using namespace brainfuck;
 
-void parseTest(
-    const std::string filename,
-    const std::optional<std::string> input = std::nullopt,
-    const Error expectedError = Error::NONE) {
+void parseTest(const std::string filename) {
   CAPTURE(filename);
 
   const auto code = read("samples/" + filename);
@@ -31,15 +28,12 @@ TEST_CASE("parse") {
   parseTest("tests/no_loop_hello.b");
   parseTest("tests/loop_til_zero.b");
   parseTest("hello_world.b");
-  parseTest("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
-  parseTest("rot13.b", "~mlk zyx");
-  parseTest("echo.b", "wow this\nis amaze");
-  parseTest("numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
+  parseTest("dbfi.b");
+  parseTest("rot13.b");
+  parseTest("echo.b");
+  parseTest("numwarp.b");
   parseTest("392quine.b");
   parseTest("bitwidth.b");
-  const auto glider =
-      "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-      "\n\n\n\n\n\n\n\n\nq\n";
-  parseTest("life.b", glider);
+  parseTest("life.b");
   parseTest("mandelbrot.b");
 }

@@ -5,7 +5,7 @@
 namespace brainfuck {
 
 template <Type type, int increment, char character>
-void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int& code_i) {
+void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
   int incrementMultiplier = 1;
   while (code[code_i + 1] == character) {
     code_i++;
@@ -14,7 +14,7 @@ void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, int& code_i
   instr.emplace_back(type, increment * incrementMultiplier);
 }
 
-inline void openBrace(ByteCode& instr, const Code& code, int& code_i, std::stack<int>& starting_brace_positions) {
+inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::stack<size_t>& starting_brace_positions) {
   if (code[code_i + 2] == ']') {
     const auto middle = code[code_i + 1];
     if (middle == '-' || middle == '+') {
@@ -29,14 +29,18 @@ inline void openBrace(ByteCode& instr, const Code& code, int& code_i, std::stack
   starting_brace_positions.push(currentIndex);
 }
 
-inline void closeBrace(ByteCode& instr, const Code& code, int& code_i, std::stack<int>& starting_brace_positions) {
-  const int starting_brace_position = starting_brace_positions.top();
+inline void closeBrace(
+    ByteCode& instr,
+    [[maybe_unused]] const Code& code,
+    [[maybe_unused]] size_t& code_i,
+    std::stack<size_t>& starting_brace_positions) {
+  const size_t starting_brace_position = starting_brace_positions.top();
   starting_brace_positions.pop();
 
   instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO, starting_brace_position + 1);
 
   const auto currentIndex = instr.size() - 1;
-  instr[starting_brace_position].value = currentIndex + 1;
+  instr[starting_brace_position].value = static_cast<Value>(currentIndex) + 1;
 }
 
 std::expected<ByteCode, Error> parse(const Code code) {
@@ -45,9 +49,9 @@ std::expected<ByteCode, Error> parse(const Code code) {
   instr.reserve(size + size % 2);
   instr.emplace_back(NOOP, 0);
 
-  std::stack<int> starting_brace_positions;
+  std::stack<size_t> starting_brace_positions;
 
-  for (int code_i = 0; code_i < code.size(); code_i++) {
+  for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
       emplaceCumulativeInstruction<MUTATE_DATA_POINTER, 1, '>'>(instr, code, code_i);
     } else if (code[code_i] == '<') {
