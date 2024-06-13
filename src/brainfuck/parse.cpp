@@ -1,5 +1,6 @@
 #include "parse.h"
 
+#include <algorithm>
 #include <stack>
 
 namespace brainfuck {
@@ -46,7 +47,29 @@ inline void closeBrace(
   instr[starting_brace_position].value = static_cast<Value>(currentIndex) + 1;
 }
 
-std::expected<ByteCode, Error> parse(const Code code) {
+[[nodiscard]] inline const Code cleanCode(const Code codeRaw) noexcept {
+  static bool whitelist[256] = {true};
+  whitelist[static_cast<uint8_t>('+')] = false;
+  whitelist[static_cast<uint8_t>('-')] = false;
+  whitelist[static_cast<uint8_t>('>')] = false;
+  whitelist[static_cast<uint8_t>('<')] = false;
+  whitelist[static_cast<uint8_t>('[')] = false;
+  whitelist[static_cast<uint8_t>(']')] = false;
+  whitelist[static_cast<uint8_t>('.')] = false;
+  whitelist[static_cast<uint8_t>(',')] = false;
+
+  std::vector<char> code;
+  code.reserve(codeRaw.size());
+  std::remove_copy_if(codeRaw.begin(), codeRaw.end(), std::back_inserter(code), [](const char character) {
+    return whitelist[static_cast<uint8_t>(character)];
+  });
+
+  return code;
+}
+
+std::expected<ByteCode, Error> parse(const Code rawCode) {
+  const auto code = cleanCode(rawCode);
+
   ByteCode instr;
   const auto size = code.size();
   instr.reserve(size + size % 2);
