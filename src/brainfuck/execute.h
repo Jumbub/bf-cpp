@@ -12,7 +12,7 @@ constexpr uint64_t ITERATION_LIMIT = 10000000000;
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();
   size_t instruction_pointer = 0;
-  size_t data_pointer = 0;
+  int32_t data_pointer = 0;
   char data[30000] = {0};
 
   uint64_t iteration;
@@ -30,31 +30,32 @@ Error execute(ByteCode instructions) {
 
     const Instruction instruction = instructions[instruction_pointer];
 
+    const int32_t offset_data_pointer = data_pointer + instruction.offset;
     switch (instruction.type) {
       case DATA_ADD:
-        data[data_pointer] += static_cast<char>(instruction.value);
+        data[offset_data_pointer] += static_cast<char>(instruction.value);
         break;
       case DATA_SET:
-        data[data_pointer] = static_cast<char>(instruction.value);
+        data[offset_data_pointer] = static_cast<char>(instruction.value);
         break;
       case DATA_POINTER_ADD:
         data_pointer += static_cast<size_t>(instruction.value);
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
-        if (data[data_pointer] == 0) {
+        if (data[offset_data_pointer] == 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
           continue;
         }
         break;
       case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
-        if (data[data_pointer] != 0) {
+        if (data[offset_data_pointer] != 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
           continue;
         }
         break;
       case DATA_PRINT:
         for (int i = 0; i < instruction.value; i++) {
-          std::cout << (char)data[data_pointer];
+          std::cout << (char)data[offset_data_pointer];
         }
         break;
       case DATA_SET_FROM_INPUT:
@@ -62,7 +63,7 @@ Error execute(ByteCode instructions) {
           char input;
           std::cin >> std::noskipws >> input;
           if (!std::cin.eof()) {
-            data[data_pointer] = input;
+            data[offset_data_pointer] = input;
           }
         }
         break;
