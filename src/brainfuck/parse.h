@@ -25,6 +25,7 @@ using Value = int32_t;
 struct Instruction {
   Type type = NOOP;
   Value value = 0;
+  int32_t offset = 0;
 
   Instruction(Type type, Value value);
 };
