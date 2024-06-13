@@ -33,35 +33,29 @@ Error execute(ByteCode instructions) {
     switch (instruction.type) {
       case DATA_ADD:
         data[data_pointer] += static_cast<char>(instruction.value);
-        instruction_pointer++;
         break;
       case DATA_SET:
         data[data_pointer] = static_cast<char>(instruction.value);
-        instruction_pointer++;
         break;
       case DATA_POINTER_ADD:
         data_pointer += static_cast<size_t>(instruction.value);
-        instruction_pointer++;
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[data_pointer] == 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
-        } else {
-          instruction_pointer++;
+          continue;
         }
         break;
       case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
         if (data[data_pointer] != 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
-        } else {
-          instruction_pointer++;
+          continue;
         }
         break;
       case DATA_PRINT:
         for (int i = 0; i < instruction.value; i++) {
           std::cout << (char)data[data_pointer];
         }
-        instruction_pointer++;
         break;
       case DATA_SET_FROM_INPUT:
         for (int i = 0; i < instruction.value; i++) {
@@ -71,12 +65,12 @@ Error execute(ByteCode instructions) {
             data[data_pointer] = input;
           }
         }
-        instruction_pointer++;
         break;
       case NOOP:
-        instruction_pointer++;
         break;
     }
+
+    instruction_pointer++;
   }
 
   return Error::NONE;
