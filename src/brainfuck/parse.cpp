@@ -21,13 +21,13 @@ inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::st
   if (code[code_i + 2] == ']') {
     const auto middle = code[code_i + 1];
     if (middle == '-' || middle == '+') {
-      instr.emplace_back(SET, 0);
+      instr.emplace_back(DATA_SET, 0);
       code_i += 2;
       return;
     }
   }
 
-  instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_ZERO, 0);
+  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, 0);
   const auto currentIndex = instr.size() - 1;
   starting_brace_positions.push(currentIndex);
 }
@@ -40,7 +40,7 @@ inline void closeBrace(
   const size_t starting_brace_position = starting_brace_positions.top();
   starting_brace_positions.pop();
 
-  instr.emplace_back(MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO, starting_brace_position + 1);
+  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
 
   const auto currentIndex = instr.size() - 1;
   instr[starting_brace_position].value = static_cast<Value>(currentIndex) + 1;
@@ -56,9 +56,9 @@ std::expected<ByteCode, Error> parse(const Code code) {
 
   for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
-      emplaceCumulativeInstruction<MUTATE_DATA_POINTER, 1, '>'>(instr, code, code_i);
+      emplaceCumulativeInstruction<DATA_POINTER_ADD, 1, '>'>(instr, code, code_i);
     } else if (code[code_i] == '<') {
-      emplaceCumulativeInstruction<MUTATE_DATA_POINTER, -1, '<'>(instr, code, code_i);
+      emplaceCumulativeInstruction<DATA_POINTER_ADD, -1, '<'>(instr, code, code_i);
     } else if (code[code_i] == '[') {
       openBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == ']') {
@@ -66,13 +66,13 @@ std::expected<ByteCode, Error> parse(const Code code) {
         return std::unexpected(Error::UNMATCHED_BRACE);
       closeBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == '+') {
-      emplaceCumulativeInstruction<MUTATE_DATA, 1, '+'>(instr, code, code_i);
+      emplaceCumulativeInstruction<DATA_ADD, 1, '+'>(instr, code, code_i);
     } else if (code[code_i] == '-') {
-      emplaceCumulativeInstruction<MUTATE_DATA, -1, '-'>(instr, code, code_i);
+      emplaceCumulativeInstruction<DATA_ADD, -1, '-'>(instr, code, code_i);
     } else if (code[code_i] == '.') {
-      instr.emplace_back(WRITE, 0);
+      emplaceCumulativeInstruction<DATA_PRINT, 1, '.'>(instr, code, code_i);
     } else if (code[code_i] == ',') {
-      instr.emplace_back(READ, 0);
+      emplaceCumulativeInstruction<DATA_SET_FROM_INPUT, 1, ','>(instr, code, code_i);
     }
   }
 

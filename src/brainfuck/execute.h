@@ -31,41 +31,45 @@ Error execute(ByteCode instructions) {
     const Instruction instruction = instructions[instruction_pointer];
 
     switch (instruction.type) {
-      case MUTATE_DATA:
+      case DATA_ADD:
         data[data_pointer] += static_cast<char>(instruction.value);
         instruction_pointer++;
         break;
-      case SET:
+      case DATA_SET:
         data[data_pointer] = static_cast<char>(instruction.value);
         instruction_pointer++;
         break;
-      case MUTATE_DATA_POINTER:
+      case DATA_POINTER_ADD:
         data_pointer += static_cast<size_t>(instruction.value);
         instruction_pointer++;
         break;
-      case MUTATE_INSTRUCTION_POINTER_IF_ZERO:
+      case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[data_pointer] == 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
         } else {
           instruction_pointer++;
         }
         break;
-      case MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO:
+      case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
         if (data[data_pointer] != 0) {
           instruction_pointer = static_cast<size_t>(instruction.value);
         } else {
           instruction_pointer++;
         }
         break;
-      case WRITE:
-        std::cout << (char)data[data_pointer];
+      case DATA_PRINT:
+        for (int i = 0; i < instruction.value; i++) {
+          std::cout << (char)data[data_pointer];
+        }
         instruction_pointer++;
         break;
-      case READ:
-        char input;
-        std::cin >> std::noskipws >> input;
-        if (!std::cin.eof()) {
-          data[data_pointer] = input;
+      case DATA_SET_FROM_INPUT:
+        for (int i = 0; i < instruction.value; i++) {
+          char input;
+          std::cin >> std::noskipws >> input;
+          if (!std::cin.eof()) {
+            data[data_pointer] = input;
+          }
         }
         instruction_pointer++;
         break;

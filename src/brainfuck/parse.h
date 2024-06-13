@@ -11,21 +11,25 @@ namespace brainfuck {
 
 enum Type : uint8_t {
   NOOP = '_',
-  READ = ',',
-  WRITE = '.',
-  MUTATE_DATA = '+',
-  MUTATE_DATA_POINTER = '>',
-  MUTATE_INSTRUCTION_POINTER_IF_ZERO = '[',
-  MUTATE_INSTRUCTION_POINTER_IF_NOT_ZERO = ']',
 
-  SET = '=',  // [-]
+  DATA_ADD = '+',
+  DATA_SET = '=',
+  DATA_SET_FROM_INPUT = ',',
+  DATA_PRINT = '.',
+
+  DATA_POINTER_ADD = '>',
+
+  INSTRUCTION_POINTER_SET_IF_ZERO = '[',
+  INSTRUCTION_POINTER_SET_IF_NOT_ZERO = ']',
 };
 
 using Value = int32_t;
+using Offset = int32_t;
+
 struct Instruction {
   Type type = NOOP;
   Value value = 0;
-  int32_t offset = 0;
+  Offset offset = 0;
 
   Instruction(Type type, Value value);
 };
