@@ -83,6 +83,15 @@ Error execute(ByteCode instructions) {
     instruction_pointer++;
   }
 
+  if constexpr (INSTRUCTION_COUNTS) {
+    for (size_t i = 0; i < instructions.size(); i++) {
+      const auto instruction = instructions[i];
+      std::cout << std::format(
+          "{} {:04} [{:04}] ! {:010}\n", (char)instruction.type, instruction.value, instruction.offset,
+          instruction_run_count[i]);
+    }
+  }
+
   return Error::NONE;
 };
 
