@@ -7,15 +7,15 @@ namespace brainfuck {
 
 template <Type type, Value increment, char character>
 void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
-  if (instr.back().type == type) {
-    instr.back().value += increment;
-    while (code[code_i + 1] == character) {
-      instr.back().value += increment;
-      code_i++;
-    }
-  } else {
-    instr.emplace_back(type, increment);
+  Value value = increment;
+  while (code[code_i + 1] == character) {
+    value += increment;
+    code_i++;
   }
+
+  Offset offset = 0;
+
+  instr.emplace_back(type, value, offset);
 }
 
 inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::stack<size_t>& starting_brace_positions) {
@@ -47,21 +47,27 @@ inline void closeBrace(
   instr[starting_brace_position].value = static_cast<Value>(currentIndex) + 1;
 }
 
-[[nodiscard]] inline const Code cleanCode(const Code codeRaw) noexcept {
-  static bool whitelist[256] = {true};
-  whitelist[static_cast<uint8_t>('+')] = false;
-  whitelist[static_cast<uint8_t>('-')] = false;
-  whitelist[static_cast<uint8_t>('>')] = false;
-  whitelist[static_cast<uint8_t>('<')] = false;
-  whitelist[static_cast<uint8_t>('[')] = false;
-  whitelist[static_cast<uint8_t>(']')] = false;
-  whitelist[static_cast<uint8_t>('.')] = false;
-  whitelist[static_cast<uint8_t>(',')] = false;
+struct CharacterLookups {
+  bool characterWhitelist[256]{false};
+  CharacterLookups() {
+    characterWhitelist[static_cast<size_t>('+')] = true;
+    characterWhitelist[static_cast<size_t>('-')] = true;
+    characterWhitelist[static_cast<size_t>('>')] = true;
+    characterWhitelist[static_cast<size_t>('<')] = true;
+    characterWhitelist[static_cast<size_t>('[')] = true;
+    characterWhitelist[static_cast<size_t>(']')] = true;
+    characterWhitelist[static_cast<size_t>('.')] = true;
+    characterWhitelist[static_cast<size_t>(',')] = true;
+  }
+};
+
+[[nodiscard]] inline const Code cleanCode(const Code rawCode) noexcept {
+  static CharacterLookups characterLookups;
 
   std::vector<char> code;
-  code.reserve(codeRaw.size());
-  std::remove_copy_if(codeRaw.begin(), codeRaw.end(), std::back_inserter(code), [](const char character) {
-    return whitelist[static_cast<uint8_t>(character)];
+  code.reserve(rawCode.size());
+  std::remove_copy_if(rawCode.begin(), rawCode.end(), std::back_inserter(code), [](const char character) {
+    return !characterLookups.characterWhitelist[static_cast<size_t>(character)];
   });
 
   return code;
