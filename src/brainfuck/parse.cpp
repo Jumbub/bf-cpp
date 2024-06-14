@@ -13,9 +13,17 @@ void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& cod
     code_i++;
   }
 
-  Offset offset = 0;
-
-  instr.emplace_back(type, value, offset);
+  if constexpr (character == '<' || character == '>') {
+    instr.emplace_back(type, 0, value);
+  } else {
+    if (instr.back().type == Type::DATA_POINTER_ADD) {
+      instr.back().type = type;
+      instr.back().value = value;
+      instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
+    } else {
+      instr.emplace_back(type, value);
+    }
+  }
 }
 
 inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::stack<size_t>& starting_brace_positions) {

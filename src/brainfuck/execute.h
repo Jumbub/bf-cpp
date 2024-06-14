@@ -39,7 +39,7 @@ Error execute(ByteCode instructions) {
         data[offset_data_pointer] = static_cast<char>(instruction.value);
         break;
       case DATA_POINTER_ADD:
-        data_pointer += static_cast<size_t>(instruction.value);
+        data_pointer += static_cast<size_t>(instruction.offset);
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[offset_data_pointer] == 0) {

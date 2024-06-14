@@ -15,7 +15,7 @@ void parseTest(const std::string filename) {
   REQUIRE_MESSAGE((bool)instructions, "Failed to parse, error code: ", instructions.error());
   std::string output;
   for (const auto instruction : *instructions) {
-    output += std::format("{} {}\n", (char)instruction.type, instruction.value);
+    output += std::format("{} {:04} [{:04}]\n", (char)instruction.type, instruction.value, instruction.offset);
   }
   if (output.empty()) {
     output = "<empty bytecode>";
