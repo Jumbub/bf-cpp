@@ -8,6 +8,7 @@
 namespace brainfuck {
 
 constexpr uint64_t ITERATION_LIMIT = 10000000000;
+constexpr bool INSTRUCTION_COUNTS = true;
 
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();
@@ -20,12 +21,20 @@ Error execute(ByteCode instructions) {
     iteration = 0;
   }
 
+  std::vector<uint32_t> instruction_run_count;
+  if constexpr (INSTRUCTION_COUNTS) {
+    instruction_run_count.resize(instruction_count, 0);
+  }
+
   while (instruction_pointer < instruction_count) {
     if constexpr (ITERATION_LIMIT > 0) {
       if (++iteration > ITERATION_LIMIT) {
         std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
         return Error::REACHED_INSRUCTION_LIMIT;
       }
+    }
+    if constexpr (INSTRUCTION_COUNTS) {
+      instruction_run_count[instruction_pointer]++;
     }
 
     const Instruction instruction = instructions[instruction_pointer];

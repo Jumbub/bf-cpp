@@ -5,6 +5,25 @@
 
 namespace brainfuck {
 
+template <char character, Value increment>
+void emplaceCumulativePointerInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
+  Value offset = increment;
+  while (code[code_i + 1] == character) {
+    offset += increment;
+    code_i++;
+  }
+
+  if (instr.back().type == Type::DATA_POINTER_ADD) {
+    if (offset + instr.back().offset == 0) {
+      instr.pop_back();
+    } else {
+      instr.back().offset += offset;
+    }
+  } else {
+    instr.emplace_back(Type::DATA_POINTER_ADD, 0, offset);
+  }
+}
+
 template <Type type, Value increment, char character>
 void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
   Value value = increment;
@@ -13,16 +32,12 @@ void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& cod
     code_i++;
   }
 
-  if constexpr (character == '<' || character == '>') {
-    instr.emplace_back(type, 0, value);
+  if (instr.back().type == Type::DATA_POINTER_ADD) {
+    instr.back().type = type;
+    instr.back().value = value;
+    instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
   } else {
-    if (instr.back().type == Type::DATA_POINTER_ADD) {
-      instr.back().type = type;
-      instr.back().value = value;
-      instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
-    } else {
-      instr.emplace_back(type, value);
-    }
+    instr.emplace_back(type, value);
   }
 }
 
@@ -30,7 +45,12 @@ inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::st
   if (code[code_i + 2] == ']') {
     const auto middle = code[code_i + 1];
     if (middle == '-' || middle == '+') {
-      instr.emplace_back(DATA_SET, 0);
+      if (instr.back().type == Type::DATA_POINTER_ADD) {
+        instr.back().type = Type::DATA_SET;
+        instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
+      } else {
+        instr.emplace_back(DATA_SET, 0);
+      }
       code_i += 2;
       return;
     }
@@ -93,9 +113,9 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
 
   for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
-      emplaceCumulativeInstruction<DATA_POINTER_ADD, 1, '>'>(instr, code, code_i);
+      emplaceCumulativePointerInstruction<'>', 1>(instr, code, code_i);
     } else if (code[code_i] == '<') {
-      emplaceCumulativeInstruction<DATA_POINTER_ADD, -1, '<'>(instr, code, code_i);
+      emplaceCumulativePointerInstruction<'<', -1>(instr, code, code_i);
     } else if (code[code_i] == '[') {
       openBrace(instr, code, code_i, starting_brace_positions);
     } else if (code[code_i] == ']') {
