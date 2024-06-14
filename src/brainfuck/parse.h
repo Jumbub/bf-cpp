@@ -31,7 +31,9 @@ struct Instruction {
   Value value = 0;
   Offset offset = 0;
 
+  Instruction(Type type);
   Instruction(Type type, Value value);
+  Instruction(Type type, Value value, Offset offset);
 };
 
 using ByteCode = std::vector<Instruction>;

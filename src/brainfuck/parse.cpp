@@ -73,7 +73,7 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
   ByteCode instr;
   const auto size = code.size();
   instr.reserve(size + size % 2);
-  instr.emplace_back(NOOP, 0);
+  instr.emplace_back(NOOP);
 
   std::stack<size_t> starting_brace_positions;
 
@@ -106,6 +106,8 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
   return instr;
 };
 
-Instruction::Instruction(Type type, int value) : type(type), value(value){};
+Instruction::Instruction(Type type) : type(type), value(0), offset(0){};
+Instruction::Instruction(Type type, Value value) : type(type), value(value), offset(0){};
+Instruction::Instruction(Type type, Value value, Offset offset) : type(type), value(value), offset(offset){};
 
 }  // namespace brainfuck
