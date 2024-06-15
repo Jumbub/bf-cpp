@@ -7,7 +7,8 @@ using namespace brainfuck;
 void test(
     const std::string filename,
     const std::optional<std::string> input = std::nullopt,
-    const Error expectedError = Error::NONE) {
+    const Error expectedError = Error::NONE,
+    const std::string variant = "") {
   const auto stopCapturingIO = startCapturingIO(input);
   CAPTURE(filename);
 
@@ -16,7 +17,7 @@ void test(
 
     const auto output = stopCapturingIO();
     CHECK_MESSAGE(error == expectedError, "Unexpected error code: ", error);
-    REQUIRE_SNAPSHOT("go/" + filename, output);
+    REQUIRE_SNAPSHOT("go/" + filename + variant, output);
   } catch (...) {
     stopCapturingIO();
     throw;
@@ -43,5 +44,5 @@ TEST_CASE("go") {
       "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
       "\n\n\n\n\n\n\n\n\nq\n";
   test("life.b", glider);
-  /* test("mandelbrot.b"); */
+  test("mandelbrot.b");
 }

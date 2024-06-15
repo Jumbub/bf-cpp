@@ -6,6 +6,8 @@
 
 namespace brainfuck {
 
+using OpenBraceIterators = std::stack<std::vector<Instruction>::iterator>;
+
 template <typename T, T increment, char character>
 [[nodiscard]] inline T accumulate(const Code& code, size_t& code_i) noexcept {
   T accumulated = increment;
@@ -56,6 +58,18 @@ consteval Type instructionForCharacter(const char character) {
   }
 }
 
+constexpr bool isDataAdd(const Instruction& instruction) {
+  return instruction.type == DATA_ADD;
+};
+
+constexpr bool hasZeroOffset(const Instruction& instruction) {
+  return instruction.offset == 0;
+};
+
+constexpr bool stableSortPrioritiseZeroOffset(const Instruction& lhs, const Instruction& rhs) {
+  return rhs.offset == 0 && lhs.offset != 0;
+}
+
 template <char character>
 void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
   constexpr Type type = instructionForCharacter(character);
@@ -97,29 +111,20 @@ void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) 
   instr.emplace_back(type, value);
 }
 
-inline void openBrace(
-    ByteCode& instr,
-    [[maybe_unused]] const Code& code,
-    [[maybe_unused]] size_t& code_i,
-    std::stack<size_t>& startingBracePosition) {
-  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, 0);
-  const auto currentIndex = instr.size() - 1;
-  startingBracePosition.push(currentIndex);
+inline void openBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
+  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, -123456789);
+  openBraceIterators.push(std::prev(instr.end()));
 }
 
-inline void closeBrace(
-    ByteCode& instr,
-    [[maybe_unused]] const Code& code,
-    [[maybe_unused]] size_t& code_i,
-    std::stack<size_t>& startingBracePosition) {
-  const size_t starting_brace_position = startingBracePosition.top();
-  startingBracePosition.pop();
+inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
+  const auto openBraceIterator = openBraceIterators.top();
+  openBraceIterators.pop();
 
   auto& thirdLast = *std::prev(instr.end(), 3);
   auto& secondLast = *std::prev(instr.end(), 2);
-  const auto& last = *std::prev(instr.end(), 1);
+  const auto& last = *std::prev(instr.cend(), 1);
 
-  // [-]
+  // [-
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_ADD && last.offset == 0 &&
       (last.value == 1 || last.value == -1)) {
     instr.pop_back();
@@ -141,7 +146,19 @@ inline void closeBrace(
     }
   }
 
-  // [>]
+  // [-+
+  // if (std::all_of(std::next(openBraceIterator), instr.end(), isDataAdd) &&
+  //     std::any_of(std::next(openBraceIterator), instr.end(), hasZeroOffset)) {
+  //   throw std::runtime_error("hi");
+  //   std::stable_sort(std::next(openBraceIterator), instr.end(), stableSortPrioritiseZeroOffset);
+
+  //   openBraceIterator->type = DATA_SET_MULTIPLE_MANY;
+  //   openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()));
+  //   openBraceIterator->offset = 0;
+  //   return;
+  // }
+
+  // [>
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_POINTER_ADD) {
     if (thirdLast.type == DATA_POINTER_ADD) {
       // >[>] :: (scan for 0 at offset)>
@@ -162,8 +179,10 @@ inline void closeBrace(
     }
   }
 
-  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
-  instr[starting_brace_position].value = static_cast<Value>(instr.size());
+  // regular loop
+  const size_t i = static_cast<size_t>(std::distance(instr.begin(), openBraceIterator));
+  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, std::distance(instr.begin(), openBraceIterator) + 1);
+  instr[i].value = static_cast<Value>(instr.size());
 }
 
 struct CharacterLookups {
@@ -202,7 +221,7 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
   instr.emplace_back(NOOP);
   instr.emplace_back(NOOP);
 
-  std::stack<size_t> startingBracePosition;
+  OpenBraceIterators openBraceIterators;
 
   for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
@@ -210,11 +229,11 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
     } else if (code[code_i] == '<') {
       handleOffsetInstructions<'<'>(instr, code, code_i);
     } else if (code[code_i] == '[') {
-      openBrace(instr, code, code_i, startingBracePosition);
+      openBrace(instr, openBraceIterators);
     } else if (code[code_i] == ']') {
-      if (startingBracePosition.empty())
+      if (openBraceIterators.empty())
         return std::unexpected(Error::UNMATCHED_BRACE);
-      closeBrace(instr, code, code_i, startingBracePosition);
+      closeBrace(instr, openBraceIterators);
     } else if (code[code_i] == '+') {
       handleValueInstructions<'+'>(instr, code, code_i);
     } else if (code[code_i] == '-') {
@@ -226,7 +245,7 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
     }
   }
 
-  if (!startingBracePosition.empty()) {
+  if (!openBraceIterators.empty()) {
     return std::unexpected(Error::UNMATCHED_BRACE);
   }
 

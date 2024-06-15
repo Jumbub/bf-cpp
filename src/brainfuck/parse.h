@@ -14,6 +14,10 @@ enum Type : uint8_t {
 
   DATA_ADD = '+',
   DATA_SET = '=',
+
+  // [->++<] :: (multiplyer)(add -1)(add 2 at offset 1)
+  DATA_SET_MULTIPLE_MANY = '*',
+
   DATA_SET_FROM_INPUT = ',',
   DATA_PRINT = '.',
 

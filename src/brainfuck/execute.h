@@ -81,6 +81,9 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
+      case DATA_SET_MULTIPLE_MANY:
+        throw std::runtime_error("unimplemented");
+        break;
       case NOOP:
         break;
     }
