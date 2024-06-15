@@ -8,7 +8,7 @@
 namespace brainfuck {
 
 constexpr uint64_t ITERATION_LIMIT = 10000000000;
-constexpr bool INSTRUCTION_COUNTS = true;
+constexpr bool INSTRUCTION_COUNTS = false;
 
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();

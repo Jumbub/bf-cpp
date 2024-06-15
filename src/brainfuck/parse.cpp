@@ -63,17 +63,18 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
 
   Offset offset = accumulate<Offset, increment, character>(code, code_i);
 
-  auto back = instr.back();
-  if (back.type == type) {
-    back.offset += offset;
-    if (back.offset == 0) {
+  auto& last = instr.back();
+
+  if (last.type == type) {
+    last.offset += offset;
+    if (last.offset == 0) {
       // >+< :: (+ offset)>< :: (+ offset)
       instr.pop_back();
-      return;
     }
-  } else {
-    instr.emplace_back(type, 0, offset);
+    return;
   }
+
+  instr.emplace_back(type, 0, offset);
 }
 
 template <char character>
@@ -83,7 +84,7 @@ void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) 
 
   Value value = accumulate<Value, increment, character>(code, code_i);
 
-  auto last = instr.back();
+  auto& last = instr.back();
 
   // >+ :: (+ offset)>
   if (last.type == DATA_POINTER_ADD) {
@@ -114,17 +115,25 @@ inline void closeBrace(
   const size_t starting_brace_position = startingBracePosition.top();
   startingBracePosition.pop();
 
-  const auto secondLast = *std::prev(instr.cend(), 2);
-  const auto last = instr.back();
+  // auto& thirdLast = *std::prev(instr.end(), 3);
+  auto& secondLast = *std::prev(instr.end(), 2);
+  const auto& last = *std::prev(instr.end(), 1);
 
   // [-] :: (set 0)
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_ADD && last.offset == 0 &&
       (last.value == 1 || last.value == -1)) {
     instr.pop_back();
-    instr.back().type = DATA_SET;
-    instr.back().value = 0;
-    instr.back().offset = 0;
-    // todo add DATA_POINTER_ADD offset swap here too
+
+    // if (thirdLast.type == DATA_POINTER_ADD) {
+    //   thirdLast.type = DATA_SET;
+    //   thirdLast.value = 0;
+    //   instr.emplace_back(DATA_POINTER_ADD, 0, thirdLast.offset);
+    //   return;
+    // }
+
+    secondLast.type = DATA_SET;
+    secondLast.value = 0;
+    secondLast.offset = 0;
   } else {
     instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
     instr[starting_brace_position].value = static_cast<Value>(instr.size());
