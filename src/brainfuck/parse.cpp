@@ -115,7 +115,7 @@ inline void closeBrace(
   const size_t starting_brace_position = startingBracePosition.top();
   startingBracePosition.pop();
 
-  // auto& thirdLast = *std::prev(instr.end(), 3);
+  auto& thirdLast = *std::prev(instr.end(), 3);
   auto& secondLast = *std::prev(instr.end(), 2);
   const auto& last = *std::prev(instr.end(), 1);
 
@@ -124,12 +124,14 @@ inline void closeBrace(
       (last.value == 1 || last.value == -1)) {
     instr.pop_back();
 
-    // if (thirdLast.type == DATA_POINTER_ADD) {
-    //   thirdLast.type = DATA_SET;
-    //   thirdLast.value = 0;
-    //   instr.emplace_back(DATA_POINTER_ADD, 0, thirdLast.offset);
-    //   return;
-    // }
+    if (thirdLast.type == DATA_POINTER_ADD) {
+      thirdLast.type = DATA_SET;
+      thirdLast.value = 0;
+      secondLast.type = DATA_POINTER_ADD;
+      secondLast.value = 0;
+      secondLast.offset = thirdLast.offset;
+      return;
+    }
 
     secondLast.type = DATA_SET;
     secondLast.value = 0;
@@ -172,6 +174,7 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
   ByteCode instr;
   const auto size = code.size();
   instr.reserve(size + size % 2);
+  instr.emplace_back(NOOP);
   instr.emplace_back(NOOP);
   instr.emplace_back(NOOP);
 
