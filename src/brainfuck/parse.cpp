@@ -1,78 +1,134 @@
 #include "parse.h"
 
 #include <algorithm>
+#include <map>
 #include <stack>
 
 namespace brainfuck {
 
-template <char character, Value increment>
-void emplaceCumulativePointerInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
-  Value offset = increment;
+template <typename T, T increment, char character>
+[[nodiscard]] inline T accumulate(const Code& code, size_t& code_i) noexcept {
+  T accumulated = increment;
   while (code[code_i + 1] == character) {
-    offset += increment;
+    accumulated += increment;
     code_i++;
   }
+  return accumulated;
+}
 
-  if (instr.back().type == Type::DATA_POINTER_ADD) {
-    if (offset + instr.back().offset == 0) {
+consteval Value incrementForCharacter(const char character) {
+  if (character == '.') {
+    return 1;
+  } else if (character == ',') {
+    return 1;
+  } else if (character == '+') {
+    return 1;
+  } else if (character == '-') {
+    return -1;
+  } else if (character == '>') {
+    return 1;
+  } else if (character == '<') {
+    return -1;
+  } else if (character == '[') {
+    return 0;
+  } else if (character == ']') {
+    return 0;
+  } else {
+    throw std::runtime_error("invalid character");
+  }
+}
+
+consteval Type instructionForCharacter(const char character) {
+  if (character == '.') {
+    return DATA_PRINT;
+  } else if (character == ',') {
+    return DATA_SET_FROM_INPUT;
+  } else if (character == '+' || character == '-') {
+    return DATA_ADD;
+  } else if (character == '<' || character == '>') {
+    return DATA_POINTER_ADD;
+  } else if (character == '[') {
+    return INSTRUCTION_POINTER_SET_IF_ZERO;
+  } else if (character == ']') {
+    return INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
+  } else {
+    throw std::runtime_error("invalid character");
+  }
+}
+
+template <char character>
+void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
+  constexpr Type type = instructionForCharacter(character);
+  constexpr Value increment = incrementForCharacter(character);
+
+  Offset offset = accumulate<Offset, increment, character>(code, code_i);
+
+  auto back = instr.back();
+  if (back.type == type) {
+    back.offset += offset;
+    if (back.offset == 0) {
+      // >+< :: (+ offset)>< :: (+ offset)
       instr.pop_back();
-    } else {
-      instr.back().offset += offset;
-    }
-  } else {
-    instr.emplace_back(Type::DATA_POINTER_ADD, 0, offset);
-  }
-}
-
-template <Type type, Value increment, char character>
-void emplaceCumulativeInstruction(ByteCode& instr, const Code& code, size_t& code_i) {
-  Value value = increment;
-  while (code[code_i + 1] == character) {
-    value += increment;
-    code_i++;
-  }
-
-  if (instr.back().type == Type::DATA_POINTER_ADD) {
-    instr.back().type = type;
-    instr.back().value = value;
-    instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
-  } else {
-    instr.emplace_back(type, value);
-  }
-}
-
-inline void openBrace(ByteCode& instr, const Code& code, size_t& code_i, std::stack<size_t>& starting_brace_positions) {
-  if (code[code_i + 2] == ']') {
-    const auto middle = code[code_i + 1];
-    if (middle == '-' || middle == '+') {
-      if (instr.back().type == Type::DATA_POINTER_ADD) {
-        instr.back().type = Type::DATA_SET;
-        instr.emplace_back(Type::DATA_POINTER_ADD, 0, instr.back().offset);
-      } else {
-        instr.emplace_back(DATA_SET, 0);
-      }
-      code_i += 2;
       return;
     }
+  } else {
+    instr.emplace_back(type, 0, offset);
+  }
+}
+
+template <char character>
+void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
+  constexpr Type type = instructionForCharacter(character);
+  constexpr Value increment = incrementForCharacter(character);
+
+  Value value = accumulate<Value, increment, character>(code, code_i);
+
+  auto last = instr.back();
+
+  // >+ :: (+ offset)>
+  if (last.type == DATA_POINTER_ADD) {
+    last.type = type;
+    last.value = value;
+    instr.emplace_back(DATA_POINTER_ADD, 0, last.offset);
+    return;
   }
 
+  instr.emplace_back(type, value);
+}
+
+inline void openBrace(
+    ByteCode& instr,
+    [[maybe_unused]] const Code& code,
+    [[maybe_unused]] size_t& code_i,
+    std::stack<size_t>& startingBracePosition) {
   instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, 0);
   const auto currentIndex = instr.size() - 1;
-  starting_brace_positions.push(currentIndex);
+  startingBracePosition.push(currentIndex);
 }
 
 inline void closeBrace(
     ByteCode& instr,
     [[maybe_unused]] const Code& code,
     [[maybe_unused]] size_t& code_i,
-    std::stack<size_t>& starting_brace_positions) {
-  const size_t starting_brace_position = starting_brace_positions.top();
-  starting_brace_positions.pop();
+    std::stack<size_t>& startingBracePosition) {
+  const size_t starting_brace_position = startingBracePosition.top();
+  startingBracePosition.pop();
 
-  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
+  const auto secondLast = *std::prev(instr.cend(), 2);
+  const auto last = instr.back();
 
-  const auto currentIndex = instr.size() - 1;
-  instr[starting_brace_position].value = static_cast<Value>(currentIndex) + 1;
+  // [-] :: (set 0)
+  if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_ADD && last.offset == 0 &&
+      (last.value == 1 || last.value == -1)) {
+    instr.pop_back();
+    instr.back().type = DATA_SET;
+    instr.back().value = 0;
+    instr.back().offset = 0;
+    // todo add DATA_POINTER_ADD offset swap here too
+  } else {
+    instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
+    instr[starting_brace_position].value = static_cast<Value>(instr.size());
+  }
 }
 
 struct CharacterLookups {
@@ -108,32 +164,33 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
   const auto size = code.size();
   instr.reserve(size + size % 2);
   instr.emplace_back(NOOP);
+  instr.emplace_back(NOOP);
 
-  std::stack<size_t> starting_brace_positions;
+  std::stack<size_t> startingBracePosition;
 
   for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
-      emplaceCumulativePointerInstruction<'>', 1>(instr, code, code_i);
+      handleOffsetInstructions<'>'>(instr, code, code_i);
     } else if (code[code_i] == '<') {
-      emplaceCumulativePointerInstruction<'<', -1>(instr, code, code_i);
+      handleOffsetInstructions<'<'>(instr, code, code_i);
     } else if (code[code_i] == '[') {
-      openBrace(instr, code, code_i, starting_brace_positions);
+      openBrace(instr, code, code_i, startingBracePosition);
     } else if (code[code_i] == ']') {
-      if (starting_brace_positions.empty())
+      if (startingBracePosition.empty())
         return std::unexpected(Error::UNMATCHED_BRACE);
-      closeBrace(instr, code, code_i, starting_brace_positions);
+      closeBrace(instr, code, code_i, startingBracePosition);
     } else if (code[code_i] == '+') {
-      emplaceCumulativeInstruction<DATA_ADD, 1, '+'>(instr, code, code_i);
+      handleValueInstructions<'+'>(instr, code, code_i);
     } else if (code[code_i] == '-') {
-      emplaceCumulativeInstruction<DATA_ADD, -1, '-'>(instr, code, code_i);
+      handleValueInstructions<'-'>(instr, code, code_i);
     } else if (code[code_i] == '.') {
-      emplaceCumulativeInstruction<DATA_PRINT, 1, '.'>(instr, code, code_i);
+      handleValueInstructions<'.'>(instr, code, code_i);
     } else if (code[code_i] == ',') {
-      emplaceCumulativeInstruction<DATA_SET_FROM_INPUT, 1, ','>(instr, code, code_i);
+      handleValueInstructions<','>(instr, code, code_i);
     }
   }
 
-  if (!starting_brace_positions.empty()) {
+  if (!startingBracePosition.empty()) {
     return std::unexpected(Error::UNMATCHED_BRACE);
   }
 
