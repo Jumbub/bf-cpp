@@ -30,7 +30,7 @@ Error execute(ByteCode instructions) {
     if constexpr (ITERATION_LIMIT > 0) {
       if (++iteration > ITERATION_LIMIT) {
         std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-        return Error::REACHED_INSRUCTION_LIMIT;
+        return Error::REACHED_INSTRUCTION_LIMIT;
       }
     }
     if constexpr (INSTRUCTION_COUNTS) {
