@@ -48,7 +48,12 @@ Error execute(ByteCode instructions) {
         data[offset_data_pointer] = static_cast<char>(instruction.value);
         break;
       case DATA_POINTER_ADD:
-        data_pointer += static_cast<size_t>(instruction.offset);
+        data_pointer += instruction.offset;
+        break;
+      case DATA_POINTER_ADD_WHILE_NOT_ZERO:
+        while (data[data_pointer + instruction.offset] != 0) {
+          data_pointer += instruction.value;
+        }
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[offset_data_pointer] == 0) {
@@ -64,7 +69,7 @@ Error execute(ByteCode instructions) {
         break;
       case DATA_PRINT:
         for (int i = 0; i < instruction.value; i++) {
-          std::cout << (char)data[offset_data_pointer];
+          std::cout << static_cast<char>(data[offset_data_pointer]);
         }
         break;
       case DATA_SET_FROM_INPUT:
@@ -87,7 +92,7 @@ Error execute(ByteCode instructions) {
     for (size_t i = 0; i < instructions.size(); i++) {
       const auto instruction = instructions[i];
       std::cout << std::format(
-          "{} {:04} [{:04}] ! {:010}\n", (char)instruction.type, instruction.value, instruction.offset,
+          "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction.type), instruction.value, instruction.offset,
           instruction_run_count[i]);
     }
   }

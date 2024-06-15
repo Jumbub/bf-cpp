@@ -27,6 +27,7 @@ TEST_CASE("parse") {
   parseTest("tests/empty_file.b");
   parseTest("tests/no_loop_hello.b");
   parseTest("tests/loop_til_zero.b");
+  parseTest("tests/move_til_zero.b");
   parseTest("hello_world.b");
   parseTest("dbfi.b");
   parseTest("rot13.b");

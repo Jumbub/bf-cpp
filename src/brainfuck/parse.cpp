@@ -119,27 +119,51 @@ inline void closeBrace(
   auto& secondLast = *std::prev(instr.end(), 2);
   const auto& last = *std::prev(instr.end(), 1);
 
-  // [-] :: (set 0)
+  // [-]
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_ADD && last.offset == 0 &&
       (last.value == 1 || last.value == -1)) {
     instr.pop_back();
 
     if (thirdLast.type == DATA_POINTER_ADD) {
+      // >[-] :: (set 0 at offset)>
       thirdLast.type = DATA_SET;
       thirdLast.value = 0;
       secondLast.type = DATA_POINTER_ADD;
       secondLast.value = 0;
       secondLast.offset = thirdLast.offset;
       return;
+    } else {
+      // [-] :: (set 0)
+      secondLast.type = DATA_SET;
+      secondLast.value = 0;
+      secondLast.offset = 0;
+      return;
     }
-
-    secondLast.type = DATA_SET;
-    secondLast.value = 0;
-    secondLast.offset = 0;
-  } else {
-    instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
-    instr[starting_brace_position].value = static_cast<Value>(instr.size());
   }
+
+  // [>]
+  if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_POINTER_ADD) {
+    if (thirdLast.type == DATA_POINTER_ADD) {
+      // >[>] :: (scan for 0 at offset)>
+      thirdLast.type = DATA_POINTER_ADD_WHILE_NOT_ZERO;
+      thirdLast.value = last.offset;
+      secondLast.type = DATA_POINTER_ADD;
+      secondLast.value = 0;
+      secondLast.offset = thirdLast.offset;
+      instr.pop_back();
+      return;
+    } else {
+      // [>] :: (scan for 0)
+      secondLast.type = DATA_POINTER_ADD_WHILE_NOT_ZERO;
+      secondLast.value = last.offset;
+      secondLast.offset = 0;
+      instr.pop_back();
+      return;
+    }
+  }
+
+  instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, starting_brace_position + 1);
+  instr[starting_brace_position].value = static_cast<Value>(instr.size());
 }
 
 struct CharacterLookups {
