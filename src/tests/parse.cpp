@@ -29,7 +29,9 @@ TEST_CASE("parse") {
   parseTest("tests/loop_til_zero.b");
   parseTest("tests/move_til_zero.b");
   parseTest("tests/transfer_value.b");
+  parseTest("tests/transfer_value_with_extra.b");
   parseTest("tests/multiply_value.b");
+  parseTest("tests/multiply_value_with_extra.b");
   parseTest("tests/complex_multiply_value.b");
   parseTest("tests/sort_loop_offsets.b");
   parseTest("hello_world.b");
