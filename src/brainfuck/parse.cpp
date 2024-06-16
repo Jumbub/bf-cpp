@@ -67,7 +67,13 @@ constexpr bool hasZeroOffset(const Instruction& instruction) {
 };
 
 constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
-  return lhs.offset < rhs.offset && (rhs.offset != 0 || lhs.offset == 0);
+  if (lhs.offset == 0) {
+    return true;
+  }
+  if (rhs.offset == 0) {
+    return false;
+  }
+  return lhs.offset < rhs.offset;
 }
 
 template <char character>

@@ -34,6 +34,7 @@ TEST_CASE("go") {
   test("tests/unmatched_brace_].b", std::nullopt, Error::UNMATCHED_BRACE);
   test("tests/loop_til_zero.b");
   test("tests/transfer_value.b");
+  test("tests/transfer_value_far.b");
   test("tests/transfer_value_with_extra.b");
   test("tests/multiply_value.b");
   test("tests/multiply_value_with_extra.b");

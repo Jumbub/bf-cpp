@@ -28,11 +28,13 @@ void parseTest(const std::string filename) {
 
 TEST_CASE("parse") {
   parseTest("tests/empty_file.b");
+  parseTest("tests/strip_non_code.b");
   parseTest("tests/no_loop_hello.b");
   parseTest("tests/loop_til_zero.b");
   parseTest("tests/move_til_zero.b");
   parseTest("tests/transfer_value.b");
   parseTest("tests/transfer_value_with_extra.b");
+  parseTest("tests/transfer_value_far.b");
   parseTest("tests/multiply_value.b");
   parseTest("tests/multiply_value_with_extra.b");
   parseTest("tests/complex_multiply_value.b");
