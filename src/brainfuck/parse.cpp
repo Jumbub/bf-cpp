@@ -66,8 +66,8 @@ constexpr bool hasZeroOffset(const Instruction& instruction) {
   return instruction.offset == 0;
 };
 
-constexpr bool stableSortPrioritiseZeroOffset(const Instruction& lhs, const Instruction& rhs) {
-  return rhs.offset == 0 && lhs.offset != 0;
+constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
+  return lhs.offset < rhs.offset || (lhs.offset == 0 && rhs.offset != 0);
 }
 
 template <char character>
@@ -147,16 +147,24 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
   }
 
   // [-+
-  // if (std::all_of(std::next(openBraceIterator), instr.end(), isDataAdd) &&
-  //     std::any_of(std::next(openBraceIterator), instr.end(), hasZeroOffset)) {
-  //   throw std::runtime_error("hi");
-  //   std::stable_sort(std::next(openBraceIterator), instr.end(), stableSortPrioritiseZeroOffset);
+  if (std::all_of(std::next(openBraceIterator), instr.end(), isDataAdd) &&
+      std::any_of(std::next(openBraceIterator), instr.end(), hasZeroOffset)) {
+    std::stable_sort(std::next(openBraceIterator), instr.end(), sortByOffsetUnlessZero);
 
-  //   openBraceIterator->type = DATA_SET_MULTIPLE_MANY;
-  //   openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()));
-  //   openBraceIterator->offset = 0;
-  //   return;
-  // }
+    if (std::next(openBraceIterator)->value == -1) {
+      // openBraceIterator->type = DATA_MULTIPLY;
+      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      // openBraceIterator->offset = 0;
+      // instr.erase(std::next(openBraceIterator));
+      // return;
+    } else {
+      // openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
+      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      // openBraceIterator->offset = 0;
+      // return;
+    }
+    // todo shuffle pointer add
+  }
 
   // [>
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_POINTER_ADD) {

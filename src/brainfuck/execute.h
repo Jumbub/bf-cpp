@@ -81,9 +81,46 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
-      case DATA_SET_MULTIPLE_MANY:
-        throw std::runtime_error("unimplemented");
+      case DATA_MULTIPLY: {
+        const size_t outputs = static_cast<size_t>(instruction.value);
+        const int32_t iterations = data[offset_data_pointer];
+
+        instruction_pointer++;
+
+        for (size_t i = 0; i < outputs; i++) {
+          const auto innerInstruction = instructions[instruction_pointer + i];
+          data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
+        }
+
+        instruction_pointer += outputs;
         break;
+      }
+      case DATA_MULTIPLY_AND_DIVIDE: {
+        const size_t outputs = static_cast<size_t>(instruction.value);
+
+        instruction_pointer++;
+
+        const auto baseInstruction = instructions[instruction_pointer];
+        if (baseInstruction.offset != 0) {
+          throw std::runtime_error("unhandled");
+        }
+
+        int32_t iterations = 0;
+        while (data[offset_data_pointer] != 0) {
+          data[offset_data_pointer] += baseInstruction.value;
+          iterations++;
+        }
+
+        instruction_pointer++;
+
+        for (size_t i = 0; i < outputs; i++) {
+          const auto innerInstruction = instructions[instruction_pointer + i];
+          data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
+        }
+
+        instruction_pointer += outputs;
+        break;
+      }
       case NOOP:
         break;
     }

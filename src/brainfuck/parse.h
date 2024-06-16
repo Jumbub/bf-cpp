@@ -16,7 +16,9 @@ enum Type : uint8_t {
   DATA_SET = '=',
 
   // [->++<] :: (multiplyer)(add -1)(add 2 at offset 1)
-  DATA_SET_MULTIPLE_MANY = '*',
+  DATA_MULTIPLY = 'x',
+  // [-->+++<] :: (multiplyer)(add -2)(add 3 at offset 1)
+  DATA_MULTIPLY_AND_DIVIDE = '*',
 
   DATA_SET_FROM_INPUT = ',',
   DATA_PRINT = '.',

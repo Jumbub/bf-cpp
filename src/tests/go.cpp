@@ -33,6 +33,9 @@ TEST_CASE("go") {
   test("tests/unmatched_brace_[.b", std::nullopt, Error::UNMATCHED_BRACE);
   test("tests/unmatched_brace_].b", std::nullopt, Error::UNMATCHED_BRACE);
   test("tests/loop_til_zero.b");
+  test("tests/transfer_value.b");
+  test("tests/multiply_value.b");
+  test("tests/complex_multiply_value.b");
   test("hello_world.b");
   test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
   test("rot13.b", "~mlk zyx");

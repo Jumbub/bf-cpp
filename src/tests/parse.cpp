@@ -31,6 +31,7 @@ TEST_CASE("parse") {
   parseTest("tests/transfer_value.b");
   parseTest("tests/multiply_value.b");
   parseTest("tests/complex_multiply_value.b");
+  parseTest("tests/sort_loop_offsets.b");
   parseTest("hello_world.b");
   parseTest("dbfi.b");
   parseTest("rot13.b");
