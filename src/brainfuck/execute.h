@@ -18,25 +18,31 @@ Error execute(ByteCode instructions) {
   // std::map<Type, uint> instruction_type_count;
 
   while (true) {
-    const int32_t offset_data_pointer = data_pointer + instruction->offset;
     switch (instruction->type) {
       case DATA_POINTER_ADD:
         data_pointer += instruction->offset;
         break;
-      case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
+      case INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] != 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
         }
         break;
-      case DATA_TRANSFER:
+      }
+      case DATA_TRANSFER: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         data[offset_data_pointer + instruction->value] += data[offset_data_pointer];
         data[offset_data_pointer] = 0;
         break;
-      case DATA_ADD:
+      }
+      case DATA_ADD: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         data[offset_data_pointer] += static_cast<char>(instruction->value);
         break;
+      }
       case DATA_MULTIPLY: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         const auto outputs = instruction->value;
         for (auto i = 0; i < outputs; i++) {
           instruction++;
@@ -45,26 +51,33 @@ Error execute(ByteCode instructions) {
         data[offset_data_pointer] = 0;
         break;
       }
-      case DATA_SET:
+      case DATA_SET: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         data[offset_data_pointer] = static_cast<char>(instruction->value);
         break;
-      case INSTRUCTION_POINTER_SET_IF_ZERO:
+      }
+      case INSTRUCTION_POINTER_SET_IF_ZERO: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] == 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
         }
         break;
+      }
       case DATA_POINTER_ADD_WHILE_NOT_ZERO:
         while (data[data_pointer + instruction->offset] != 0) {
           data_pointer += instruction->value;
         }
         break;
-      case DATA_PRINT:
+      case DATA_PRINT: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         for (int i = 0; i < instruction->value; i++) {
           std::cout << static_cast<char>(data[offset_data_pointer]);
         }
         break;
-      case DATA_SET_FROM_INPUT:
+      }
+      case DATA_SET_FROM_INPUT: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         for (int i = 0; i < instruction->value; i++) {
           char input;
           std::cin >> std::noskipws >> input;
@@ -73,7 +86,9 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
+      }
       case DATA_MULTIPLY_AND_DIVIDE: {
+        const int32_t offset_data_pointer = data_pointer + instruction->offset;
         const auto outputs = instruction->value;
         instruction++;
         int32_t iterations = 0;
