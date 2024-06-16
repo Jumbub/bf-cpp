@@ -19,6 +19,10 @@ cmake --build --preset all
 ./build/src/tests/tests
 ```
 
+### Notable Gains
+
+- (Tell your compiler about the un-reachable default)[cafb46b4e5239c24966859327d6d6369cf06201a]
+
 ## References
 
 - [brainfuck optimization strategies](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html)
