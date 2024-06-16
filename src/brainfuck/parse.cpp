@@ -97,6 +97,17 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
   instr.emplace_back(type, 0, offset);
 }
 
+// >... :: (... at offset)>
+void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
+  auto maybeDataPointerAdd = std::prev(current);
+  if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
+    const Offset offset = maybeDataPointerAdd->offset;
+    current->offset = offset;
+    instr.erase(maybeDataPointerAdd);
+    instr.emplace_back(DATA_POINTER_ADD, 0, offset);
+  }
+}
+
 template <char character>
 void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
   constexpr Type type = instructionForCharacter(character);
@@ -193,14 +204,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
         openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
       }
 
-      const auto maybeDataPointerAdd = std::prev(openBraceIterator);
-      if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
-        // >... :: ...>
-        const Offset offset = maybeDataPointerAdd->offset;
-        openBraceIterator->offset = offset;
-        instr.erase(maybeDataPointerAdd);
-        instr.emplace_back(DATA_POINTER_ADD, 0, offset);
-      }
+      checkAndApplyOffsetShuffling(instr, openBraceIterator);
       return;
     }
     // todo shuffle pointer add
