@@ -81,9 +81,15 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
+      case DATA_TRANSFER: {
+        data[offset_data_pointer + instruction.value] += data[offset_data_pointer];
+        data[offset_data_pointer] = 0;
+        break;
+      }
       case DATA_MULTIPLY: {
         const size_t outputs = static_cast<size_t>(instruction.value);
         const int32_t iterations = data[offset_data_pointer];
+        data[offset_data_pointer] = 0;
 
         instruction_pointer++;
 

@@ -15,9 +15,11 @@ enum Type : uint8_t {
   DATA_ADD = '+',
   DATA_SET = '=',
 
+  // [->+<] :: (transfer)(add -1)(add 1 at offset 1)
+  DATA_TRANSFER = '~',
   // [->++<] :: (multiplyer)(add -1)(add 2 at offset 1)
   DATA_MULTIPLY = 'x',
-  // [-->+++<] :: (multiplyer)(add -2)(add 3 at offset 1)
+  // [-->+++<] :: (multiplyer & divide)(add -2)(add 3 at offset 1)
   DATA_MULTIPLY_AND_DIVIDE = '*',
 
   DATA_SET_FROM_INPUT = ',',

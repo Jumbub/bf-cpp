@@ -151,13 +151,23 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       std::any_of(std::next(openBraceIterator), instr.end(), hasZeroOffset)) {
     std::stable_sort(std::next(openBraceIterator), instr.end(), sortByOffsetUnlessZero);
 
-    if (std::next(openBraceIterator)->value == -1) {
+    const auto zeroOffsetValue = std::next(openBraceIterator)->value;
+    if (zeroOffsetValue == -1 && (std::distance(openBraceIterator, instr.end()) == 3) &&
+        std::next(openBraceIterator, 2)->value == 1) {
+      // [->+<] :: (transfer to offset)
       openBraceIterator->type = DATA_MULTIPLY;
-      openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
-      openBraceIterator->offset = 0;
-      instr.erase(std::next(openBraceIterator));
-      return;
+      openBraceIterator->value = std::next(openBraceIterator, 2)->offset;
+      instr.pop_back();
+      instr.pop_back();
+    } else if (zeroOffsetValue == -1) {
+      // [->++>+++<<] :: (multiply)(offset 1 multiply base by 2)(offset 1 multiply base by 3)
+      // openBraceIterator->type = DATA_MULTIPLY;
+      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      // openBraceIterator->offset = 0;
+      // instr.erase(std::next(openBraceIterator));
+      // return;
     } else {
+      // [-->+>+++<<] :: (multiply & divide)(offset 1 multiply base by 1/2)(offset 1 multiply base by 3/2)
       // openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
       // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
       // openBraceIterator->offset = 0;
