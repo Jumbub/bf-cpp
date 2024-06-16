@@ -9,7 +9,7 @@
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  int32_t data_pointer = 0;
+  auto data_pointer = 0;
   char data[30000] = {0};
   Instruction* instruction = &instructions[0];
 
@@ -23,7 +23,7 @@ Error execute(ByteCode instructions) {
         data_pointer += instruction->offset;
         break;
       case INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] != 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
@@ -31,18 +31,17 @@ Error execute(ByteCode instructions) {
         break;
       }
       case DATA_TRANSFER: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         data[offset_data_pointer + instruction->value] += data[offset_data_pointer];
         data[offset_data_pointer] = 0;
         break;
       }
       case DATA_ADD: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
-        data[offset_data_pointer] += static_cast<char>(instruction->value);
+        data[data_pointer + instruction->offset] += static_cast<char>(instruction->value);
         break;
       }
       case DATA_MULTIPLY: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         const auto outputs = instruction->value;
         for (auto i = 0; i < outputs; i++) {
           instruction++;
@@ -52,12 +51,12 @@ Error execute(ByteCode instructions) {
         break;
       }
       case DATA_SET: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         data[offset_data_pointer] = static_cast<char>(instruction->value);
         break;
       }
       case INSTRUCTION_POINTER_SET_IF_ZERO: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] == 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
@@ -70,14 +69,14 @@ Error execute(ByteCode instructions) {
         }
         break;
       case DATA_PRINT: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         for (int i = 0; i < instruction->value; i++) {
           std::cout << static_cast<char>(data[offset_data_pointer]);
         }
         break;
       }
       case DATA_SET_FROM_INPUT: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         for (int i = 0; i < instruction->value; i++) {
           char input;
           std::cin >> std::noskipws >> input;
@@ -88,10 +87,10 @@ Error execute(ByteCode instructions) {
         break;
       }
       case DATA_MULTIPLY_AND_DIVIDE: {
-        const int32_t offset_data_pointer = data_pointer + instruction->offset;
+        const auto offset_data_pointer = data_pointer + instruction->offset;
         const auto outputs = instruction->value;
         instruction++;
-        int32_t iterations = 0;
+        auto iterations = 0;
         while (data[offset_data_pointer] != 0) {
           data[offset_data_pointer] += instruction->value;
           iterations++;
