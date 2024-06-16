@@ -98,7 +98,7 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
 }
 
 // >... :: (... at offset)>
-void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
+inline void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
   auto maybeDataPointerAdd = std::prev(current);
   if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
     const Offset offset = maybeDataPointerAdd->offset;
@@ -115,17 +115,9 @@ void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) 
 
   Value value = accumulate<Value, increment, character>(code, code_i);
 
-  auto& last = instr.back();
-
-  // >+ :: (+ offset)>
-  if (last.type == DATA_POINTER_ADD) {
-    last.type = type;
-    last.value = value;
-    instr.emplace_back(DATA_POINTER_ADD, 0, last.offset);
-    return;
-  }
-
   instr.emplace_back(type, value);
+
+  checkAndApplyOffsetShuffling(instr, std::prev(instr.end()));
 }
 
 inline void openBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
@@ -137,7 +129,6 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
   const auto openBraceIterator = openBraceIterators.top();
   openBraceIterators.pop();
 
-  auto& thirdLast = *std::prev(instr.end(), 3);
   auto& secondLast = *std::prev(instr.end(), 2);
   const auto& last = *std::prev(instr.cend(), 1);
 
@@ -146,21 +137,13 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       (last.value == 1 || last.value == -1)) {
     instr.pop_back();
 
-    if (thirdLast.type == DATA_POINTER_ADD) {
-      // >[-] :: (set 0 at offset)>
-      thirdLast.type = DATA_SET;
-      thirdLast.value = 0;
-      secondLast.type = DATA_POINTER_ADD;
-      secondLast.value = 0;
-      secondLast.offset = thirdLast.offset;
-      return;
-    } else {
-      // [-] :: (set 0)
-      secondLast.type = DATA_SET;
-      secondLast.value = 0;
-      secondLast.offset = 0;
-      return;
-    }
+    // [-] :: (set 0)
+    secondLast.type = DATA_SET;
+    secondLast.value = 0;
+    secondLast.offset = 0;
+
+    checkAndApplyOffsetShuffling(instr, openBraceIterator);
+    return;
   }
 
   // [-+
@@ -170,26 +153,17 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
 
     const auto zeroOffsetValue = std::next(openBraceIterator)->value;
     if (zeroOffsetValue == -1 && (std::distance(openBraceIterator, instr.end()) == 3) && instr.back().value == 1) {
-      // [->+<]
+      // [->+<] :: (transfer to offset)
       const auto moveTo = instr.back().offset;
       instr.pop_back();
       instr.pop_back();
 
       auto& last = instr.back();
-      auto secondLast = std::prev(instr.end(), 2);
-      if (secondLast->type == DATA_POINTER_ADD) {
-        // >[->+<] :: (transfer to offset at offset)>
-        secondLast->type = DATA_TRANSFER;
-        secondLast->value = moveTo;
-        last.type = DATA_POINTER_ADD;
-        last.value = 0;
-        last.offset = secondLast->offset;
-      } else {
-        // [->+<] :: (transfer to offset)
-        last.type = DATA_TRANSFER;
-        last.value = moveTo;
-        last.offset = 0;
-      }
+      last.type = DATA_TRANSFER;
+      last.value = moveTo;
+      last.offset = 0;
+
+      checkAndApplyOffsetShuffling(instr, openBraceIterator);
       return;
     } else {
       openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
@@ -212,23 +186,14 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
 
   // [>
   if (secondLast.type == INSTRUCTION_POINTER_SET_IF_ZERO && last.type == DATA_POINTER_ADD) {
-    if (thirdLast.type == DATA_POINTER_ADD) {
-      // >[>] :: (scan for 0 at offset)>
-      thirdLast.type = DATA_POINTER_ADD_WHILE_NOT_ZERO;
-      thirdLast.value = last.offset;
-      secondLast.type = DATA_POINTER_ADD;
-      secondLast.value = 0;
-      secondLast.offset = thirdLast.offset;
-      instr.pop_back();
-      return;
-    } else {
-      // [>] :: (scan for 0)
-      secondLast.type = DATA_POINTER_ADD_WHILE_NOT_ZERO;
-      secondLast.value = last.offset;
-      secondLast.offset = 0;
-      instr.pop_back();
-      return;
-    }
+    // [>] :: (scan for 0)
+    secondLast.type = DATA_POINTER_ADD_WHILE_NOT_ZERO;
+    secondLast.value = last.offset;
+    secondLast.offset = 0;
+    instr.pop_back();
+
+    checkAndApplyOffsetShuffling(instr, openBraceIterator);
+    return;
   }
 
   // regular loop
