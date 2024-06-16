@@ -226,6 +226,7 @@ struct CharacterLookups {
   std::remove_copy_if(rawCode.begin(), rawCode.end(), std::back_inserter(code), [](const char character) {
     return !characterLookups.characterWhitelist[static_cast<size_t>(character)];
   });
+  code.push_back('$');  // final character to allow lookaheads without boundary checks
 
   return code;
 }
