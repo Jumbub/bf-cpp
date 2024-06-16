@@ -106,6 +106,8 @@ Error execute(ByteCode instructions) {
         return Error::NONE;
       case NOOP:
         break;
+      default:
+        __builtin_unreachable();
     }
 
     instruction++;
