@@ -177,6 +177,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
         // [->+<] :: (transfer to offset)
         last.type = DATA_TRANSFER;
         last.value = moveTo;
+        last.offset = 0;
       }
       return;
     } else if (zeroOffsetValue == -1) {
@@ -185,6 +186,15 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
       openBraceIterator->offset = 0;
       instr.erase(std::next(openBraceIterator));
+
+      const auto maybeDataPointerAdd = std::prev(openBraceIterator);
+      if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
+        // >[->++>+++<<] :: (multiply)(offset 1 multiply base by 2)(offset 1 multiply base by 3)>
+        const Offset offset = maybeDataPointerAdd->offset;
+        openBraceIterator->offset = offset;
+        instr.erase(maybeDataPointerAdd);
+        instr.emplace_back(DATA_POINTER_ADD, 0, offset);
+      }
       return;
     } else {
       // [-->+>+++<<] :: (multiply & divide)(offset 1 multiply base by 1/2)(offset 1 multiply base by 3/2)
