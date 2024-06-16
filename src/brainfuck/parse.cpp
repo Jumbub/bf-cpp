@@ -159,12 +159,25 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
 
     const auto zeroOffsetValue = std::next(openBraceIterator)->value;
     if (zeroOffsetValue == -1 && (std::distance(openBraceIterator, instr.end()) == 3) && instr.back().value == 1) {
-      // [->+<] :: (transfer to offset)
+      // [->+<]
       const auto moveTo = instr.back().offset;
       instr.pop_back();
       instr.pop_back();
-      instr.back().type = DATA_TRANSFER;
-      instr.back().value = moveTo;
+
+      auto& last = instr.back();
+      auto secondLast = std::prev(instr.end(), 2);
+      if (secondLast->type == DATA_POINTER_ADD) {
+        // >[->+<] :: (transfer to offset at offset)>
+        secondLast->type = DATA_TRANSFER;
+        secondLast->value = moveTo;
+        last.type = DATA_POINTER_ADD;
+        last.value = 0;
+        last.offset = secondLast->offset;
+      } else {
+        // [->+<] :: (transfer to offset)
+        last.type = DATA_TRANSFER;
+        last.value = moveTo;
+      }
       return;
     } else if (zeroOffsetValue == -1) {
       // [->++>+++<<] :: (multiply)(offset 1 multiply base by 2)(offset 1 multiply base by 3)
