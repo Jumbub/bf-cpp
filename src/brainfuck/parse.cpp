@@ -152,11 +152,11 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
     std::stable_sort(std::next(openBraceIterator), instr.end(), sortByOffsetUnlessZero);
 
     if (std::next(openBraceIterator)->value == -1) {
-      // openBraceIterator->type = DATA_MULTIPLY;
-      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
-      // openBraceIterator->offset = 0;
-      // instr.erase(std::next(openBraceIterator));
-      // return;
+      openBraceIterator->type = DATA_MULTIPLY;
+      openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      openBraceIterator->offset = 0;
+      instr.erase(std::next(openBraceIterator));
+      return;
     } else {
       // openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
       // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
