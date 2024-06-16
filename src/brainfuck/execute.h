@@ -1,16 +1,12 @@
 #pragma once
 
-#include <concepts>
-#include <iomanip>
-#include <map>
-#include <vector>
+// #include <iomanip>
+// #include <map>
+// #include <vector>
 #include "error.h"
 #include "parse.h"
 
 namespace brainfuck {
-
-constexpr uint64_t ITERATION_LIMIT = 10000000000;
-constexpr bool DEBUG = false;
 
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();
@@ -18,31 +14,24 @@ Error execute(ByteCode instructions) {
   int32_t data_pointer = 0;
   char data[30000] = {0};
 
-  uint64_t iteration;
-  if constexpr (ITERATION_LIMIT > 0) {
-    iteration = 0;
-  }
-
-  std::vector<uint32_t> instruction_run_count(instruction_count, 0);
-  std::map<Type, uint> instruction_type_count;
+  // uint64_t iteration = 0;
+  // std::vector<uint32_t> instruction_run_count(instruction_count, 0);
+  // std::map<Type, uint> instruction_type_count;
 
   while (instruction_pointer < instruction_count) {
-    if constexpr (ITERATION_LIMIT > 0) {
-      if (++iteration > ITERATION_LIMIT) {
-        std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-        return Error::REACHED_INSTRUCTION_LIMIT;
-      }
-    }
+    // constexpr uint64_t ITERATION_LIMIT = 10000000000;
+    // if (++iteration > ITERATION_LIMIT) {
+    //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
+    //   return Error::REACHED_INSTRUCTION_LIMIT;
+    // }
 
     const Instruction instruction = instructions[instruction_pointer];
 
-    if constexpr (DEBUG) {
-      instruction_run_count[instruction_pointer]++;
-      instruction_type_count[instructions[instruction_pointer].type]++;
-      std::cout << std::format(
-          "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction.type, instruction.value,
-          instruction.offset);
-    }
+    // instruction_run_count[instruction_pointer]++;
+    // instruction_type_count[instructions[instruction_pointer].type]++;
+    // std::cout << std::format(
+    //     "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction.type, instruction.value,
+    //     instruction.offset);
 
     const int32_t offset_data_pointer = data_pointer + instruction.offset;
     switch (instruction.type) {
@@ -123,17 +112,15 @@ Error execute(ByteCode instructions) {
     instruction_pointer++;
   }
 
-  if constexpr (DEBUG) {
-    for (size_t i = 0; i < instructions.size(); i++) {
-      const auto instruction = instructions[i];
-      std::cout << std::format(
-          "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction.type), instruction.value, instruction.offset,
-          instruction_run_count[i]);
-    }
-    for (const auto& [key, value] : instruction_type_count) {
-      std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
-    }
-  }
+  // for (size_t i = 0; i < instructions.size(); i++) {
+  //   const auto instruction = instructions[i];
+  //   std::cout << std::format(
+  //       "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction.type), instruction.value, instruction.offset,
+  //       instruction_run_count[i]);
+  // }
+  // for (const auto& [key, value] : instruction_type_count) {
+  //   std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
+  // }
 
   return Error::NONE;
 };
