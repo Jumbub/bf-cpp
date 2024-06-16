@@ -81,52 +81,45 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
-      case DATA_TRANSFER: {
+      case DATA_TRANSFER:
         data[offset_data_pointer + instruction.value] += data[offset_data_pointer];
         data[offset_data_pointer] = 0;
         break;
-      }
       case DATA_MULTIPLY: {
-        const size_t outputs = static_cast<size_t>(instruction.value);
-        const int32_t iterations = data[offset_data_pointer];
+        for (size_t i = 0; i < static_cast<size_t>(instruction.value); i++) {
+          instruction_pointer++;
+          const auto output = instructions[instruction_pointer];
+          data[offset_data_pointer + output.offset] += output.value * data[offset_data_pointer];
+        }
         data[offset_data_pointer] = 0;
-
-        instruction_pointer++;
-
-        for (size_t i = 0; i < outputs; i++) {
-          const auto innerInstruction = instructions[instruction_pointer + i];
-          data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
-        }
-
-        instruction_pointer += outputs;
         break;
       }
-      case DATA_MULTIPLY_AND_DIVIDE: {
-        const size_t outputs = static_cast<size_t>(instruction.value);
+      // case DATA_MULTIPLY_AND_DIVIDE: {
+      //   const size_t outputs = static_cast<size_t>(instruction.value);
 
-        instruction_pointer++;
+      //   instruction_pointer++;
 
-        const auto baseInstruction = instructions[instruction_pointer];
-        if (baseInstruction.offset != 0) {
-          throw std::runtime_error("unhandled");
-        }
+      //   const auto baseInstruction = instructions[instruction_pointer];
+      //   if (baseInstruction.offset != 0) {
+      //     throw std::runtime_error("unhandled");
+      //   }
 
-        int32_t iterations = 0;
-        while (data[offset_data_pointer] != 0) {
-          data[offset_data_pointer] += baseInstruction.value;
-          iterations++;
-        }
+      //   int32_t iterations = 0;
+      //   while (data[offset_data_pointer] != 0) {
+      //     data[offset_data_pointer] += baseInstruction.value;
+      //     iterations++;
+      //   }
 
-        instruction_pointer++;
+      //   instruction_pointer++;
 
-        for (size_t i = 0; i < outputs; i++) {
-          const auto innerInstruction = instructions[instruction_pointer + i];
-          data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
-        }
+      //   for (size_t i = 0; i < outputs; i++) {
+      //     const auto innerInstruction = instructions[instruction_pointer + i];
+      //     data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
+      //   }
 
-        instruction_pointer += outputs;
-        break;
-      }
+      //   instruction_pointer += outputs;
+      //   break;
+      // }
       case NOOP:
         break;
     }
