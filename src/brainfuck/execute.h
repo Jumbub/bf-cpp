@@ -26,7 +26,7 @@ Error execute(ByteCode instructions) {
         const auto offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] != 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
-          continue;
+          instruction--;
         }
         break;
       }
@@ -59,7 +59,7 @@ Error execute(ByteCode instructions) {
         const auto offset_data_pointer = data_pointer + instruction->offset;
         if (data[offset_data_pointer] == 0) {
           instruction = &instructions[static_cast<size_t>(instruction->value)];
-          continue;
+          instruction--;
         }
         break;
       }
