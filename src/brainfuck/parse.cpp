@@ -76,6 +76,17 @@ constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction&
   return lhs.offset < rhs.offset;
 }
 
+// >... :: (... at offset)>
+inline void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
+  auto maybeDataPointerAdd = std::prev(current);
+  if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
+    const Offset offset = maybeDataPointerAdd->offset;
+    current->offset = offset;
+    instr.erase(maybeDataPointerAdd);
+    instr.emplace_back(DATA_POINTER_ADD, 0, offset);
+  }
+}
+
 template <char character>
 void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
   constexpr Type type = instructionForCharacter(character);
@@ -95,17 +106,6 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
   }
 
   instr.emplace_back(type, 0, offset);
-}
-
-// >... :: (... at offset)>
-inline void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
-  auto maybeDataPointerAdd = std::prev(current);
-  if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
-    const Offset offset = maybeDataPointerAdd->offset;
-    current->offset = offset;
-    instr.erase(maybeDataPointerAdd);
-    instr.emplace_back(DATA_POINTER_ADD, 0, offset);
-  }
 }
 
 template <char character>
