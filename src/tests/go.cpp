@@ -39,6 +39,8 @@ TEST_CASE("go") {
   test("tests/multiply_value.b");
   test("tests/multiply_value_with_extra.b");
   test("tests/complex_multiply_value.b");
+  test("tests/complex_multiply_value_multi_output.b");
+  test("tests/complex_multiply_value_multi_output_spread.b");
   test("hello_world.b");
   test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
   test("rot13.b", "~mlk zyx");

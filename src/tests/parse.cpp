@@ -38,6 +38,8 @@ TEST_CASE("parse") {
   parseTest("tests/multiply_value.b");
   parseTest("tests/multiply_value_with_extra.b");
   parseTest("tests/complex_multiply_value.b");
+  parseTest("tests/complex_multiply_value_multi_output.b");
+  parseTest("tests/complex_multiply_value_multi_output_spread.b");
   parseTest("tests/sort_loop_offsets.b");
   parseTest("hello_world.b");
   parseTest("dbfi.b");

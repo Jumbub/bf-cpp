@@ -101,32 +101,23 @@ Error execute(ByteCode instructions) {
         data[offset_data_pointer] = 0;
         break;
       }
-      // case DATA_MULTIPLY_AND_DIVIDE: {
-      //   const size_t outputs = static_cast<size_t>(instruction.value);
+      case DATA_MULTIPLY_AND_DIVIDE: {
+        instruction_pointer++;
+        const auto zeroInstruction = instructions[instruction_pointer];
 
-      //   instruction_pointer++;
+        int32_t iterations = 0;
+        while (data[offset_data_pointer] != 0) {
+          data[offset_data_pointer] += zeroInstruction.value;
+          iterations++;
+        }
 
-      //   const auto baseInstruction = instructions[instruction_pointer];
-      //   if (baseInstruction.offset != 0) {
-      //     throw std::runtime_error("unhandled");
-      //   }
-
-      //   int32_t iterations = 0;
-      //   while (data[offset_data_pointer] != 0) {
-      //     data[offset_data_pointer] += baseInstruction.value;
-      //     iterations++;
-      //   }
-
-      //   instruction_pointer++;
-
-      //   for (size_t i = 0; i < outputs; i++) {
-      //     const auto innerInstruction = instructions[instruction_pointer + i];
-      //     data[offset_data_pointer + innerInstruction.offset] += innerInstruction.value * iterations;
-      //   }
-
-      //   instruction_pointer += outputs;
-      //   break;
-      // }
+        for (size_t i = 0; i < static_cast<size_t>(instruction.value); i++) {
+          instruction_pointer++;
+          const auto output = instructions[instruction_pointer];
+          data[offset_data_pointer + output.offset] += output.value * iterations;
+        }
+        break;
+      }
       case NOOP:
         break;
     }

@@ -175,10 +175,10 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       return;
     } else {
       // [-->+>+++<<] :: (multiply & divide)(offset 1 multiply base by 1/2)(offset 1 multiply base by 3/2)
-      // openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
-      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
-      // openBraceIterator->offset = 0;
-      // return;
+      openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
+      openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      openBraceIterator->offset = 0;
+      return;
     }
     // todo shuffle pointer add
   }
