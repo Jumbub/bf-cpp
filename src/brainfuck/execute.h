@@ -9,6 +9,7 @@ namespace brainfuck {
 
 constexpr uint64_t ITERATION_LIMIT = 10000000000;
 constexpr bool INSTRUCTION_COUNTS = false;
+constexpr bool INSTRUCTION_PRINTOUTS = false;
 
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();
@@ -38,6 +39,12 @@ Error execute(ByteCode instructions) {
     }
 
     const Instruction instruction = instructions[instruction_pointer];
+
+    if constexpr (INSTRUCTION_PRINTOUTS) {
+      std::cout << std::format(
+          "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction.type, instruction.value,
+          instruction.offset);
+    }
 
     const int32_t offset_data_pointer = data_pointer + instruction.offset;
     switch (instruction.type) {
