@@ -260,6 +260,8 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
       handleValueInstructions<'.'>(instr, code, code_i);
     } else if (code[code_i] == ',') {
       handleValueInstructions<','>(instr, code, code_i);
+    } else if (code[code_i] == '$') {
+      instr.emplace_back(DONE);
     }
   }
 

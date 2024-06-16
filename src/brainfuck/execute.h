@@ -9,7 +9,6 @@
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  const auto instruction_count = instructions.size();
   size_t instruction_pointer = 0;
   int32_t data_pointer = 0;
   char data[30000] = {0};
@@ -18,7 +17,7 @@ Error execute(ByteCode instructions) {
   // std::vector<uint32_t> instruction_run_count(instruction_count, 0);
   // std::map<Type, uint> instruction_type_count;
 
-  while (instruction_pointer < instruction_count) {
+  while (true) {
     // constexpr uint64_t ITERATION_LIMIT = 10000000000;
     // if (++iteration > ITERATION_LIMIT) {
     //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
@@ -105,6 +104,8 @@ Error execute(ByteCode instructions) {
         }
         break;
       }
+      case DONE:
+        return Error::NONE;
       case NOOP:
         break;
     }

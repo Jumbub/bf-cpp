@@ -11,6 +11,7 @@ namespace brainfuck {
 
 enum Type : uint8_t {
   NOOP = '_',
+  DONE = '0',
 
   DATA_ADD = '+',
   DATA_SET = '=',
