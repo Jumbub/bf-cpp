@@ -9,9 +9,9 @@
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  size_t instruction_pointer = 0;
   int32_t data_pointer = 0;
   char data[30000] = {0};
+  Instruction* instruction = &instructions[0];
 
   // uint64_t iteration = 0;
   // std::vector<uint32_t> instruction_run_count(instruction_count, 0);
@@ -23,8 +23,6 @@ Error execute(ByteCode instructions) {
     //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
     //   return Error::REACHED_INSTRUCTION_LIMIT;
     // }
-
-    const Instruction* instruction = &instructions[instruction_pointer];
 
     // instruction_run_count[instruction_pointer]++;
     // instruction_type_count[instructions[instruction_pointer].type]++;
@@ -39,7 +37,7 @@ Error execute(ByteCode instructions) {
         break;
       case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
         if (data[offset_data_pointer] != 0) {
-          instruction_pointer = static_cast<size_t>(instruction->value);
+          instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
         }
         break;
@@ -51,10 +49,10 @@ Error execute(ByteCode instructions) {
         data[offset_data_pointer] += static_cast<char>(instruction->value);
         break;
       case DATA_MULTIPLY: {
-        for (size_t i = 0; i < static_cast<size_t>(instruction->value); i++) {
-          instruction_pointer++;
-          const auto output = instructions[instruction_pointer];
-          data[offset_data_pointer + output.offset] += output.value * data[offset_data_pointer];
+        const auto outputs = instruction->value;
+        for (auto i = 0; i < outputs; i++) {
+          instruction++;
+          data[offset_data_pointer + instruction->offset] += instruction->value * data[offset_data_pointer];
         }
         data[offset_data_pointer] = 0;
         break;
@@ -64,7 +62,7 @@ Error execute(ByteCode instructions) {
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[offset_data_pointer] == 0) {
-          instruction_pointer = static_cast<size_t>(instruction->value);
+          instruction = &instructions[static_cast<size_t>(instruction->value)];
           continue;
         }
         break;
@@ -88,19 +86,17 @@ Error execute(ByteCode instructions) {
         }
         break;
       case DATA_MULTIPLY_AND_DIVIDE: {
-        instruction_pointer++;
-        const auto zeroInstruction = instructions[instruction_pointer];
-
+        const auto outputs = instruction->value;
+        instruction++;
         int32_t iterations = 0;
         while (data[offset_data_pointer] != 0) {
-          data[offset_data_pointer] += zeroInstruction.value;
+          data[offset_data_pointer] += instruction->value;
           iterations++;
         }
 
-        for (size_t i = 0; i < static_cast<size_t>(instruction->value); i++) {
-          instruction_pointer++;
-          const auto output = instructions[instruction_pointer];
-          data[offset_data_pointer + output.offset] += output.value * iterations;
+        for (auto i = 0; i < outputs; i++) {
+          instruction++;
+          data[offset_data_pointer + instruction->offset] += instruction->value * iterations;
         }
         break;
       }
@@ -110,7 +106,7 @@ Error execute(ByteCode instructions) {
         break;
     }
 
-    instruction_pointer++;
+    instruction++;
   }
 
   // for (size_t i = 0; i < instructions.size(); i++) {
