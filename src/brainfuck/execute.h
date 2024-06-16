@@ -10,9 +10,7 @@
 namespace brainfuck {
 
 constexpr uint64_t ITERATION_LIMIT = 10000000000;
-constexpr bool INSTRUCTION_TYPE_COUNTS = false;
-constexpr bool INSTRUCTION_COUNTS = false;
-constexpr bool INSTRUCTION_PRINTOUTS = false;
+constexpr bool DEBUG = false;
 
 Error execute(ByteCode instructions) {
   const auto instruction_count = instructions.size();
@@ -25,11 +23,7 @@ Error execute(ByteCode instructions) {
     iteration = 0;
   }
 
-  std::vector<uint32_t> instruction_run_count;
-  if constexpr (INSTRUCTION_COUNTS) {
-    instruction_run_count.resize(instruction_count, 0);
-  }
-
+  std::vector<uint32_t> instruction_run_count(instruction_count, 0);
   std::map<Type, uint> instruction_type_count;
 
   while (instruction_pointer < instruction_count) {
@@ -39,16 +33,12 @@ Error execute(ByteCode instructions) {
         return Error::REACHED_INSTRUCTION_LIMIT;
       }
     }
-    if constexpr (INSTRUCTION_COUNTS) {
-      instruction_run_count[instruction_pointer]++;
-    }
-    if constexpr (INSTRUCTION_TYPE_COUNTS) {
-      instruction_type_count[instructions[instruction_pointer].type]++;
-    }
 
     const Instruction instruction = instructions[instruction_pointer];
 
-    if constexpr (INSTRUCTION_PRINTOUTS) {
+    if constexpr (DEBUG) {
+      instruction_run_count[instruction_pointer]++;
+      instruction_type_count[instructions[instruction_pointer].type]++;
       std::cout << std::format(
           "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction.type, instruction.value,
           instruction.offset);
@@ -133,15 +123,13 @@ Error execute(ByteCode instructions) {
     instruction_pointer++;
   }
 
-  if constexpr (INSTRUCTION_COUNTS) {
+  if constexpr (DEBUG) {
     for (size_t i = 0; i < instructions.size(); i++) {
       const auto instruction = instructions[i];
       std::cout << std::format(
           "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction.type), instruction.value, instruction.offset,
           instruction_run_count[i]);
     }
-  }
-  if constexpr (INSTRUCTION_TYPE_COUNTS) {
     for (const auto& [key, value] : instruction_type_count) {
       std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
     }
