@@ -18,18 +18,6 @@ Error execute(ByteCode instructions) {
   // std::map<Type, uint> instruction_type_count;
 
   while (true) {
-    // constexpr uint64_t ITERATION_LIMIT = 10000000000;
-    // if (++iteration > ITERATION_LIMIT) {
-    //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-    //   return Error::REACHED_INSTRUCTION_LIMIT;
-    // }
-
-    // instruction_run_count[instruction_pointer]++;
-    // instruction_type_count[instructions[instruction_pointer].type]++;
-    // std::cout << std::format(
-    //     "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction->type, instruction->value,
-    //     instruction->offset);
-
     const int32_t offset_data_pointer = data_pointer + instruction->offset;
     switch (instruction->type) {
       case DATA_POINTER_ADD:
@@ -107,6 +95,18 @@ Error execute(ByteCode instructions) {
     }
 
     instruction++;
+
+    // constexpr uint64_t ITERATION_LIMIT = 10000000000;
+    // if (++iteration > ITERATION_LIMIT) {
+    //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
+    //   return Error::REACHED_INSTRUCTION_LIMIT;
+    // }
+
+    // instruction_run_count[instruction_pointer]++;
+    // instruction_type_count[instructions[instruction_pointer].type]++;
+    // std::cout << std::format(
+    //     "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction->type, instruction->value,
+    //     instruction->offset);
   }
 
   // for (size_t i = 0; i < instructions.size(); i++) {
