@@ -14,7 +14,6 @@
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_CXX_STANDARD": "23",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-        "CMAKE_CXX_SCAN_FOR_MODULES": "ON",
         "CMAKE_BUILD_TYPE": "Release"
       }
     }
