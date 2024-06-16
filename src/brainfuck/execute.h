@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <iomanip>
+#include <map>
 #include <vector>
 #include "error.h"
 #include "parse.h"
@@ -8,6 +10,7 @@
 namespace brainfuck {
 
 constexpr uint64_t ITERATION_LIMIT = 10000000000;
+constexpr bool INSTRUCTION_TYPE_COUNTS = false;
 constexpr bool INSTRUCTION_COUNTS = false;
 constexpr bool INSTRUCTION_PRINTOUTS = false;
 
@@ -27,6 +30,8 @@ Error execute(ByteCode instructions) {
     instruction_run_count.resize(instruction_count, 0);
   }
 
+  std::map<Type, uint> instruction_type_count;
+
   while (instruction_pointer < instruction_count) {
     if constexpr (ITERATION_LIMIT > 0) {
       if (++iteration > ITERATION_LIMIT) {
@@ -36,6 +41,9 @@ Error execute(ByteCode instructions) {
     }
     if constexpr (INSTRUCTION_COUNTS) {
       instruction_run_count[instruction_pointer]++;
+    }
+    if constexpr (INSTRUCTION_TYPE_COUNTS) {
+      instruction_type_count[instructions[instruction_pointer].type]++;
     }
 
     const Instruction instruction = instructions[instruction_pointer];
@@ -131,6 +139,11 @@ Error execute(ByteCode instructions) {
       std::cout << std::format(
           "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction.type), instruction.value, instruction.offset,
           instruction_run_count[i]);
+    }
+  }
+  if constexpr (INSTRUCTION_TYPE_COUNTS) {
+    for (const auto& [key, value] : instruction_type_count) {
+      std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
     }
   }
 
