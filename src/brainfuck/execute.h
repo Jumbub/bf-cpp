@@ -56,19 +56,33 @@ Error execute(ByteCode instructions) {
 
     const int32_t offset_data_pointer = data_pointer + instruction.offset;
     switch (instruction.type) {
-      case DATA_ADD:
-        data[offset_data_pointer] += static_cast<char>(instruction.value);
-        break;
-      case DATA_SET:
-        data[offset_data_pointer] = static_cast<char>(instruction.value);
-        break;
       case DATA_POINTER_ADD:
         data_pointer += instruction.offset;
         break;
-      case DATA_POINTER_ADD_WHILE_NOT_ZERO:
-        while (data[data_pointer + instruction.offset] != 0) {
-          data_pointer += instruction.value;
+      case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
+        if (data[offset_data_pointer] != 0) {
+          instruction_pointer = static_cast<size_t>(instruction.value);
+          continue;
         }
+        break;
+      case DATA_TRANSFER:
+        data[offset_data_pointer + instruction.value] += data[offset_data_pointer];
+        data[offset_data_pointer] = 0;
+        break;
+      case DATA_ADD:
+        data[offset_data_pointer] += static_cast<char>(instruction.value);
+        break;
+      case DATA_MULTIPLY: {
+        for (size_t i = 0; i < static_cast<size_t>(instruction.value); i++) {
+          instruction_pointer++;
+          const auto output = instructions[instruction_pointer];
+          data[offset_data_pointer + output.offset] += output.value * data[offset_data_pointer];
+        }
+        data[offset_data_pointer] = 0;
+        break;
+      }
+      case DATA_SET:
+        data[offset_data_pointer] = static_cast<char>(instruction.value);
         break;
       case INSTRUCTION_POINTER_SET_IF_ZERO:
         if (data[offset_data_pointer] == 0) {
@@ -76,10 +90,9 @@ Error execute(ByteCode instructions) {
           continue;
         }
         break;
-      case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
-        if (data[offset_data_pointer] != 0) {
-          instruction_pointer = static_cast<size_t>(instruction.value);
-          continue;
+      case DATA_POINTER_ADD_WHILE_NOT_ZERO:
+        while (data[data_pointer + instruction.offset] != 0) {
+          data_pointer += instruction.value;
         }
         break;
       case DATA_PRINT:
@@ -96,19 +109,6 @@ Error execute(ByteCode instructions) {
           }
         }
         break;
-      case DATA_TRANSFER:
-        data[offset_data_pointer + instruction.value] += data[offset_data_pointer];
-        data[offset_data_pointer] = 0;
-        break;
-      case DATA_MULTIPLY: {
-        for (size_t i = 0; i < static_cast<size_t>(instruction.value); i++) {
-          instruction_pointer++;
-          const auto output = instructions[instruction_pointer];
-          data[offset_data_pointer + output.offset] += output.value * data[offset_data_pointer];
-        }
-        data[offset_data_pointer] = 0;
-        break;
-      }
       case DATA_MULTIPLY_AND_DIVIDE: {
         instruction_pointer++;
         const auto zeroInstruction = instructions[instruction_pointer];
