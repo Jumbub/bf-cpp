@@ -67,7 +67,7 @@ constexpr bool hasZeroOffset(const Instruction& instruction) {
 };
 
 constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
-  return lhs.offset < rhs.offset || (lhs.offset == 0 && rhs.offset != 0);
+  return lhs.offset < rhs.offset && (rhs.offset != 0 || lhs.offset == 0);
 }
 
 template <char character>
@@ -162,11 +162,11 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       return;
     } else if (zeroOffsetValue == -1) {
       // [->++>+++<<] :: (multiply)(offset 1 multiply base by 2)(offset 1 multiply base by 3)
-      // openBraceIterator->type = DATA_MULTIPLY;
-      // openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
-      // openBraceIterator->offset = 0;
-      // instr.erase(std::next(openBraceIterator));
-      // return;
+      openBraceIterator->type = DATA_MULTIPLY;
+      openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
+      openBraceIterator->offset = 0;
+      instr.erase(std::next(openBraceIterator));
+      return;
     } else {
       // [-->+>+++<<] :: (multiply & divide)(offset 1 multiply base by 1/2)(offset 1 multiply base by 3/2)
       // openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
