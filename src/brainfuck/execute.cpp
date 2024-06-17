@@ -9,7 +9,7 @@ namespace brainfuck {
 
 Error execute(ByteCode instructions) {
   int64_t data_pointer = 0;
-  char data[30000] = {0};
+  int64_t data[30000] = {0};
   Instruction* instruction = &instructions[0];
 
   // uint64_t iteration = 0;
@@ -23,7 +23,7 @@ next:
       break;
     case INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
-      if (data[offset_data_pointer] != 0) {
+      if (data[offset_data_pointer] % 256 != 0) {
         instruction = &instructions[static_cast<size_t>(instruction->value)];
         goto next;
       }
@@ -36,7 +36,7 @@ next:
       break;
     }
     case DATA_ADD: {
-      data[data_pointer + instruction->offset] += static_cast<char>(instruction->value);
+      data[data_pointer + instruction->offset] += instruction->value;
       break;
     }
     case DATA_MULTIPLY: {
@@ -44,34 +44,33 @@ next:
       const auto outputs = instruction->value;
       for (auto i = 0; i < outputs; i++) {
         instruction++;
-        data[offset_data_pointer + instruction->offset] +=
-            static_cast<char>(instruction->value * data[offset_data_pointer]);
+        data[offset_data_pointer + instruction->offset] += instruction->value * data[offset_data_pointer];
       }
       data[offset_data_pointer] = 0;
       break;
     }
     case DATA_SET: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
-      data[offset_data_pointer] = static_cast<char>(instruction->value);
+      data[offset_data_pointer] = instruction->value;
       break;
     }
     case INSTRUCTION_POINTER_SET_IF_ZERO: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
-      if (data[offset_data_pointer] == 0) {
+      if (data[offset_data_pointer] % 256 == 0) {
         instruction = &instructions[static_cast<size_t>(instruction->value)];
         goto next;
       }
       break;
     }
     case DATA_POINTER_ADD_WHILE_NOT_ZERO:
-      while (data[data_pointer + instruction->offset] != 0) {
+      while (data[data_pointer + instruction->offset] % 256 != 0) {
         data_pointer += instruction->value;
       }
       break;
     case DATA_PRINT: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
       for (int i = 0; i < instruction->value; i++) {
-        std::cout << static_cast<char>(data[offset_data_pointer]);
+        std::cout << static_cast<char>(data[offset_data_pointer] % 256);
       }
       break;
     }
@@ -91,14 +90,14 @@ next:
       const auto outputs = instruction->value;
       instruction++;
       Value iterations = 0;
-      while (data[offset_data_pointer] != 0) {
-        data[offset_data_pointer] += static_cast<char>(instruction->value);
+      while (data[offset_data_pointer] % 256 != 0) {
+        data[offset_data_pointer] += instruction->value;
         iterations++;
       }
 
       for (auto i = 0; i < outputs; i++) {
         instruction++;
-        data[offset_data_pointer + instruction->offset] += static_cast<char>(instruction->value * iterations);
+        data[offset_data_pointer + instruction->offset] += instruction->value * iterations;
       }
       break;
     }
