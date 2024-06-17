@@ -10,27 +10,27 @@
 namespace brainfuck {
 
 enum Type : uint8_t {
-  NOOP = '_',
-  DONE = '0',
+  NOOP,
+  DONE,
 
-  DATA_ADD = '+',
-  DATA_SET = '=',
+  DATA_ADD,
+  DATA_SET,
 
   // [->+<] :: (transfer)(add -1)(add 1 at offset 1)
-  DATA_TRANSFER = '~',
+  DATA_TRANSFER,
   // [->++<] :: (multiplyer)(add -1)(add 2 at offset 1)
-  DATA_MULTIPLY = 'x',
+  DATA_MULTIPLY,
   // [-->+++<] :: (multiplyer & divide)(add -2)(add 3 at offset 1)
-  DATA_MULTIPLY_AND_DIVIDE = '*',
+  DATA_MULTIPLY_AND_DIVIDE,
 
-  DATA_SET_FROM_INPUT = ',',
-  DATA_PRINT = '.',
+  DATA_SET_FROM_INPUT,
+  DATA_PRINT,
 
-  DATA_POINTER_ADD = '>',
-  DATA_POINTER_ADD_WHILE_NOT_ZERO = '^',
+  DATA_POINTER_ADD,
+  DATA_POINTER_ADD_WHILE_NOT_ZERO,
 
-  INSTRUCTION_POINTER_SET_IF_ZERO = '[',
-  INSTRUCTION_POINTER_SET_IF_NOT_ZERO = ']',
+  INSTRUCTION_POINTER_SET_IF_ZERO,
+  INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
 };
 
 using Value = int32_t;
