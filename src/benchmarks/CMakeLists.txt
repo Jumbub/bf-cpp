@@ -8,5 +8,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(google_benchmark)
 
-add_executable(benchmarks main.cpp execute.cpp parse.cpp file.cpp utils.cpp)
+add_executable(benchmarks main.cpp go.cpp execute.cpp parse.cpp file.cpp utils.cpp)
 target_link_libraries(benchmarks brainfuck benchmark::benchmark)

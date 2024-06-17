@@ -17,7 +17,7 @@ void parseTest(const std::string filename) {
   std::string output;
   for (size_t instructionPointer = 0; instructionPointer < instructions->size(); instructionPointer++) {
     const auto instruction = instructions.value()[instructionPointer];
-    output += formatInstruction(instruction, instructionPointer);
+    output += formatInstruction(instruction, instructionPointer) + "\n";
   }
   if (output.empty()) {
     output = "<empty bytecode>";

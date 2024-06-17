@@ -1,22 +1,26 @@
 #include "execute.h"
 
 #include <iostream>
-// #include <iomanip>
-// #include <map>
-// #include <vector>
+#include <vector>
+#include "debug.h"
 
 namespace brainfuck {
+
+#define ENABLE_DEBUG false
 
 Error execute(ByteCode instructions) {
   int64_t data_pointer = 0;
   int64_t data[30000] = {0};
   Instruction* instruction = &instructions[0];
 
-  // uint64_t iteration = 0;
-  // std::vector<uint32_t> instruction_run_count(instruction_count, 0);
-  // std::map<Type, uint> instruction_type_count;
+#if ENABLE_DEBUG
+  Debug debug{instructions};
+#endif
 
 next:
+#if ENABLE_DEBUG
+  debug.trackInstruction(static_cast<size_t>(instruction - instructions.data()));
+#endif
   switch (instruction->type) {
     case DATA_POINTER_ADD:
       data_pointer += instruction->offset;
@@ -102,6 +106,9 @@ next:
       break;
     }
     case DONE:
+#if ENABLE_DEBUG
+      debug.done();
+#endif
       return Error::NONE;
     case NOOP:
       break;
@@ -110,28 +117,6 @@ next:
   }
 
   instruction++;
-
-  // constexpr uint64_t ITERATION_LIMIT = 10000000000;
-  // if (++iteration > ITERATION_LIMIT) {
-  //   std::cerr << "Exceeded maximum iterations (" << ITERATION_LIMIT << " iteration limit)" << std::endl;
-  //   return Error::REACHED_INSTRUCTION_LIMIT;
-  // }
-
-  // instruction_run_count[instruction_pointer]++;
-  // instruction_type_count[instructions[instruction_pointer].type]++;
-  // std::cout << std::format(
-  //     "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction->type, instruction->value,
-  //     instruction->offset);
-
-  // for (size_t i = 0; i < instructions.size(); i++) {
-  //   const auto instruction = instructions[i];
-  //   std::cout << std::format(
-  //       "{} {:04} [{:04}] ! {:010}\n", static_cast<char>(instruction->type), instruction->value, instruction->offset,
-  //       instruction_run_count[i]);
-  // }
-  // for (const auto& [key, value] : instruction_type_count) {
-  //   std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
-  // }
 
   goto next;
 };
