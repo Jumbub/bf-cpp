@@ -8,7 +8,7 @@
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  auto data_pointer = 0;
+  int64_t data_pointer = 0;
   char data[30000] = {0};
   Instruction* instruction = &instructions[0];
 

@@ -28,7 +28,7 @@ enum Type : uint64_t {
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
 };
 
-using Value = int32_t;
+using Value = int64_t;
 using Offset = int32_t;
 
 struct Instruction {
