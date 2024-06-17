@@ -12,7 +12,7 @@ enum class Error : int {
   UNMATCHED_BRACE,
 };
 
-enum Type : uint8_t {
+enum Type : uint64_t {
   NOOP,
   DONE,
   DATA_ADD,                             // + // -
