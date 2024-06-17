@@ -20,24 +20,28 @@ next:
   switch (instruction->type) {
     case DATA_POINTER_ADD:
       data_pointer += instruction->offset;
-      break;
+      instruction++;
+      goto next;
     case INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
       if (data[offset_data_pointer] != 0) {
         instruction = &instructions[static_cast<size_t>(instruction->value)];
         goto next;
       }
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_TRANSFER: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
       data[offset_data_pointer + instruction->value] += data[offset_data_pointer];
       data[offset_data_pointer] = 0;
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_ADD: {
       data[data_pointer + instruction->offset] += static_cast<char>(instruction->value);
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_MULTIPLY: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
@@ -48,12 +52,14 @@ next:
             static_cast<char>(instruction->value * data[offset_data_pointer]);
       }
       data[offset_data_pointer] = 0;
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_SET: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
       data[offset_data_pointer] = static_cast<char>(instruction->value);
-      break;
+      instruction++;
+      goto next;
     }
     case INSTRUCTION_POINTER_SET_IF_ZERO: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
@@ -61,19 +67,22 @@ next:
         instruction = &instructions[static_cast<size_t>(instruction->value)];
         goto next;
       }
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_POINTER_ADD_WHILE_NOT_ZERO:
       while (data[data_pointer + instruction->offset] != 0) {
         data_pointer += instruction->value;
       }
-      break;
+      instruction++;
+      goto next;
     case DATA_PRINT: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
       for (int i = 0; i < instruction->value; i++) {
         std::cout << static_cast<char>(data[offset_data_pointer]);
       }
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_SET_FROM_INPUT: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
@@ -84,7 +93,8 @@ next:
           data[offset_data_pointer] = input;
         }
       }
-      break;
+      instruction++;
+      goto next;
     }
     case DATA_MULTIPLY_AND_DIVIDE: {
       const auto offset_data_pointer = data_pointer + instruction->offset;
@@ -100,17 +110,18 @@ next:
         instruction++;
         data[offset_data_pointer + instruction->offset] += static_cast<char>(instruction->value * iterations);
       }
-      break;
+      instruction++;
+      goto next;
     }
     case DONE:
       return Error::NONE;
     case NOOP:
-      break;
+      instruction++;
+      goto next;
     default:
       __builtin_unreachable();
   }
-
-  instruction++;
+  __builtin_unreachable();
 
   // constexpr uint64_t ITERATION_LIMIT = 10000000000;
   // if (++iteration > ITERATION_LIMIT) {
@@ -133,8 +144,6 @@ next:
   // for (const auto& [key, value] : instruction_type_count) {
   //   std::cout << std::setfill('0') << std::setw(10) << value << " repitions of " << key << std::endl;
   // }
-
-  goto next;
 };
 
 }  // namespace brainfuck
