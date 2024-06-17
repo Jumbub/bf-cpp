@@ -2,25 +2,19 @@
 
 #include <iostream>
 #include <vector>
-#include "debug.h"
+// #include "debug.h"
 
 namespace brainfuck {
-
-#define ENABLE_DEBUG false
 
 Error execute(ByteCode instructions) {
   int64_t data_pointer = 0;
   int64_t data[30000] = {0};
   Instruction* instruction = &instructions[0];
 
-#if ENABLE_DEBUG
-  Debug debug{instructions};
-#endif
+  // Debug debug{instructions};
 
 next:
-#if ENABLE_DEBUG
-  debug.trackInstruction(static_cast<size_t>(instruction - instructions.data()));
-#endif
+  // debug.trackInstruction(static_cast<size_t>(instruction - instructions.data()));
   switch (instruction->type) {
     case DATA_POINTER_ADD:
       data_pointer += instruction->offset;
@@ -106,9 +100,7 @@ next:
       break;
     }
     case DONE:
-#if ENABLE_DEBUG
-      debug.done();
-#endif
+      // debug.done();
       return Error::NONE;
     case NOOP:
       break;
