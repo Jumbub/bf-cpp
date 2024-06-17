@@ -2,6 +2,7 @@
 
 #include "execute.h"
 #include "file.h"
+#include "parse.h"
 
 namespace brainfuck {
 

@@ -1,8 +1,8 @@
 #include "parse.h"
 
 #include <algorithm>
-#include <map>
 #include <stack>
+#include <stdexcept>
 
 namespace brainfuck {
 
@@ -271,9 +271,5 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
 
   return instr;
 };
-
-Instruction::Instruction(Type type) : type(type), value(0), offset(0){};
-Instruction::Instruction(Type type, Value value) : type(type), value(value), offset(0){};
-Instruction::Instruction(Type type, Value value, Offset offset) : type(type), value(value), offset(offset){};
 
 }  // namespace brainfuck

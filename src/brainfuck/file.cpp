@@ -5,7 +5,7 @@
 
 namespace brainfuck {
 
-std::optional<std::vector<char>> read(const std::string filename) {
+std::optional<Code> read(const std::string filename) {
   std::ifstream file(filename, std::ios::binary);
   if (!file.good()) {
     return std::nullopt;

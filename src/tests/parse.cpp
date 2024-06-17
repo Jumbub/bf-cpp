@@ -1,5 +1,6 @@
 #include <format>
 #include "../brainfuck/file.h"
+#include "../brainfuck/format.h"
 #include "../brainfuck/parse.h"
 #include "doctest/doctest.h"
 #include "utils.h"
@@ -14,11 +15,9 @@ void parseTest(const std::string filename) {
   const auto instructions = parse(code.value());
   REQUIRE_MESSAGE((bool)instructions, "Failed to parse, error code: ", instructions.error());
   std::string output;
-  for (size_t instruction_pointer = 0; instruction_pointer < instructions->size(); instruction_pointer++) {
-    const auto instruction = instructions.value()[instruction_pointer];
-    output += std::format(
-        "({:04}) {} {:04} [{:04}]\n", instruction_pointer, (char)instruction.type, instruction.value,
-        instruction.offset);
+  for (size_t instructionPointer = 0; instructionPointer < instructions->size(); instructionPointer++) {
+    const auto instruction = instructions.value()[instructionPointer];
+    output += formatInstruction(instruction, instructionPointer);
   }
   if (output.empty()) {
     output = "<empty bytecode>";
