@@ -29,7 +29,7 @@ enum Type : uint64_t {
 };
 
 using Value = int64_t;
-using Offset = int32_t;
+using Offset = int64_t;
 
 struct Instruction {
   Type type = NOOP;
