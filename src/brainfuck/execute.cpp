@@ -70,8 +70,8 @@ DATA_ADD: {
 
 DATA_MULTIPLY: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
-  const auto outputs = instruction->value;
-  for (auto i = 0; i < outputs; i++) {
+  const auto lastInstruction = instruction + instruction->value;
+  while (instruction != lastInstruction) {
     instruction++;
     data[offset_data_pointer + instruction->offset] += instruction->value * data[offset_data_pointer];
   }
@@ -141,7 +141,8 @@ DATA_MULTIPLY_AND_DIVIDE: {
     iterations++;
   }
 
-  for (auto i = 0; i < outputs; i++) {
+  const auto lastInstruction = instruction + outputs;
+  while (instruction != lastInstruction) {
     instruction++;
     data[offset_data_pointer + instruction->offset] += instruction->value * iterations;
   }
