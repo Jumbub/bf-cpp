@@ -71,9 +71,10 @@ DATA_ADD: {
 DATA_MULTIPLY: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
   const auto lastInstruction = instruction + instruction->value;
+  const auto multiplier = data[offset_data_pointer];
   while (instruction != lastInstruction) {
     instruction++;
-    data[offset_data_pointer + instruction->offset] += instruction->value * data[offset_data_pointer];
+    data[offset_data_pointer + instruction->offset] += instruction->value * multiplier;
   }
   data[offset_data_pointer] = 0;
 
