@@ -40,7 +40,7 @@ void execute(benchmark::State& state, Args&&... args) {
 //     "[>>]>>]<<[>>+>>+>>]<<[->>>>>>>>]<<[>.>>>>>>>]<<[>->>>>>]<<[>,>>>]<<[>+>]<<[+<<]<]!--[>--->->->++>-<<<<<-------]>--"
 //     ".>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!")
 //     ->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(execute, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(execute, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kMillisecond)->Repetitions(5);
 BENCHMARK_CAPTURE(
     execute,
     cgbfi2_cgbfi2_hello_world,

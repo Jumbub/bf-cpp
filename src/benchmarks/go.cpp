@@ -18,4 +18,4 @@ void go(benchmark::State& state, Args&&... args) {
   }
 }
 
-BENCHMARK_CAPTURE(go, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kMillisecond);
+// BENCHMARK_CAPTURE(go, mandelbrot, "samples/mandelbrot.b", "")->Unit(benchmark::kMillisecond);
