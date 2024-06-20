@@ -35,11 +35,12 @@ Error execute(ByteCode instructions) {
 
   goto*(instruction->jump);
 
-DATA_POINTER_ADD:
+DATA_POINTER_ADD: {
   data_pointer += instruction->offset;
 
   instruction++;
   goto*(instruction->jump);
+}
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if (data[data_pointer] % 256 != 0) {
@@ -149,13 +150,15 @@ DATA_MULTIPLY_AND_DIVIDE: {
   goto*(instruction->jump);
 }
 
-DONE:
+DONE: {
   // debug.done();
   return Error::NONE;
+}
 
-NOOP:
+NOOP: {
   instruction++;
   goto*(instruction->jump);
+}
 };
 
 }  // namespace brainfuck
