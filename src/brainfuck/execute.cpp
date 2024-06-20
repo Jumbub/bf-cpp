@@ -42,8 +42,7 @@ DATA_POINTER_ADD:
   goto*(instruction->jump);
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
-  if (data[offset_data_pointer] % 256 != 0) {
+  if (data[data_pointer] % 256 != 0) {
     instruction = &instructions[static_cast<size_t>(instruction->value)];
     goto*(instruction->jump);
   }
@@ -90,8 +89,7 @@ DATA_SET: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
-  if (data[offset_data_pointer] % 256 == 0) {
+  if (data[data_pointer] % 256 == 0) {
     instruction = &instructions[static_cast<size_t>(instruction->value)];
     goto*(instruction->jump);
   }
