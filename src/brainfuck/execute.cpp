@@ -29,23 +29,27 @@ Error execute(ByteCode instructions) {
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
   };
 
-  goto* jumpTable[instruction->type];
+  for (auto& instruction : instructions) {
+    instruction.jump = jumpTable[instruction.type];
+  }
+
+  goto*(instruction->jump);
 
 DATA_POINTER_ADD:
   data_pointer += instruction->offset;
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
   if (data[offset_data_pointer] % 256 != 0) {
     instruction = &instructions[static_cast<size_t>(instruction->value)];
-    goto* jumpTable[instruction->type];
+    goto*(instruction->jump);
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_TRANSFER: {
@@ -54,14 +58,14 @@ DATA_TRANSFER: {
   data[offset_data_pointer] = 0;
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_ADD: {
   data[data_pointer + instruction->offset] += instruction->value;
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_MULTIPLY: {
@@ -74,7 +78,7 @@ DATA_MULTIPLY: {
   data[offset_data_pointer] = 0;
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_SET: {
@@ -82,18 +86,18 @@ DATA_SET: {
   data[offset_data_pointer] = instruction->value;
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
   if (data[offset_data_pointer] % 256 == 0) {
     instruction = &instructions[static_cast<size_t>(instruction->value)];
-    goto* jumpTable[instruction->type];
+    goto*(instruction->jump);
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO:
@@ -102,7 +106,7 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO:
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 
 DATA_PRINT: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
@@ -111,7 +115,7 @@ DATA_PRINT: {
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_SET_FROM_INPUT: {
@@ -125,7 +129,7 @@ DATA_SET_FROM_INPUT: {
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DATA_MULTIPLY_AND_DIVIDE: {
@@ -144,7 +148,7 @@ DATA_MULTIPLY_AND_DIVIDE: {
   }
 
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 }
 
 DONE:
@@ -153,7 +157,7 @@ DONE:
 
 NOOP:
   instruction++;
-  goto* jumpTable[instruction->type];
+  goto*(instruction->jump);
 };
 
 }  // namespace brainfuck

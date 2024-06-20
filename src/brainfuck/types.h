@@ -30,11 +30,13 @@ enum Type : uint64_t {
 
 using Value = int64_t;
 using Offset = int64_t;
+using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
 
 struct Instruction {
   Type type = NOOP;
   Value value = 0;
   Offset offset = 0;
+  Jump jump = nullptr;
 
   Instruction(Type type);
   Instruction(Type type, Value value);
