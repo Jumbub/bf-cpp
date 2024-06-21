@@ -22,6 +22,11 @@
     {
       "name": "all",
       "configurePreset": "all"
+    },
+    {
+      "name": "standalone",
+      "targets": "standalone",
+      "configurePreset": "all"
     }
   ]
 }
