@@ -100,13 +100,14 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
   goto*(instruction->jump);
 }
 
-DATA_POINTER_ADD_WHILE_NOT_ZERO:
+DATA_POINTER_ADD_WHILE_NOT_ZERO: {
   while (data[data_pointer + instruction->offset] % 256 != 0) {
     data_pointer += instruction->value;
   }
 
   instruction++;
   goto*(instruction->jump);
+}
 
 DATA_PRINT: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
