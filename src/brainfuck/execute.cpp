@@ -31,6 +31,11 @@ Error execute(ByteCode instructions) {
 
   for (auto& instruction : instructions) {
     instruction.jump = jumpTable[instruction.type];
+    if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+      instruction.value = reinterpret_cast<Value>(&instructions[static_cast<size_t>(instruction.value)]);
+    } else if (instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      instruction.value = reinterpret_cast<Value>(&instructions[static_cast<size_t>(instruction.value)]);
+    }
   }
 
   goto*(instruction->jump);
@@ -44,7 +49,7 @@ DATA_POINTER_ADD: {
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if (data[data_pointer] % 256 != 0) {
-    instruction = &instructions[static_cast<size_t>(instruction->value)];
+    instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
 
@@ -92,7 +97,7 @@ DATA_SET: {
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if (data[data_pointer] % 256 == 0) {
-    instruction = &instructions[static_cast<size_t>(instruction->value)];
+    instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
 
