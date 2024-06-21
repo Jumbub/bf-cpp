@@ -153,14 +153,14 @@ DATA_MULTIPLY_AND_DIVIDE: {
   goto*(instruction->jump);
 }
 
-DONE: {
-  // debug.done();
-  return Error::NONE;
-}
-
 NOOP: {
   instruction++;
   goto*(instruction->jump);
+}
+
+DONE: {
+  // debug.done();
+  return Error::NONE;
 }
 };
 
