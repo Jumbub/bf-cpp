@@ -47,6 +47,13 @@ DATA_POINTER_ADD: {
   goto*(instruction->jump);
 }
 
+DATA_ADD: {
+  data[data_pointer + instruction->offset] += instruction->value;
+
+  instruction++;
+  goto*(instruction->jump);
+}
+
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if (data[data_pointer] % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
@@ -61,13 +68,6 @@ DATA_TRANSFER: {
   const auto offset_data_pointer = data_pointer + instruction->offset;
   data[offset_data_pointer + instruction->value] += data[offset_data_pointer];
   data[offset_data_pointer] = 0;
-
-  instruction++;
-  goto*(instruction->jump);
-}
-
-DATA_ADD: {
-  data[data_pointer + instruction->offset] += instruction->value;
 
   instruction++;
   goto*(instruction->jump);
