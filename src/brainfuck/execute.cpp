@@ -7,8 +7,8 @@
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  int64_t data_pointer = 0;
-  int64_t data[30000] = {0};
+  int64_t data_offset = 0;
+  int64_t datas[30000] = {0};
   Instruction* instruction = &instructions[0];
 
   // Debug debug{instructions};
@@ -41,21 +41,21 @@ Error execute(ByteCode instructions) {
   goto*(instruction->jump);
 
 DATA_POINTER_ADD: {
-  data_pointer += instruction->offset;
+  data_offset += instruction->offset;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  data[data_pointer + instruction->offset] += instruction->value;
+  datas[data_offset + instruction->offset] += instruction->value;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  if (data[data_pointer] % 256 != 0) {
+  if (datas[data_offset] % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
@@ -65,38 +65,38 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 DATA_TRANSFER: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
-  data[offset_data_pointer + instruction->value] += data[offset_data_pointer];
-  data[offset_data_pointer] = 0;
+  const auto offset_data_pointer = data_offset + instruction->offset;
+  datas[offset_data_pointer + instruction->value] += datas[offset_data_pointer];
+  datas[offset_data_pointer] = 0;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_MULTIPLY: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
+  const auto offset_data_pointer = data_offset + instruction->offset;
   const auto lastInstruction = instruction + instruction->value;
-  const auto multiplier = data[offset_data_pointer];
+  const auto multiplier = datas[offset_data_pointer];
   while (instruction != lastInstruction) {
     instruction++;
-    data[offset_data_pointer + instruction->offset] += instruction->value * multiplier;
+    datas[offset_data_pointer + instruction->offset] += instruction->value * multiplier;
   }
-  data[offset_data_pointer] = 0;
+  datas[offset_data_pointer] = 0;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_SET: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
-  data[offset_data_pointer] = instruction->value;
+  const auto offset_data_pointer = data_offset + instruction->offset;
+  datas[offset_data_pointer] = instruction->value;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if (data[data_pointer] % 256 == 0) {
+  if (datas[data_offset] % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
@@ -106,8 +106,8 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO: {
-  while (data[data_pointer + instruction->offset] % 256 != 0) {
-    data_pointer += instruction->value;
+  while (datas[data_offset + instruction->offset] % 256 != 0) {
+    data_offset += instruction->value;
   }
 
   instruction++;
@@ -115,9 +115,9 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO: {
 }
 
 DATA_PRINT: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
+  const auto offset_data_pointer = data_offset + instruction->offset;
   for (int i = 0; i < instruction->value; i++) {
-    std::cout << static_cast<char>(data[offset_data_pointer] % 256);
+    std::cout << static_cast<char>(datas[offset_data_pointer] % 256);
   }
 
   instruction++;
@@ -125,12 +125,12 @@ DATA_PRINT: {
 }
 
 DATA_SET_FROM_INPUT: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
+  const auto offset_data_pointer = data_offset + instruction->offset;
   for (int i = 0; i < instruction->value; i++) {
     char input;
     std::cin >> std::noskipws >> input;
     if (!std::cin.eof()) {
-      data[offset_data_pointer] = input;
+      datas[offset_data_pointer] = input;
     }
   }
 
@@ -139,19 +139,19 @@ DATA_SET_FROM_INPUT: {
 }
 
 DATA_MULTIPLY_AND_DIVIDE: {
-  const auto offset_data_pointer = data_pointer + instruction->offset;
+  const auto offset_data_pointer = data_offset + instruction->offset;
   const auto outputs = instruction->value;
   instruction++;
   Value iterations = 0;
-  while (data[offset_data_pointer] % 256 != 0) {
-    data[offset_data_pointer] += instruction->value;
+  while (datas[offset_data_pointer] % 256 != 0) {
+    datas[offset_data_pointer] += instruction->value;
     iterations++;
   }
 
   const auto lastInstruction = instruction + outputs;
   while (instruction != lastInstruction) {
     instruction++;
-    data[offset_data_pointer + instruction->offset] += instruction->value * iterations;
+    datas[offset_data_pointer + instruction->offset] += instruction->value * iterations;
   }
 
   instruction++;
