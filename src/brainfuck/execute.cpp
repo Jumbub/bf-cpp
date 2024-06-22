@@ -40,22 +40,20 @@ Error execute(ByteCode instructions) {
   goto*(instruction->jump);
 
 DATA_POINTER_ADD: {
-  data += instruction->offset;
+  data += instruction->value;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  *(data + instruction->offset) += instruction->value;
+  *data += instruction->value;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  data += instruction->offset;
-
   if ((*data) % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
@@ -66,39 +64,28 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 DATA_TRANSFER: {
-  const auto offset_data_pointer = data + instruction->offset;
-  *(offset_data_pointer + instruction->value) += *(offset_data_pointer);
-  *(offset_data_pointer) = 0;
+  throw std::runtime_error("missed!");
+  *(data + instruction->value) += *data;
+  *data = 0;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_MULTIPLY: {
-  const auto offset_data_pointer = data + instruction->offset;
-  const auto lastInstruction = instruction + instruction->value;
-  const auto multiplier = *offset_data_pointer;
-  while (instruction != lastInstruction) {
-    instruction++;
-    *(offset_data_pointer + instruction->offset) += instruction->value * multiplier;
-  }
-  *(offset_data_pointer) = 0;
-
+  throw std::runtime_error("missed!");
   instruction++;
   goto*(instruction->jump);
 }
 
 DATA_SET: {
-  auto offset_data_pointer = data + instruction->offset;
-  *offset_data_pointer = instruction->value;
+  *data = instruction->value;
 
   instruction++;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  data += instruction->offset;
-
   if ((*data) % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
@@ -109,7 +96,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO: {
-  while (*(data + instruction->offset) % 256 != 0) {
+  while (*data % 256 != 0) {
     data += instruction->value;
   }
 
@@ -118,9 +105,8 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO: {
 }
 
 DATA_PRINT: {
-  const auto offset_data_pointer = data + instruction->offset;
   for (int i = 0; i < instruction->value; i++) {
-    std::cout << static_cast<char>((*offset_data_pointer) % 256);
+    std::cout << static_cast<char>(*data % 256);
   }
 
   instruction++;
@@ -128,12 +114,11 @@ DATA_PRINT: {
 }
 
 DATA_SET_FROM_INPUT: {
-  const auto offset_data_pointer = data + instruction->offset;
   for (int i = 0; i < instruction->value; i++) {
     char input;
     std::cin >> std::noskipws >> input;
     if (!std::cin.eof()) {
-      *offset_data_pointer = input;
+      *data = input;
     }
   }
 
@@ -142,28 +127,12 @@ DATA_SET_FROM_INPUT: {
 }
 
 DATA_MULTIPLY_AND_DIVIDE: {
-  const auto offset_data_pointer = data + instruction->offset;
-  const auto outputs = instruction->value;
-  instruction++;
-  Value iterations = 0;
-  while ((*offset_data_pointer) % 256 != 0) {
-    *offset_data_pointer += instruction->value;
-    iterations++;
-  }
-
-  const auto lastInstruction = instruction + outputs;
-  while (instruction != lastInstruction) {
-    instruction++;
-    *(offset_data_pointer + instruction->offset) += instruction->value * iterations;
-  }
-
+  throw std::runtime_error("missed!");
   instruction++;
   goto*(instruction->jump);
 }
 
-DONE: {
-  return Error::NONE;
-}
+DONE: { return Error::NONE; }
 };
 
 }  // namespace brainfuck

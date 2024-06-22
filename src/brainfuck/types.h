@@ -29,18 +29,15 @@ enum Type : uint64_t {
 };
 
 using Value = int64_t;
-using Offset = int64_t;
 using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
 
 struct Instruction {
   Jump jump = nullptr;
   Type type = NOOP;
   Value value = 0;
-  Offset offset = 0;
 
   Instruction(Type type);
   Instruction(Type type, Value value);
-  Instruction(Type type, Value value, Offset offset);
 };
 
 using ByteCode = std::vector<Instruction>;
