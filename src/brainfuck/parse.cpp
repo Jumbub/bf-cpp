@@ -77,13 +77,28 @@ constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction&
 }
 
 // >... :: (... at offset)>
-inline void checkAndApplyOffsetShuffling(ByteCode& instr, const ByteCode::iterator& current) {
-  auto maybeDataPointerAdd = std::prev(current);
-  if (maybeDataPointerAdd->type == DATA_POINTER_ADD) {
-    const Offset offset = maybeDataPointerAdd->offset;
+inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterator current) {
+  if (std::prev(current)->type == DATA_POINTER_ADD) {
+    const auto previous = std::prev(current);
+    const auto offset = previous->offset;
     current->offset = offset;
-    instr.erase(maybeDataPointerAdd);
+    instr.erase(previous);
     instr.emplace_back(DATA_POINTER_ADD, 0, offset);
+  }
+
+  if (instr.back().type == DATA_POINTER_ADD) {
+    const auto current = std::prev(instr.end(), 2);
+    const auto previous = std::prev(instr.end(), 3);
+    if (previous->type == DATA_SET && current->type == DATA_ADD && current->offset == previous->offset) {
+      previous->value += current->value;
+      instr.erase(current);
+    }
+  } else {
+    const auto previous = std::prev(instr.end(), 2);
+    if (previous->type == DATA_SET && current->type == DATA_ADD && current->offset == previous->offset) {
+      previous->value += current->value;
+      instr.pop_back();
+    }
   }
 }
 
@@ -117,7 +132,7 @@ void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) 
 
   instr.emplace_back(type, value);
 
-  checkAndApplyOffsetShuffling(instr, std::prev(instr.end()));
+  checkAndApplySimplifications(instr, std::prev(instr.end()));
 }
 
 inline void openBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
@@ -142,7 +157,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
     secondLast.value = 0;
     secondLast.offset = 0;
 
-    checkAndApplyOffsetShuffling(instr, openBraceIterator);
+    checkAndApplySimplifications(instr, openBraceIterator);
     return;
   }
 
@@ -163,7 +178,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
       last.value = moveTo;
       last.offset = 0;
 
-      checkAndApplyOffsetShuffling(instr, openBraceIterator);
+      checkAndApplySimplifications(instr, openBraceIterator);
       return;
     } else {
       openBraceIterator->value = static_cast<Value>(std::distance(openBraceIterator, instr.end()) - 2);
@@ -178,7 +193,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
         openBraceIterator->type = DATA_MULTIPLY_AND_DIVIDE;
       }
 
-      checkAndApplyOffsetShuffling(instr, openBraceIterator);
+      checkAndApplySimplifications(instr, openBraceIterator);
       return;
     }
     // todo shuffle pointer add
@@ -192,7 +207,7 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
     secondLast.offset = 0;
     instr.pop_back();
 
-    checkAndApplyOffsetShuffling(instr, openBraceIterator);
+    checkAndApplySimplifications(instr, openBraceIterator);
     return;
   }
 
