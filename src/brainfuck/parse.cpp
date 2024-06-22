@@ -234,6 +234,29 @@ struct CharacterLookups {
   return code;
 }
 
+[[nodiscard]] inline const ByteCode removeNoops(const ByteCode rawInstr) noexcept {
+  ByteCode instr;
+  instr.reserve(rawInstr.size());
+  std::remove_copy_if(rawInstr.begin(), rawInstr.end(), std::back_inserter(instr), [](const Instruction& instruction) {
+    return instruction.type == NOOP;
+  });
+  return instr;
+}
+
+inline void applyLoopIndices(ByteCode& instr) noexcept {
+  std::stack<std::tuple<size_t, Instruction*>> loops;
+  for (size_t i = 0; i < instr.size(); i++) {
+    if (instr[i].type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      loops.push({i, &instr[i]});
+    } else if (instr[i].type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+      const auto [startI, startInstr] = loops.top();
+      startInstr->value = static_cast<Value>(i + 1);
+      instr[i].value = static_cast<Value>(startI + 1);
+      loops.pop();
+    }
+  }
+}
+
 std::expected<ByteCode, Error> parse(const Code rawCode) {
   const auto code = cleanCode(rawCode);
 
@@ -266,7 +289,11 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
     } else if (code[code_i] == ',') {
       handleValueInstructions<','>(instr, code, code_i);
     } else if (code[code_i] == '$') {
-      instr.emplace_back(DONE);
+      if (instr.back().type == DATA_POINTER_ADD) {
+        instr.back().type = DONE;
+      } else {
+        instr.emplace_back(DONE);
+      }
     }
   }
 
@@ -274,7 +301,9 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
     return std::unexpected(Error::UNMATCHED_BRACE);
   }
 
-  return instr;
+  auto cleanInstr = removeNoops(instr);
+  applyLoopIndices(cleanInstr);
+  return cleanInstr;
 };
 
 }  // namespace brainfuck
