@@ -1,4 +1,4 @@
-#include "debug.h"
+#include "profile.h"
 
 #include <iostream>
 #include <print>
@@ -6,19 +6,19 @@
 
 using namespace std::chrono;
 
-brainfuck::Debug::Debug(const std::vector<Instruction>& instructions)
+brainfuck::Profile::Profile(const std::vector<Instruction>& instructions)
     : instructions(instructions),
       executions(instructions.size(), 0),
       time(high_resolution_clock::now()),
       times(instructions.size(), duration_cast<duration<double>>(time - time)) {}
 
-void brainfuck::Debug::trackInstruction(const size_t index) {
-  this->executions[index] += 1;
+void brainfuck::Profile::instruction(const Instruction* instruction) {
+  this->executions[static_cast<size_t>(instruction - &instructions[0])] += 1;
   // this->times[index] += high_resolution_clock::now() - this->time;
   // this->time = high_resolution_clock::now();
 };
 
-void brainfuck::Debug::done() const {
+brainfuck::Profile::~Profile() {
   for (size_t i = 0; i < instructions.size(); i++) {
     const auto instruction = instructions[i];
     std::cout << std::format(

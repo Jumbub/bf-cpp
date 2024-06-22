@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <vector>
-// #include "debug.h"
+#define PROFILE false
+#include "profile_macros.h"
 
 namespace brainfuck {
 
@@ -10,8 +11,6 @@ Error execute(ByteCode instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];
-
-  // Debug debug{instructions};
 
   static void* jumpTable[] = {
       &&NOOP,
@@ -38,12 +37,14 @@ Error execute(ByteCode instructions) {
     }
   }
 
+  PROFILE_BEGIN;
   goto*(instruction->jump);
 
 DATA_POINTER_ADD: {
   data += instruction->offset;
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -51,16 +52,19 @@ DATA_ADD: {
   *(data + instruction->offset) += instruction->value;
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((*data) % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
+    PROFILE_INSTRUCTION;
     goto*(instruction->jump);
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -70,6 +74,7 @@ DATA_TRANSFER: {
   *(offset_data_pointer) = 0;
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -84,6 +89,7 @@ DATA_MULTIPLY: {
   *(offset_data_pointer) = 0;
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -92,16 +98,19 @@ DATA_SET: {
   *offset_data_pointer = instruction->value;
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if ((*data) % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
+    PROFILE_INSTRUCTION;
     goto*(instruction->jump);
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -111,6 +120,7 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO: {
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -121,6 +131,7 @@ DATA_PRINT: {
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -135,6 +146,7 @@ DATA_SET_FROM_INPUT: {
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
@@ -155,18 +167,17 @@ DATA_MULTIPLY_AND_DIVIDE: {
   }
 
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
 NOOP: {
   instruction++;
+  PROFILE_INSTRUCTION;
   goto*(instruction->jump);
 }
 
-DONE: {
-  // debug.done();
-  return Error::NONE;
-}
+DONE: { return Error::NONE; }
 };
 
 }  // namespace brainfuck

@@ -5,12 +5,13 @@
 
 namespace brainfuck {
 
-struct Debug {
-  Debug(const std::vector<Instruction>& instructions);
+struct Profile {
+  Profile(const std::vector<Instruction>& instructions);
+  ~Profile();
 
-  void trackInstruction(const size_t index);
-  void done() const;
+  void instruction(const Instruction*);
 
+ private:
   const std::vector<Instruction>& instructions;
   std::vector<uint64_t> executions;
   std::chrono::high_resolution_clock::time_point time;
