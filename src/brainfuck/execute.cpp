@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#define PROFILE false
+#define PROFILE true
 #include "profile_macros.h"
 
 namespace brainfuck {
