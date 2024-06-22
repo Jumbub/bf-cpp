@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <vector>
-// #include "debug.h"
 
 namespace brainfuck {
 
@@ -10,8 +9,6 @@ Error execute(ByteCode instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];
-
-  // Debug debug{instructions};
 
   static void* jumpTable[] = {
       &&DONE,
@@ -165,7 +162,6 @@ DATA_MULTIPLY_AND_DIVIDE: {
 }
 
 DONE: {
-  // debug.done();
   return Error::NONE;
 }
 };
