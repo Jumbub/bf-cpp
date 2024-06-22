@@ -13,7 +13,6 @@ Error execute(ByteCode instructions) {
   Instruction* instruction = &instructions[0];
 
   static void* jumpTable[] = {
-      &&NOOP,
       &&DONE,
       &&DATA_ADD,
       &&DATA_SET,
@@ -29,7 +28,10 @@ Error execute(ByteCode instructions) {
   };
 
   for (auto& instruction : instructions) {
-    instruction.jump = jumpTable[instruction.type];
+    if (instruction.type == NOOP) {
+      throw std::runtime_error("Parser failed to strip NOOP instructions");
+    }
+    instruction.jump = jumpTable[instruction.type - 1];
     if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
       instruction.value = reinterpret_cast<Value>(&instructions[static_cast<size_t>(instruction.value)]);
     } else if (instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
@@ -57,6 +59,8 @@ DATA_ADD: {
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+  data += instruction->offset;
+
   if ((*data) % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     PROFILE_INSTRUCTION
@@ -103,6 +107,8 @@ DATA_SET: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
+  data += instruction->offset;
+
   if ((*data) % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     PROFILE_INSTRUCTION
@@ -166,12 +172,6 @@ DATA_MULTIPLY_AND_DIVIDE: {
     *(offset_data_pointer + instruction->offset) += instruction->value * iterations;
   }
 
-  instruction++;
-  PROFILE_INSTRUCTION
-  goto*(instruction->jump);
-}
-
-NOOP: {
   instruction++;
   PROFILE_INSTRUCTION
   goto*(instruction->jump);
