@@ -197,14 +197,15 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
   }
 
   // regular loop
-  const size_t openBraceIndex = static_cast<size_t>(std::distance(instr.begin(), openBraceIterator));
+  if (std::prev(openBraceIterator)->type == DATA_POINTER_ADD) {
+    openBraceIterator->offset = std::prev(openBraceIterator)->offset;
+    instr.erase(std::prev(openBraceIterator));
+  }
   if (instr.back().type == DATA_POINTER_ADD) {
     instr.back().type = INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
-    instr.back().value = static_cast<Value>(openBraceIndex + 1);
   } else {
-    instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, openBraceIndex + 1);
+    instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
   }
-  instr[openBraceIndex].value = static_cast<Value>(instr.size());
 }
 
 struct CharacterLookups {

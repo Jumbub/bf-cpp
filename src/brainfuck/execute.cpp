@@ -100,6 +100,8 @@ DATA_SET: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
+  data += instruction->offset;
+
   if ((*data) % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
