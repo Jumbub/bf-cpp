@@ -37,14 +37,14 @@ Error execute(ByteCode instructions) {
     }
   }
 
-  PROFILE_BEGIN;
+  PROFILE_BEGIN
   goto*(instruction->jump);
 
 DATA_POINTER_ADD: {
   data += instruction->offset;
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -52,19 +52,19 @@ DATA_ADD: {
   *(data + instruction->offset) += instruction->value;
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((*data) % 256 != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
-    PROFILE_INSTRUCTION;
+    PROFILE_INSTRUCTION
     goto*(instruction->jump);
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -74,7 +74,7 @@ DATA_TRANSFER: {
   *(offset_data_pointer) = 0;
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -89,7 +89,7 @@ DATA_MULTIPLY: {
   *(offset_data_pointer) = 0;
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -98,19 +98,19 @@ DATA_SET: {
   *offset_data_pointer = instruction->value;
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if ((*data) % 256 == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
-    PROFILE_INSTRUCTION;
+    PROFILE_INSTRUCTION
     goto*(instruction->jump);
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -120,7 +120,7 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO: {
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -131,7 +131,7 @@ DATA_PRINT: {
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -146,7 +146,7 @@ DATA_SET_FROM_INPUT: {
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
@@ -167,13 +167,13 @@ DATA_MULTIPLY_AND_DIVIDE: {
   }
 
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
 NOOP: {
   instruction++;
-  PROFILE_INSTRUCTION;
+  PROFILE_INSTRUCTION
   goto*(instruction->jump);
 }
 
