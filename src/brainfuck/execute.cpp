@@ -59,7 +59,7 @@ DATA_ADD: {
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   data += instruction->offset;
 
-  if ((*data) % 256 != 0) {
+  if ((*data & 255) != 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
@@ -97,7 +97,7 @@ DATA_SET: {
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   data += instruction->offset;
 
-  if ((*data) % 256 == 0) {
+  if ((*data & 255) == 0) {
     instruction = reinterpret_cast<Instruction*>(instruction->value);
     goto*(instruction->jump);
   }
@@ -106,7 +106,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO: {
-  while (*(data + instruction->offset) % 256 != 0) {
+  while ((*(data + instruction->offset) & 255) != 0) {
     data += instruction->value;
   }
 
@@ -140,7 +140,7 @@ DATA_MULTIPLY_AND_DIVIDE: {
   const auto outputs = instruction->value;
   instruction++;
   Value iterations = 0;
-  while ((*offset_data_pointer) % 256 != 0) {
+  while ((*offset_data_pointer & 255) != 0) {
     *offset_data_pointer += instruction->value;
     iterations++;
   }
