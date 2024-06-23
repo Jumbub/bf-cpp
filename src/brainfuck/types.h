@@ -33,9 +33,13 @@ using Value = int64_t;
 using Offset = int64_t;
 using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
 
+static_assert(sizeof(void*) == sizeof(Type));
+
 struct Instruction {
-  Jump jump = nullptr;
-  Type type = NOOP;
+  union {
+    void* jump;
+    Type type;
+  };
   Value value = 0;
   Offset offset = 0;
 
