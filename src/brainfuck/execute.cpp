@@ -89,8 +89,7 @@ DATA_MULTIPLY: {
 }
 
 DATA_SET: {
-  auto offset_data_pointer = data + instruction->offset;
-  *offset_data_pointer = instruction->value;
+  *(data + instruction->offset) = instruction->value;
 
   goto NEXT;
 }
