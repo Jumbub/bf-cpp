@@ -106,9 +106,11 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO: {
-  while ((*(data + instruction->offset) & 255) != 0) {
-    data += instruction->value;
+  auto offset_data_pointer = data + instruction->offset;
+  while ((*offset_data_pointer & 255) != 0) {
+    offset_data_pointer += instruction->value;
   }
+  data = offset_data_pointer - instruction->offset;
 
   goto NEXT;
 }
