@@ -35,9 +35,9 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
   }
 }
 
-std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {
-  const std::string base = instructionPointer == -1 ? "" : std::format("({:04}) ", instructionPointer);
-  const char type = brainfuck::formatInstructionType(instruction.type);
-  const auto instr = std::format("{} {:04} [{:04}]", type, instruction.value, instruction.offset);
-  return base + instr;
-}
+// std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {
+//   const std::string base = instructionPointer == -1 ? "" : std::format("({:04}) ", instructionPointer);
+//   const char type = brainfuck::formatInstructionType(instruction.type);
+//   const auto instr = std::format("{} {:04} [{:04}]", type, instruction.value, instruction.offset);
+//   return base + instr;
+// }

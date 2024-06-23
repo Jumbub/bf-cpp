@@ -32,7 +32,7 @@ using Value = int64_t;
 using Offset = int64_t;
 using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
 
-struct Instruction {
+struct alignas(8) Instruction {
   Jump jump = nullptr;
   Type type = NOOP;
   Value value = 0;
