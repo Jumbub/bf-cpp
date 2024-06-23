@@ -100,6 +100,15 @@ inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterat
       instr.pop_back();
     }
   }
+
+  if (instr.back().type == DATA_SET && instr.back().value == 0) {
+    const auto previous = std::prev(instr.end(), 2);
+    if (previous->type == DATA_SET && previous->value == 0) {
+      previous->value = instr.back().offset;
+      previous->type = DATA_RESET;
+      instr.erase(current);
+    }
+  }
 }
 
 template <char character>

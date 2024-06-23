@@ -12,6 +12,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return '+';
     case DATA_SET:
       return '=';
+    case DATA_RESET:
+      return 'R';
     case DATA_TRANSFER:
       return '~';
     case DATA_MULTIPLY:

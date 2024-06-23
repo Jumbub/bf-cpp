@@ -15,6 +15,7 @@ Error execute(ByteCode instructions) {
       &&DONE,
       &&DATA_ADD,
       &&DATA_SET,
+      &&DATA_RESET,
       &&DATA_TRANSFER,
       &&DATA_MULTIPLY,
       &&DATA_MULTIPLY_AND_DIVIDE,
@@ -92,6 +93,13 @@ DATA_MULTIPLY: {
 
 DATA_SET: {
   *(data + instruction->offset) = instruction->value;
+
+  goto NEXT;
+}
+
+DATA_RESET: {
+  *(data + instruction->offset) = 0;
+  *(data + instruction->value) = 0;
 
   goto NEXT;
 }

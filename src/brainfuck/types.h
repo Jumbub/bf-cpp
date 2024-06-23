@@ -17,6 +17,7 @@ enum Type : uint64_t {
   DONE,
   DATA_ADD,                             // + // -
   DATA_SET,                             // [-]
+  DATA_RESET,                           // [-]
   DATA_TRANSFER,                        // [->+<]
   DATA_MULTIPLY,                        // [->++<]
   DATA_MULTIPLY_AND_DIVIDE,             // [-->+++<]
