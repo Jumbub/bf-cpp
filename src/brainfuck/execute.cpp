@@ -39,18 +39,21 @@ Error execute(ByteCode instructions) {
 
   goto*(instruction->jump);
 
+NEXT: {
+  instruction++;
+  goto*(instruction->jump);
+}
+
 DATA_POINTER_ADD: {
   data += instruction->offset;
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_ADD: {
   *(data + instruction->offset) += instruction->value;
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
@@ -61,8 +64,7 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
     goto*(instruction->jump);
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_TRANSFER: {
@@ -70,8 +72,7 @@ DATA_TRANSFER: {
   *(offset_data_pointer + instruction->value) += *(offset_data_pointer);
   *(offset_data_pointer) = 0;
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_MULTIPLY: {
@@ -84,16 +85,14 @@ DATA_MULTIPLY: {
   }
   *(offset_data_pointer) = 0;
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_SET: {
   auto offset_data_pointer = data + instruction->offset;
   *offset_data_pointer = instruction->value;
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
@@ -104,8 +103,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
     goto*(instruction->jump);
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_POINTER_ADD_WHILE_NOT_ZERO: {
@@ -113,8 +111,7 @@ DATA_POINTER_ADD_WHILE_NOT_ZERO: {
     data += instruction->value;
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_PRINT: {
@@ -123,8 +120,7 @@ DATA_PRINT: {
     std::cout << static_cast<char>((*offset_data_pointer) % 256);
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
@@ -137,8 +133,7 @@ DATA_SET_FROM_INPUT: {
     }
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
 DATA_MULTIPLY_AND_DIVIDE: {
@@ -157,13 +152,10 @@ DATA_MULTIPLY_AND_DIVIDE: {
     *(offset_data_pointer + instruction->offset) += instruction->value * iterations;
   }
 
-  instruction++;
-  goto*(instruction->jump);
+  goto NEXT;
 }
 
-DONE: {
-  return Error::NONE;
-}
+DONE: { return Error::NONE; }
 };
 
 }  // namespace brainfuck
