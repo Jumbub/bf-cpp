@@ -35,7 +35,7 @@ using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
 
 static_assert(sizeof(void*) == sizeof(Type));
 
-struct Instruction {
+struct alignas(16) Instruction {
   union {
     void* jump;
     Type type;
