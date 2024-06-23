@@ -1,5 +1,6 @@
 #include "execute.h"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -77,13 +78,14 @@ DATA_TRANSFER: {
 
 DATA_MULTIPLY: {
   const auto offset_data_pointer = data + instruction->offset;
-  const auto lastInstruction = instruction + instruction->value;
   const auto multiplier = *offset_data_pointer;
-  while (instruction != lastInstruction) {
-    instruction++;
-    *(offset_data_pointer + instruction->offset) += instruction->value * multiplier;
-  }
   *(offset_data_pointer) = 0;
+
+  const auto lastInstruction = instruction + instruction->value;
+  std::for_each(instruction + 1, lastInstruction + 1, [&offset_data_pointer, &multiplier](const auto& instruction) {
+    *(offset_data_pointer + instruction.offset) += instruction.value * multiplier;
+  });
+  instruction = lastInstruction;
 
   goto NEXT;
 }
