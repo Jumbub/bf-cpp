@@ -41,6 +41,7 @@ genuinely my favourite part of C++ programming.
   - single jump table
 - [4% performance gains by changing the order of the cpp files in the CMakelists.txt](https://github.com/Jumbub/bf-cpp/commit/44017042f7515248d655477616b7ac0e224861bd)
   - [2016 LLVM Developers’ Meeting: Z. Ansari "Causes of Performance Instability due to Code ..."](https://www.youtube.com/watch?v=IX16gcX4vDQ)
+  - ["Performance Matters" by Emery Berger ](https://www.youtube.com/watch?v=r-TLSBdHe1A)
   - Counter example: [Revert "Remove legacy debug operations", because it decreases performance by 8%, even though it's literally unreferenced](https://github.com/Jumbub/bf-cpp/commit/bfdc321af2a041127a87a647e358e7e97e987b6d)
 
 
