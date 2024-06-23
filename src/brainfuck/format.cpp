@@ -1,7 +1,5 @@
 #include "format.h"
 
-#include <format>
-
 char brainfuck::formatInstructionType(const brainfuck::Type type) {
   switch (type) {
     case NOOP:

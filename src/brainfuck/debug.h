@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include "types.h"
 
 namespace brainfuck {

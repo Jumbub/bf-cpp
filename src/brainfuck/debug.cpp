@@ -1,7 +1,5 @@
 #include "debug.h"
 
-#include <iostream>
-#include <print>
 #include "format.h"
 
 using namespace std::chrono;

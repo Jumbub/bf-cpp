@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "parse.h"
 
 namespace brainfuck {

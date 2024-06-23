@@ -1,9 +1,5 @@
 #include "parse.h"
 
-#include <algorithm>
-#include <stack>
-#include <stdexcept>
-
 namespace brainfuck {
 
 using OpenBraceIterators = std::stack<std::vector<Instruction>::iterator>;

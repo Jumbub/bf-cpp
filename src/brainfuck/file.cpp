@@ -1,8 +1,5 @@
 #include "file.h"
 
-#include <filesystem>
-#include <fstream>
-
 namespace brainfuck {
 
 std::optional<Code> read(const std::string filename) {
