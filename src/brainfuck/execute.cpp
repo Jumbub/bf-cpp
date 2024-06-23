@@ -6,7 +6,47 @@
 
 namespace brainfuck {
 
-Error execute(ByteCode instructions) {
+__attribute__((hot)) Error execute(ByteCode instructions) {
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+  __asm__ __volatile__("nop");
+
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];
@@ -90,13 +130,11 @@ DATA_MULTIPLY: {
 
   goto NEXT;
 }
-
 DATA_SET: {
   *(data + instruction->offset) = instruction->value;
 
   goto NEXT;
 }
-
 DATA_RESET: {
   *(data + instruction->offset) = 0;
   *(data + instruction->value) = 0;
