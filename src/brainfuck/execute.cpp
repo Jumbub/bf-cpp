@@ -3,11 +3,12 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include "hp.h"
 
 namespace brainfuck {
 
 Error execute(ByteCode instructions) {
-  int64_t datas[30000] = {0};
+  int64_t* datas = static_cast<int64_t*>(hugePageAlignedAlloc(sizeof(int64_t) * 30000));
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];
 
