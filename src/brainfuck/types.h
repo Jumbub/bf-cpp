@@ -37,10 +37,13 @@ static_assert(sizeof(void*) == sizeof(Type));
 
 struct alignas(16) Instruction {
   union {
+    Type type = NOOP;
     void* jump;
-    Type type;
   };
-  Value value = 0;
+  union {
+    Value value = 0;
+    Instruction* next;
+  };
   Offset offset = 0;
 
   Instruction(Type type);

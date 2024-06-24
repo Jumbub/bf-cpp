@@ -32,9 +32,9 @@ Error execute(ByteCode instructions) {
       throw std::runtime_error("Parser failed to strip NOOP instructions");
     }
     if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-      instruction.value = reinterpret_cast<Value>(&instructions[static_cast<size_t>(instruction.value)]);
+      instruction.next = &instructions[static_cast<size_t>(instruction.value)];
     } else if (instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      instruction.value = reinterpret_cast<Value>(&instructions[static_cast<size_t>(instruction.value)]);
+      instruction.next = &instructions[static_cast<size_t>(instruction.value)];
     }
     instruction.jump = jumpTable[instruction.type - 1];
   }
@@ -62,7 +62,7 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   data += instruction->offset;
 
   if ((*data & 255) != 0) {
-    instruction = reinterpret_cast<Instruction*>(instruction->value);
+    instruction = instruction->next;
     goto*(instruction->jump);
   }
 
@@ -108,7 +108,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
   data += instruction->offset;
 
   if ((*data & 255) == 0) {
-    instruction = reinterpret_cast<Instruction*>(instruction->value);
+    instruction = instruction->next;
     goto*(instruction->jump);
   }
 
