@@ -58,12 +58,14 @@ consteval Type instructionForCharacter(const char character) {
   }
 }
 
-constexpr bool isDataAdd(const Instruction& instruction) {
-  return instruction.type == DATA_ADD;
+template <Type T>
+constexpr bool isType(const Instruction& instruction) {
+  return instruction.type == T;
 };
 
-constexpr bool hasZeroOffset(const Instruction& instruction) {
-  return instruction.offset == 0;
+template <Offset T>
+constexpr bool hasOffset(const Instruction& instruction) {
+  return instruction.offset == T;
 };
 
 constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
@@ -171,8 +173,8 @@ inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) 
   }
 
   // [-+
-  if (std::all_of(std::next(openBraceIterator), instr.end(), isDataAdd) &&
-      std::any_of(std::next(openBraceIterator), instr.end(), hasZeroOffset)) {
+  if (std::all_of(std::next(openBraceIterator), instr.end(), isType<DATA_ADD>) &&
+      std::any_of(std::next(openBraceIterator), instr.end(), hasOffset<0>)) {
     std::stable_sort(std::next(openBraceIterator), instr.end(), sortByOffsetUnlessZero);
 
     const auto zeroOffsetValue = std::next(openBraceIterator)->value;
