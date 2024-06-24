@@ -6,7 +6,7 @@
 
 namespace brainfuck {
 
-Error execute(ByteCode instructions) {
+__attribute__((hot)) Error execute(ByteCode instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];

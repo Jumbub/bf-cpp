@@ -46,9 +46,9 @@ struct alignas(16) Instruction {
   };
   Offset offset = 0;
 
-  Instruction(Type type);
-  Instruction(Type type, Value value);
-  Instruction(Type type, Value value, Offset offset);
+  __attribute__((cold)) Instruction(Type type);
+  __attribute__((cold)) Instruction(Type type, Value value);
+  __attribute__((cold)) Instruction(Type type, Value value, Offset offset);
 };
 
 using ByteCode = std::vector<Instruction>;

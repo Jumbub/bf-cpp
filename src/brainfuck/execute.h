@@ -4,6 +4,6 @@
 
 namespace brainfuck {
 
-Error execute(ByteCode instructions);
+__attribute__((hot)) Error execute(ByteCode instructions);
 
 }  // namespace brainfuck

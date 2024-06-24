@@ -9,7 +9,7 @@ namespace brainfuck {
 using OpenBraceIterators = std::stack<std::vector<Instruction>::iterator>;
 
 template <typename T, T increment, char character>
-[[nodiscard]] inline T accumulate(const Code& code, size_t& code_i) noexcept {
+__attribute__((cold)) [[nodiscard]] inline T accumulate(const Code& code, size_t& code_i) noexcept {
   T accumulated = increment;
   while (code[code_i + 1] == character) {
     accumulated += increment;
@@ -58,15 +58,15 @@ consteval Type instructionForCharacter(const char character) {
   }
 }
 
-constexpr bool isDataAdd(const Instruction& instruction) {
+__attribute__((cold)) constexpr bool isDataAdd(const Instruction& instruction) {
   return instruction.type == DATA_ADD;
 };
 
-constexpr bool hasZeroOffset(const Instruction& instruction) {
+__attribute__((cold)) constexpr bool hasZeroOffset(const Instruction& instruction) {
   return instruction.offset == 0;
 };
 
-constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
+__attribute__((cold)) constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction& rhs) {
   if (lhs.offset == 0) {
     return true;
   }
@@ -112,7 +112,7 @@ inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterat
 }
 
 template <char character>
-void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
+__attribute__((cold)) void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
   constexpr Type type = instructionForCharacter(character);
   constexpr Value increment = incrementForCharacter(character);
 
@@ -133,7 +133,7 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
 }
 
 template <char character>
-void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
+__attribute__((cold)) void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
   constexpr Type type = instructionForCharacter(character);
   constexpr Value increment = incrementForCharacter(character);
 
@@ -282,7 +282,7 @@ inline void applyLoopIndices(ByteCode& instr) noexcept {
   }
 }
 
-std::expected<ByteCode, Error> parse(const Code rawCode) {
+__attribute__((cold)) std::expected<ByteCode, Error> parse(const Code rawCode) {
   const auto code = cleanCode(rawCode);
 
   ByteCode instr;

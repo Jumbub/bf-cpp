@@ -2,7 +2,7 @@
 
 #include <format>
 
-char brainfuck::formatInstructionType(const brainfuck::Type type) {
+__attribute__((cold)) char brainfuck::formatInstructionType(const brainfuck::Type type) {
   switch (type) {
     case NOOP:
       return '_';
@@ -37,7 +37,9 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
   }
 }
 
-std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {
+__attribute__((cold)) std::string brainfuck::formatInstruction(
+    const brainfuck::Instruction instruction,
+    const int instructionPointer) {
   const std::string base = instructionPointer == -1 ? "" : std::format("({:04}) ", instructionPointer);
   const char type = brainfuck::formatInstructionType(instruction.type);
   const auto instr = std::format("{} {:04} [{:04}]", type, instruction.value, instruction.offset);

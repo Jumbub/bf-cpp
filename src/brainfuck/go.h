@@ -6,7 +6,7 @@
 
 namespace brainfuck {
 
-Error go(const std::string filename) {
+__attribute__((hot)) Error go(const std::string filename) {
   const auto data = brainfuck::read(filename);
   if (!data) {
     return Error::PROGRAM_NOT_FOUND;
