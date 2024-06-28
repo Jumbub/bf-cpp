@@ -18,46 +18,6 @@ template <typename T, T increment, char character>
   return accumulated;
 }
 
-consteval Value incrementForCharacter(const char character) {
-  if (character == '.') {
-    return 1;
-  } else if (character == ',') {
-    return 1;
-  } else if (character == '+') {
-    return 1;
-  } else if (character == '-') {
-    return -1;
-  } else if (character == '>') {
-    return 1;
-  } else if (character == '<') {
-    return -1;
-  } else if (character == '[') {
-    return 0;
-  } else if (character == ']') {
-    return 0;
-  } else {
-    throw std::runtime_error("invalid character");
-  }
-}
-
-consteval Type instructionForCharacter(const char character) {
-  if (character == '.') {
-    return DATA_PRINT;
-  } else if (character == ',') {
-    return DATA_SET_FROM_INPUT;
-  } else if (character == '+' || character == '-') {
-    return DATA_ADD;
-  } else if (character == '<' || character == '>') {
-    return DATA_POINTER_ADD;
-  } else if (character == '[') {
-    return INSTRUCTION_POINTER_SET_IF_ZERO;
-  } else if (character == ']') {
-    return INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
-  } else {
-    throw std::runtime_error("invalid character");
-  }
-}
-
 template <Type T>
 constexpr bool isType(const Instruction& instruction) {
   return instruction.type == T;
@@ -113,11 +73,8 @@ inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterat
   }
 }
 
-template <char character>
+template <char character, Type type, Value increment>
 void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
-  constexpr Type type = instructionForCharacter(character);
-  constexpr Value increment = incrementForCharacter(character);
-
   Offset offset = accumulate<Offset, increment, character>(code, code_i);
 
   auto& last = instr.back();
@@ -134,11 +91,8 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
   instr.emplace_back(type, 0, offset);
 }
 
-template <char character>
+template <char character, Type type, Value increment>
 void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
-  constexpr Type type = instructionForCharacter(character);
-  constexpr Value increment = incrementForCharacter(character);
-
   Value value = accumulate<Value, increment, character>(code, code_i);
 
   instr.emplace_back(type, value);
@@ -298,9 +252,9 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
 
   for (size_t code_i = 0; code_i < code.size(); code_i++) {
     if (code[code_i] == '>') {
-      handleOffsetInstructions<'>'>(instr, code, code_i);
+      handleOffsetInstructions<'>', DATA_POINTER_ADD, 1>(instr, code, code_i);
     } else if (code[code_i] == '<') {
-      handleOffsetInstructions<'<'>(instr, code, code_i);
+      handleOffsetInstructions<'<', DATA_POINTER_ADD, -1>(instr, code, code_i);
     } else if (code[code_i] == '[') {
       openBrace(instr, openBraceIterators);
     } else if (code[code_i] == ']') {
@@ -308,13 +262,13 @@ std::expected<ByteCode, Error> parse(const Code rawCode) {
         return std::unexpected(Error::UNMATCHED_BRACE);
       closeBrace(instr, openBraceIterators);
     } else if (code[code_i] == '+') {
-      handleValueInstructions<'+'>(instr, code, code_i);
+      handleValueInstructions<'+', DATA_ADD, 1>(instr, code, code_i);
     } else if (code[code_i] == '-') {
-      handleValueInstructions<'-'>(instr, code, code_i);
+      handleValueInstructions<'-', DATA_ADD, -1>(instr, code, code_i);
     } else if (code[code_i] == '.') {
-      handleValueInstructions<'.'>(instr, code, code_i);
+      handleValueInstructions<'.', DATA_PRINT, 1>(instr, code, code_i);
     } else if (code[code_i] == ',') {
-      handleValueInstructions<','>(instr, code, code_i);
+      handleValueInstructions<',', DATA_SET_FROM_INPUT, 1>(instr, code, code_i);
     } else if (code[code_i] == '$') {
       if (instr.back().type == DATA_POINTER_ADD) {
         instr.back().type = DONE;
