@@ -51,6 +51,4 @@ struct alignas(16) Instruction {
   Instruction(Type type, Value value, Offset offset);
 };
 
-using Code = std::vector<char>;
-
 }  // namespace brainfuck

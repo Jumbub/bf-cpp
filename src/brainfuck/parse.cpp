@@ -9,7 +9,7 @@ namespace brainfuck {
 using OpenBraceIterators = std::stack<std::vector<Instruction>::iterator>;
 
 template <typename T, T increment, char character>
-[[nodiscard]] inline T accumulate(const Code& code, size_t& code_i) noexcept {
+[[nodiscard]] inline T accumulate(const std::vector<char>& code, size_t& code_i) noexcept {
   T accumulated = increment;
   while (code[code_i + 1] == character) {
     accumulated += increment;
@@ -39,7 +39,9 @@ constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction&
 }
 
 // >... :: (... at offset)>
-inline void checkAndApplySimplifications(std::vector<Instruction>& instr, const std::vector<Instruction>::iterator current) {
+inline void checkAndApplySimplifications(
+    std::vector<Instruction>& instr,
+    const std::vector<Instruction>::iterator current) {
   if (std::prev(current)->type == DATA_POINTER_ADD) {
     const auto previous = std::prev(current);
     const auto offset = previous->offset;
@@ -74,7 +76,7 @@ inline void checkAndApplySimplifications(std::vector<Instruction>& instr, const 
 }
 
 template <char character, Type type, Value increment>
-void handleOffsetInstructions(std::vector<Instruction>& instr, const Code& code, size_t& code_i) noexcept {
+void handleOffsetInstructions(std::vector<Instruction>& instr, const std::vector<char>& code, size_t& code_i) noexcept {
   Offset offset = accumulate<Offset, increment, character>(code, code_i);
 
   auto& last = instr.back();
@@ -92,7 +94,7 @@ void handleOffsetInstructions(std::vector<Instruction>& instr, const Code& code,
 }
 
 template <char character, Type type, Value increment>
-void handleValueInstructions(std::vector<Instruction>& instr, const Code& code, size_t& code_i) {
+void handleValueInstructions(std::vector<Instruction>& instr, const std::vector<char>& code, size_t& code_i) {
   Value value = accumulate<Value, increment, character>(code, code_i);
 
   instr.emplace_back(type, value);
@@ -202,7 +204,7 @@ struct CharacterLookups {
   }
 };
 
-[[nodiscard]] inline const Code cleanCode(const Code rawCode) noexcept {
+[[nodiscard]] inline const std::vector<char> cleanCode(const std::vector<char> rawCode) noexcept {
   static CharacterLookups characterLookups;
 
   std::vector<char> code;
@@ -238,7 +240,7 @@ inline void applyLoopIndices(std::vector<Instruction>& instr) noexcept {
   }
 }
 
-std::expected<std::vector<Instruction>, Error> parse(const Code rawCode) {
+std::expected<std::vector<Instruction>, Error> parse(const std::vector<char> rawCode) {
   const auto code = cleanCode(rawCode);
 
   std::vector<Instruction> instr;
