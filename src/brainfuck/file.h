@@ -2,10 +2,10 @@
 
 #include <optional>
 #include <string>
-#include "types.h"
+#include <vector>
 
 namespace brainfuck {
 
-std::optional<Code> read(const std::string filename);
+std::optional<std::vector<char>> read(const std::string filename);
 
 }  // namespace brainfuck
