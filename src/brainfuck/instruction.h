@@ -4,9 +4,11 @@
 
 namespace brainfuck {
 
+using Value = int64_t;
+using Offset = int64_t;
 enum Type : uint64_t {
-  NOOP,
-  DONE,
+  NOOP,                                 // foo
+  DONE,                                 // EOF
   DATA_ADD,                             // + // -
   DATA_SET,                             // [-]
   DATA_RESET,                           // [-]
@@ -21,20 +23,14 @@ enum Type : uint64_t {
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
 };
 
-using Value = int64_t;
-using Offset = int64_t;
-using Jump = void*;  // Stores labelled gotos. See `execute.cpp`.
-
-static_assert(sizeof(void*) == sizeof(Type));
-
 struct alignas(16) Instruction {
   union {
     Type type = NOOP;
-    void* jump;
+    void* jump;  // Types are converted to labelled gotos at runtime. See `execute.cpp`.
   };
   union {
     Value value = 0;
-    Instruction* next;
+    Instruction* next;  // Some values are actually pointers to another instruction.
   };
   Offset offset = 0;
 
