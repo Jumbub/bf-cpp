@@ -1,7 +1,7 @@
 #pragma once
 
 #include <expected>
-#include "types.h"
+#include "instruction.h"
 
 namespace brainfuck {
 
