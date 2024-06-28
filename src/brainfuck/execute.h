@@ -4,6 +4,6 @@
 
 namespace brainfuck {
 
-Error execute(ByteCode instructions);
+Error execute(std::vector<Instruction> instructions);
 
 }  // namespace brainfuck

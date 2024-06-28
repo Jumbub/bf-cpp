@@ -6,7 +6,7 @@
 
 namespace brainfuck {
 
-Error execute(ByteCode instructions) {
+Error execute(std::vector<Instruction> instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];

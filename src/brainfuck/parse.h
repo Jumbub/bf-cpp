@@ -5,6 +5,6 @@
 
 namespace brainfuck {
 
-std::expected<ByteCode, Error> parse(Code full);
+std::expected<std::vector<Instruction>, Error> parse(Code full);
 
 }  // namespace brainfuck

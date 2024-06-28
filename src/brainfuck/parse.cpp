@@ -39,7 +39,7 @@ constexpr bool sortByOffsetUnlessZero(const Instruction& lhs, const Instruction&
 }
 
 // >... :: (... at offset)>
-inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterator current) {
+inline void checkAndApplySimplifications(std::vector<Instruction>& instr, const std::vector<Instruction>::iterator current) {
   if (std::prev(current)->type == DATA_POINTER_ADD) {
     const auto previous = std::prev(current);
     const auto offset = previous->offset;
@@ -74,7 +74,7 @@ inline void checkAndApplySimplifications(ByteCode& instr, const ByteCode::iterat
 }
 
 template <char character, Type type, Value increment>
-void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i) noexcept {
+void handleOffsetInstructions(std::vector<Instruction>& instr, const Code& code, size_t& code_i) noexcept {
   Offset offset = accumulate<Offset, increment, character>(code, code_i);
 
   auto& last = instr.back();
@@ -92,7 +92,7 @@ void handleOffsetInstructions(ByteCode& instr, const Code& code, size_t& code_i)
 }
 
 template <char character, Type type, Value increment>
-void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) {
+void handleValueInstructions(std::vector<Instruction>& instr, const Code& code, size_t& code_i) {
   Value value = accumulate<Value, increment, character>(code, code_i);
 
   instr.emplace_back(type, value);
@@ -100,12 +100,12 @@ void handleValueInstructions(ByteCode& instr, const Code& code, size_t& code_i) 
   checkAndApplySimplifications(instr, std::prev(instr.end()));
 }
 
-inline void openBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
+inline void openBrace(std::vector<Instruction>& instr, OpenBraceIterators& openBraceIterators) {
   instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, -123456789);
   openBraceIterators.push(std::prev(instr.end()));
 }
 
-inline void closeBrace(ByteCode& instr, OpenBraceIterators& openBraceIterators) {
+inline void closeBrace(std::vector<Instruction>& instr, OpenBraceIterators& openBraceIterators) {
   const auto openBraceIterator = openBraceIterators.top();
   openBraceIterators.pop();
 
@@ -215,8 +215,8 @@ struct CharacterLookups {
   return code;
 }
 
-[[nodiscard]] inline const ByteCode removeNoops(const ByteCode rawInstr) noexcept {
-  ByteCode instr;
+[[nodiscard]] inline const std::vector<Instruction> removeNoops(const std::vector<Instruction> rawInstr) noexcept {
+  std::vector<Instruction> instr;
   instr.reserve(rawInstr.size());
   std::remove_copy_if(rawInstr.begin(), rawInstr.end(), std::back_inserter(instr), [](const Instruction& instruction) {
     return instruction.type == NOOP;
@@ -224,7 +224,7 @@ struct CharacterLookups {
   return instr;
 }
 
-inline void applyLoopIndices(ByteCode& instr) noexcept {
+inline void applyLoopIndices(std::vector<Instruction>& instr) noexcept {
   std::stack<std::tuple<size_t, Instruction*>> loops;
   for (size_t i = 0; i < instr.size(); i++) {
     if (instr[i].type == INSTRUCTION_POINTER_SET_IF_ZERO) {
@@ -238,10 +238,10 @@ inline void applyLoopIndices(ByteCode& instr) noexcept {
   }
 }
 
-std::expected<ByteCode, Error> parse(const Code rawCode) {
+std::expected<std::vector<Instruction>, Error> parse(const Code rawCode) {
   const auto code = cleanCode(rawCode);
 
-  ByteCode instr;
+  std::vector<Instruction> instr;
   const auto size = code.size();
   instr.reserve(size + size % 2);
   instr.emplace_back(NOOP);
