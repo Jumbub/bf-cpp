@@ -26,11 +26,11 @@ enum Type : uint64_t {
 struct alignas(16) Instruction {
   union {
     Type type = NOOP;
-    void* jump;  // Types are converted to labelled gotos at runtime. See `execute.cpp`.
+    void* jump;  // Types are converted to labelled gotos at runtime.
   };
   union {
     Value value = 0;
-    Instruction* next;  // Some values are actually pointers to another instruction.
+    Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
   Offset offset = 0;
 

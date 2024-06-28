@@ -12,12 +12,12 @@ Result go(const std::string filename) {
     return Result::PROGRAM_NOT_FOUND;
   }
 
-  const auto parseResult = parse(readResult.value());
+  const auto parseResult = parse(*readResult);
   if (!parseResult) {
     return Result::UNMATCHED_BRACE;
   }
 
-  execute(parseResult.value());
+  execute(*parseResult);
 
   return Result::DONE;
 }

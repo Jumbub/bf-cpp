@@ -12,31 +12,28 @@ void execute(std::vector<Instruction> instructions) {
   Instruction* instruction = &instructions[0];
 
   static void* jumpTable[] = {
-      &&DONE,
-      &&DATA_ADD,
-      &&DATA_SET,
-      &&DATA_RESET,
-      &&DATA_TRANSFER,
-      &&DATA_MULTIPLY,
-      &&DATA_MULTIPLY_AND_DIVIDE,
-      &&DATA_SET_FROM_INPUT,
-      &&DATA_PRINT,
-      &&DATA_POINTER_ADD,
-      &&DATA_POINTER_ADD_WHILE_NOT_ZERO,
-      &&INSTRUCTION_POINTER_SET_IF_ZERO,
-      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
+      &&NEXT,                                 // foo
+      &&DONE,                                 // EOF
+      &&DATA_ADD,                             // + // -
+      &&DATA_SET,                             // [-]
+      &&DATA_RESET,                           // [-]
+      &&DATA_TRANSFER,                        // [->+<]
+      &&DATA_MULTIPLY,                        // [->++<]
+      &&DATA_MULTIPLY_AND_DIVIDE,             // [-->+++<]
+      &&DATA_SET_FROM_INPUT,                  // ,
+      &&DATA_PRINT,                           // .
+      &&DATA_POINTER_ADD,                     // > // <
+      &&DATA_POINTER_ADD_WHILE_NOT_ZERO,      // [>] // [<]
+      &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
+      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
   };
 
   for (auto& instruction : instructions) {
-    if (instruction.type == NOOP) {
-      throw std::runtime_error("Parser failed to strip NOOP instructions");
-    }
-    if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-      instruction.next = &instructions[static_cast<size_t>(instruction.value)];
-    } else if (instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+    if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO ||
+        instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       instruction.next = &instructions[static_cast<size_t>(instruction.value)];
     }
-    instruction.jump = jumpTable[instruction.type - 1];
+    instruction.jump = jumpTable[instruction.type];
   }
 
   goto*(instruction->jump);
