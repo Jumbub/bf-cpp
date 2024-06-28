@@ -10,15 +10,9 @@ enum Type : uint64_t {
   NOOP,                                 // foo
   DONE,                                 // EOF
   DATA_ADD,                             // + // -
-  DATA_SET,                             // [-]
-  DATA_RESET,                           // [-]
-  DATA_TRANSFER,                        // [->+<]
-  DATA_MULTIPLY,                        // [->++<]
-  DATA_MULTIPLY_AND_DIVIDE,             // [-->+++<]
   DATA_SET_FROM_INPUT,                  // ,
   DATA_PRINT,                           // .
   DATA_POINTER_ADD,                     // > // <
-  DATA_POINTER_ADD_WHILE_NOT_ZERO,      // [>] // [<]
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
 };

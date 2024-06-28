@@ -15,15 +15,9 @@ void execute(std::vector<Instruction> instructions) {
       &&NEXT,                                 // foo
       &&DONE,                                 // EOF
       &&DATA_ADD,                             // + // -
-      &&DATA_SET,                             // [-]
-      &&DATA_RESET,                           // [-]
-      &&DATA_TRANSFER,                        // [->+<]
-      &&DATA_MULTIPLY,                        // [->++<]
-      &&DATA_MULTIPLY_AND_DIVIDE,             // [-->+++<]
       &&DATA_SET_FROM_INPUT,                  // ,
       &&DATA_PRINT,                           // .
       &&DATA_POINTER_ADD,                     // > // <
-      &&DATA_POINTER_ADD_WHILE_NOT_ZERO,      // [>] // [<]
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
   };
@@ -66,41 +60,6 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   goto NEXT;
 }
 
-DATA_TRANSFER: {
-  const auto offset_data_pointer = data + instruction->offset;
-  *(offset_data_pointer + instruction->value) += *(offset_data_pointer);
-  *(offset_data_pointer) = 0;
-
-  goto NEXT;
-}
-
-DATA_MULTIPLY: {
-  const auto offset_data_pointer = data + instruction->offset;
-  const auto multiplier = *offset_data_pointer;
-  *(offset_data_pointer) = 0;
-
-  const auto lastInstruction = instruction + instruction->value;
-  std::for_each(instruction + 1, lastInstruction + 1, [&offset_data_pointer, &multiplier](const auto& instruction) {
-    *(offset_data_pointer + instruction.offset) += instruction.value * multiplier;
-  });
-  instruction = lastInstruction;
-
-  goto NEXT;
-}
-
-DATA_SET: {
-  *(data + instruction->offset) = instruction->value;
-
-  goto NEXT;
-}
-
-DATA_RESET: {
-  *(data + instruction->offset) = 0;
-  *(data + instruction->value) = 0;
-
-  goto NEXT;
-}
-
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   data += instruction->offset;
 
@@ -108,16 +67,6 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
-
-  goto NEXT;
-}
-
-DATA_POINTER_ADD_WHILE_NOT_ZERO: {
-  auto offset_data_pointer = data + instruction->offset;
-  while ((*offset_data_pointer & 255) != 0) {
-    offset_data_pointer += instruction->value;
-  }
-  data = offset_data_pointer - instruction->offset;
 
   goto NEXT;
 }
@@ -139,25 +88,6 @@ DATA_SET_FROM_INPUT: {
     if (!std::cin.eof()) {
       *offset_data_pointer = input;
     }
-  }
-
-  goto NEXT;
-}
-
-DATA_MULTIPLY_AND_DIVIDE: {
-  const auto offset_data_pointer = data + instruction->offset;
-  const auto outputs = instruction->value;
-  instruction++;
-  Value iterations = 0;
-  while ((*offset_data_pointer & 255) != 0) {
-    *offset_data_pointer += instruction->value;
-    iterations++;
-  }
-
-  const auto lastInstruction = instruction + outputs;
-  while (instruction != lastInstruction) {
-    instruction++;
-    *(offset_data_pointer + instruction->offset) += instruction->value * iterations;
   }
 
   goto NEXT;
