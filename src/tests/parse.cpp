@@ -13,7 +13,7 @@ void parseTest(const std::string filename) {
   const auto code = read("samples/" + filename);
   REQUIRE(code.has_value());
   const auto instructions = parse(code.value());
-  REQUIRE_MESSAGE((bool)instructions, "Failed to parse, error code: ", instructions.error());
+  REQUIRE_MESSAGE((bool)instructions, "Failed to parse");
   std::string output;
   for (size_t instructionPointer = 0; instructionPointer < instructions->size(); instructionPointer++) {
     const auto instruction = instructions.value()[instructionPointer];

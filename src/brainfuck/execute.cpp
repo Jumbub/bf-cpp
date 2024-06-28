@@ -6,7 +6,7 @@
 
 namespace brainfuck {
 
-Error execute(std::vector<Instruction> instructions) {
+void execute(std::vector<Instruction> instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = &instructions[0];
@@ -166,7 +166,7 @@ DATA_MULTIPLY_AND_DIVIDE: {
   goto NEXT;
 }
 
-DONE: { return Error::NONE; }
+DONE:
 };
 
 }  // namespace brainfuck

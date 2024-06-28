@@ -23,8 +23,7 @@ void execute(benchmark::State& state, Args&&... args) {
   for (auto _ : state) {
     const auto stop = startCapturingIO(input);
 
-    auto output = brainfuck::execute(bytecode.value());
-    benchmark::DoNotOptimize(output);
+    brainfuck::execute(bytecode.value());
 
     stop();
   }

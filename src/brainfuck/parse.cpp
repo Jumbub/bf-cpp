@@ -240,7 +240,7 @@ inline void applyLoopIndices(std::vector<Instruction>& instr) noexcept {
   }
 }
 
-std::expected<std::vector<Instruction>, Error> parse(const std::vector<char> rawCode) {
+std::optional<std::vector<Instruction>> parse(const std::vector<char> rawCode) {
   const auto code = cleanCode(rawCode);
 
   std::vector<Instruction> instr;
@@ -261,7 +261,7 @@ std::expected<std::vector<Instruction>, Error> parse(const std::vector<char> raw
       openBrace(instr, openBraceIterators);
     } else if (code[code_i] == ']') {
       if (openBraceIterators.empty())
-        return std::unexpected(Error::UNMATCHED_BRACE);
+        return std::nullopt;
       closeBrace(instr, openBraceIterators);
     } else if (code[code_i] == '+') {
       handleValueInstructions<'+', DATA_ADD, 1>(instr, code, code_i);
@@ -281,7 +281,7 @@ std::expected<std::vector<Instruction>, Error> parse(const std::vector<char> raw
   }
 
   if (!openBraceIterators.empty()) {
-    return std::unexpected(Error::UNMATCHED_BRACE);
+    return std::nullopt;
   }
 
   auto cleanInstr = removeNoops(instr);

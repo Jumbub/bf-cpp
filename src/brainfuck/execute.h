@@ -1,9 +1,10 @@
 #pragma once
 
+#include <vector>
 #include "instruction.h"
 
 namespace brainfuck {
 
-Error execute(std::vector<Instruction> instructions);
+void execute(std::vector<Instruction> instructions);
 
 }  // namespace brainfuck

@@ -1,16 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 namespace brainfuck {
-
-enum class Error : int {
-  NONE = 0,
-  PROGRAM_NOT_FOUND,
-  REACHED_INSTRUCTION_LIMIT,
-  UNMATCHED_BRACE,
-};
 
 enum Type : uint64_t {
   NOOP,

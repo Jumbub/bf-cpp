@@ -1,23 +1,15 @@
 #pragma once
 
-#include "execute.h"
-#include "file.h"
-#include "parse.h"
+#include <string>
 
 namespace brainfuck {
 
-Error go(const std::string filename) {
-  const auto data = brainfuck::read(filename);
-  if (!data) {
-    return Error::PROGRAM_NOT_FOUND;
-  }
+enum class Result : int {
+  DONE = 0,
+  PROGRAM_NOT_FOUND,
+  UNMATCHED_BRACE,
+};
 
-  const auto instructions = brainfuck::parse(data.value());
-  if (!instructions) {
-    return instructions.error();
-  }
-
-  return execute(*instructions);
-}
+Result go(const std::string filename);
 
 }  // namespace brainfuck

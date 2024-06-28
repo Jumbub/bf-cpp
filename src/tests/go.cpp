@@ -7,7 +7,7 @@ using namespace brainfuck;
 void test(
     const std::string filename,
     const std::optional<std::string> input = std::nullopt,
-    const Error expectedError = Error::NONE,
+    const Result expectedResult = Result::DONE,
     const std::string variant = "") {
   const auto stopCapturingIO = startCapturingIO(input);
   CAPTURE(filename);
@@ -16,7 +16,7 @@ void test(
     const auto error = go("samples/" + filename);
 
     const auto output = stopCapturingIO();
-    CHECK_MESSAGE(error == expectedError, "Unexpected error code: ", error);
+    CHECK_MESSAGE(error == expectedResult, "Unexpected error code: ", error);
     REQUIRE_SNAPSHOT("go/" + filename + variant, output);
   } catch (...) {
     stopCapturingIO();
@@ -26,12 +26,12 @@ void test(
 
 TEST_CASE("go") {
   const auto error = go("this-file-does-not-exist");
-  REQUIRE(error == Error::PROGRAM_NOT_FOUND);
+  REQUIRE(error == Result::PROGRAM_NOT_FOUND);
 
   test("tests/empty_file.b");
   test("tests/no_loop_hello.b");
-  test("tests/unmatched_brace_[.b", std::nullopt, Error::UNMATCHED_BRACE);
-  test("tests/unmatched_brace_].b", std::nullopt, Error::UNMATCHED_BRACE);
+  test("tests/unmatched_brace_[.b", std::nullopt, Result::UNMATCHED_BRACE);
+  test("tests/unmatched_brace_].b", std::nullopt, Result::UNMATCHED_BRACE);
   test("tests/loop_til_zero.b");
   test("tests/transfer_value.b");
   test("tests/transfer_value_far.b");
