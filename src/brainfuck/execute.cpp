@@ -56,21 +56,21 @@ NEXT: {
 }
 
 DATA_POINTER_ADD: {
-  data += instruction->offset;
+  data += instruction->value;
 
   goto NEXT;
 }
 
 DATA_ADD: {
-  *(data + instruction->offset) += instruction->value;
+  *data += instruction->value;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  data += instruction->offset;
+  const int64_t value = *data;
 
-  if ((*data & 255) != 0) {
+  if ((value & 255) != 0) {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
@@ -79,9 +79,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  data += instruction->offset;
+  const int64_t value = *data;
 
-  if ((*data & 255) == 0) {
+  if ((value & 255) == 0) {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
@@ -90,13 +90,13 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  output(*(data + instruction->offset), instruction->value);
+  output(*data, instruction->value);
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  input((data + instruction->offset), instruction->value);
+  input(data, instruction->value);
 
   goto NEXT;
 }

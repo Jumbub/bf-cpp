@@ -39,11 +39,11 @@ using Instructions = std::vector<Instruction>;
       if (loops.empty()) {  // check for brace mismatch
         return false;
       }
-      const auto openIterator = loops.top();
+      const auto open = loops.top();
       loops.pop();
 
-      openIterator->value = std::distance(begin, current) + 1;
-      current->value = std::distance(begin, openIterator) + 1;
+      open->value = std::distance(begin, current) + 1;
+      current->value = std::distance(begin, open) + 1;
     }
     current = std::next(current);
   }
@@ -66,10 +66,10 @@ using Instructions = std::vector<Instruction>;
         instr.emplace_back(DATA_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
         break;
       case '>':
-        instr.emplace_back(DATA_POINTER_ADD, 0, consecutiveAccumulator(source_iterator, source.cend()));
+        instr.emplace_back(DATA_POINTER_ADD, consecutiveAccumulator(source_iterator, source.cend()));
         break;
       case '<':
-        instr.emplace_back(DATA_POINTER_ADD, 0, -consecutiveAccumulator(source_iterator, source.cend()));
+        instr.emplace_back(DATA_POINTER_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
         break;
       case '.':
         instr.emplace_back(DATA_PRINT, consecutiveAccumulator(source_iterator, source.cend()));

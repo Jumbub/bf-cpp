@@ -27,7 +27,7 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
-  return std::format("{} {:04} [{:04}]", type, instruction.value, instruction.offset);
+  return std::format("{} {:04}", type, instruction.value);
 }
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {

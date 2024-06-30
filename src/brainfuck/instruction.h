@@ -5,7 +5,6 @@
 namespace brainfuck {
 
 using Value = int64_t;
-using Offset = int64_t;
 enum Type : uint64_t {
   NOOP,                                 // foo
   DONE,                                 // EOF
@@ -26,11 +25,9 @@ struct alignas(16) Instruction {
     Value value = 0;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
-  Offset offset = 0;
 
   Instruction(Type type);
   Instruction(Type type, Value value);
-  Instruction(Type type, Value value, Offset offset);
 };
 
 }  // namespace brainfuck
