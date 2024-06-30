@@ -56,9 +56,11 @@ NEXT: {
   goto*(instruction->jump);
 }
 
-DATA_ADD: {
-  *data += instruction->value;
-  data_dereferenced += instruction->value;
+INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+  if ((data_dereferenced & 255) != 0) {
+    instruction = instruction->next;
+    goto*(instruction->jump);
+  }
 
   goto NEXT;
 }
@@ -70,11 +72,9 @@ DATA_POINTER_ADD: {
   goto NEXT;
 }
 
-INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  if ((data_dereferenced & 255) != 0) {
-    instruction = instruction->next;
-    goto*(instruction->jump);
-  }
+DATA_ADD: {
+  *data += instruction->value;
+  data_dereferenced += instruction->value;
 
   goto NEXT;
 }
