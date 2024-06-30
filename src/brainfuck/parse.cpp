@@ -16,7 +16,6 @@ using Instructions = std::vector<Instruction>;
     return output == '+' || output == '-' || output == '>' || output == '<' || output == '.' || output == ',' ||
            output == '[' || output == ']';
   });
-
   return output;
 }
 
@@ -30,24 +29,20 @@ using Instructions = std::vector<Instruction>;
 
 [[nodiscard]] bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
   std::stack<size_t> loops;
-
   for (size_t i = 0; i < instructions.size(); i++) {
     if (instructions[i].type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       loops.push(i);
     } else if (instructions[i].type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-      if (loops.empty()) {
-        return false;  // brace mismatch
+      if (loops.empty()) {  // check for brace mismatch
+        return false;
       }
-
       const auto startI = loops.top();
       loops.pop();
-
       instructions[startI].value = static_cast<Value>(i + 1);
       instructions[i].value = static_cast<Value>(startI + 1);
     }
   }
-
-  return loops.empty();
+  return loops.empty();  // check for brace mismatch
 }
 
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
