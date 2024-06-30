@@ -7,16 +7,9 @@
 namespace brainfuck {
 
 using Source = std::vector<char>;
+using Instructions = std::vector<Instruction>;
 
-[[nodiscard]] int64_t consecutiveAccumulator(Source::const_iterator& begin, const Source::const_iterator end) noexcept {
-  const char check = *begin;
-  const auto miss = std::find_if(begin, end, [check](char current) -> bool { return current != check; });
-  const auto distance = std::distance(begin, miss);
-  begin = miss;
-  return distance;
-}
-
-[[nodiscard]] inline const Source removeNoopCodes(const Source input) noexcept {
+[[nodiscard]] inline Source removeNoopCodes(const Source input) noexcept {
   Source output;
   output.reserve(input.size());
   std::copy_if(input.begin(), input.end(), std::back_inserter(output), [](const char output) {
@@ -27,13 +20,15 @@ using Source = std::vector<char>;
   return output;
 }
 
-template <Type T>
-bool isType(const Instruction& value) {
-  return value.type == T;
+[[nodiscard]] int64_t consecutiveAccumulator(Source::const_iterator& begin, const Source::const_iterator end) noexcept {
+  const char check = *begin;
+  const auto miss = std::find_if(begin, end, [check](char current) -> bool { return current != check; });
+  const auto distance = std::distance(begin, miss);
+  begin = miss;
+  return distance;
 }
 
-using Instructions = std::vector<Instruction>;
-bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
+[[nodiscard]] bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
   std::stack<size_t> loops;
 
   for (size_t i = 0; i < instructions.size(); i++) {
@@ -41,7 +36,7 @@ bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
       loops.push(i);
     } else if (instructions[i].type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
       if (loops.empty()) {
-        return false;
+        return false;  // brace mismatch
       }
 
       const auto startI = loops.top();
@@ -55,7 +50,7 @@ bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
   return loops.empty();
 }
 
-std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
+[[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
   const Source source = removeNoopCodes(plaintext);
 
   std::vector<Instruction> instr;
@@ -63,24 +58,33 @@ std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext)
 
   Source::const_iterator source_iterator = source.cbegin();
   while (source_iterator != source.cend()) {
-    if (*source_iterator == '+') {
-      instr.emplace_back(DATA_ADD, consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == '-') {
-      instr.emplace_back(DATA_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == '>') {
-      instr.emplace_back(DATA_POINTER_ADD, 0, consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == '<') {
-      instr.emplace_back(DATA_POINTER_ADD, 0, -consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == '.') {
-      instr.emplace_back(DATA_PRINT, consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == ',') {
-      instr.emplace_back(DATA_SET_FROM_INPUT, consecutiveAccumulator(source_iterator, source.cend()));
-    } else if (*source_iterator == '[') {
-      instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
-      source_iterator = std::next(source_iterator);
-    } else if (*source_iterator == ']') {
-      instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
-      source_iterator = std::next(source_iterator);
+    switch (*source_iterator) {
+      case '+':
+        instr.emplace_back(DATA_ADD, consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case '-':
+        instr.emplace_back(DATA_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case '>':
+        instr.emplace_back(DATA_POINTER_ADD, 0, consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case '<':
+        instr.emplace_back(DATA_POINTER_ADD, 0, -consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case '.':
+        instr.emplace_back(DATA_PRINT, consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case ',':
+        instr.emplace_back(DATA_SET_FROM_INPUT, consecutiveAccumulator(source_iterator, source.cend()));
+        break;
+      case '[':
+        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
+        source_iterator = std::next(source_iterator);
+        break;
+      case ']':
+        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        source_iterator = std::next(source_iterator);
+        break;
     }
   }
 
