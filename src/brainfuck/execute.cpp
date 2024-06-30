@@ -34,6 +34,7 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 void execute(const Instruction* begin, const Instruction* end) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
+  int64_t data_dereferenced = *data;
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   const void* jumpTable[] = {
@@ -57,20 +58,20 @@ NEXT: {
 
 DATA_POINTER_ADD: {
   data += instruction->value;
+  data_dereferenced = *data;
 
   goto NEXT;
 }
 
 DATA_ADD: {
   *data += instruction->value;
+  data_dereferenced = *data;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  volatile const int64_t value = *data;
-
-  if ((value & 255) != 0) {
+  if ((data_dereferenced & 255) != 0) {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
@@ -79,9 +80,7 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  volatile const int64_t value = *data;
-
-  if ((value & 255) == 0) {
+  if ((data_dereferenced & 255) == 0) {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
@@ -97,6 +96,7 @@ DATA_PRINT: {
 
 DATA_SET_FROM_INPUT: {
   input(data, instruction->value);
+  data_dereferenced = *data;
 
   goto NEXT;
 }
