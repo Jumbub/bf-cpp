@@ -68,7 +68,7 @@ DATA_ADD: {
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  const int64_t value = *data;
+  volatile const int64_t value = *data;
 
   if ((value & 255) != 0) {
     instruction = instruction->next;
@@ -79,7 +79,7 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  const int64_t value = *data;
+  volatile const int64_t value = *data;
 
   if ((value & 255) == 0) {
     instruction = instruction->next;
