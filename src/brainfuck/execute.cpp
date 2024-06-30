@@ -6,6 +6,22 @@
 
 namespace brainfuck {
 
+static void output(int64_t output, Value times) {
+  for (int i = 0; i < times; i++) {
+    std::cout << static_cast<char>(output % 256);
+  }
+}
+
+static void input(int64_t* character, Value times) {
+  for (int i = 0; i < times; i++) {
+    char input;
+    std::cin >> std::noskipws >> input;
+    if (!std::cin.eof()) {
+      *character = input;
+    }
+  }
+}
+
 void execute(std::vector<Instruction> instructions) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
@@ -72,23 +88,13 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  const auto offset_data_pointer = data + instruction->offset;
-  for (int i = 0; i < instruction->value; i++) {
-    std::cout << static_cast<char>((*offset_data_pointer) % 256);
-  }
+  output(*(data + instruction->offset), instruction->value);
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  const auto offset_data_pointer = data + instruction->offset;
-  for (int i = 0; i < instruction->value; i++) {
-    char input;
-    std::cin >> std::noskipws >> input;
-    if (!std::cin.eof()) {
-      *offset_data_pointer = input;
-    }
-  }
+  input((data + instruction->offset), instruction->value);
 
   goto NEXT;
 }
