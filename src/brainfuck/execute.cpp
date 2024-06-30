@@ -56,16 +56,16 @@ NEXT: {
   goto*(instruction->jump);
 }
 
-DATA_POINTER_ADD: {
-  data += instruction->value;
-  data_dereferenced = *data;
+DATA_ADD: {
+  *data += instruction->value;
+  data_dereferenced += instruction->value;
 
   goto NEXT;
 }
 
-DATA_ADD: {
-  *data += instruction->value;
-  data_dereferenced += instruction->value;
+DATA_POINTER_ADD: {
+  data += instruction->value;
+  data_dereferenced = *data;
 
   goto NEXT;
 }
