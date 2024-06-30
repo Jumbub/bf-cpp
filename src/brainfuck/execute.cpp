@@ -65,7 +65,7 @@ DATA_POINTER_ADD: {
 
 DATA_ADD: {
   *data += instruction->value;
-  data_dereferenced = *data;
+  data_dereferenced += instruction->value;
 
   goto NEXT;
 }
