@@ -17,7 +17,7 @@ Result go(const std::string filename) {
     return Result::UNMATCHED_BRACE;
   }
 
-  execute(*parseResult);
+  execute(&((*parseResult)[0]), &((*parseResult)[parseResult->size()]));
 
   return Result::DONE;
 }

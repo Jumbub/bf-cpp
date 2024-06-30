@@ -23,7 +23,7 @@ void execute(benchmark::State& state, Args&&... args) {
   for (auto _ : state) {
     const auto stop = startCapturingIO(input);
 
-    brainfuck::execute(bytecode.value());
+    brainfuck::execute(&bytecode->data()[0], &bytecode->data()[bytecode->size()]);
 
     stop();
   }

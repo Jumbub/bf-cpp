@@ -1,8 +1,6 @@
 #include "execute.h"
 
-#include <algorithm>
 #include <iostream>
-#include <vector>
 
 namespace brainfuck {
 
@@ -22,12 +20,23 @@ static void input(int64_t* character, Value times) {
   }
 }
 
-void execute(std::vector<Instruction> instructions) {
+void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
+  Instruction* current = const_cast<Instruction*>(begin);
+  while (current < end) {
+    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      current->next = const_cast<Instruction*>(begin + current->value);
+    }
+    current->jump = const_cast<void*>(jumpTable[current->type]);
+    current++;
+  }
+}
+
+void execute(const Instruction* begin, const Instruction* end) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
-  Instruction* instruction = &instructions[0];
+  Instruction* instruction = const_cast<Instruction*>(begin);
 
-  static void* jumpTable[] = {
+  const void* jumpTable[] = {
       &&NEXT,                                 // foo
       &&DONE,                                 // EOF
       &&DATA_ADD,                             // + // -
@@ -37,14 +46,7 @@ void execute(std::vector<Instruction> instructions) {
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
   };
-
-  for (auto& instruction : instructions) {
-    if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO ||
-        instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      instruction.next = &instructions[static_cast<size_t>(instruction.value)];
-    }
-    instruction.jump = jumpTable[instruction.type];
-  }
+  setupInstructionAddresses(begin, end, jumpTable);
 
   goto*(instruction->jump);
 
