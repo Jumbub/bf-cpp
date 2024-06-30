@@ -27,20 +27,25 @@ using Instructions = std::vector<Instruction>;
   return distance;
 }
 
-[[nodiscard]] bool applyInstructionPointerOffsets(Instructions& instructions) noexcept {
-  std::stack<size_t> loops;
-  for (size_t i = 0; i < instructions.size(); i++) {
-    if (instructions[i].type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      loops.push(i);
-    } else if (instructions[i].type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+[[nodiscard]] bool applyInstructionPointerOffsets(
+    const Instructions::iterator begin,
+    const Instructions::iterator end) noexcept {
+  std::stack<Instructions::iterator> loops;
+  Instructions::iterator current = begin;
+  while (current < end) {
+    if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      loops.push(current);
+    } else if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
       if (loops.empty()) {  // check for brace mismatch
         return false;
       }
-      const auto startI = loops.top();
+      const auto openIterator = loops.top();
       loops.pop();
-      instructions[startI].value = static_cast<Value>(i + 1);
-      instructions[i].value = static_cast<Value>(startI + 1);
+
+      openIterator->value = std::distance(begin, current) + 1;
+      current->value = std::distance(begin, openIterator) + 1;
     }
+    current = std::next(current);
   }
   return loops.empty();  // check for brace mismatch
 }
@@ -85,7 +90,7 @@ using Instructions = std::vector<Instruction>;
 
   instr.emplace_back(DONE);
 
-  if (!applyInstructionPointerOffsets(instr)) {
+  if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;
   }
 
