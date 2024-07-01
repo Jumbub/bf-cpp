@@ -41,6 +41,7 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&DATA_POINTER_ADD,                     // > // <
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
+      &&DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -68,6 +69,18 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 DATA_POINTER_ADD: {
   data += instruction->value;
   data_dereferenced = *data;
+
+  goto NEXT;
+}
+
+DATA_TRANSFER: {
+  const Instruction* last = instruction + instruction->value;
+  while (instruction < last) {
+    throw new std::runtime_error("unimplemented");
+  }
+
+  *data = 0;
+  data_dereferenced = 0;
 
   goto NEXT;
 }
