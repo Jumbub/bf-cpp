@@ -74,10 +74,12 @@ DATA_POINTER_ADD: {
 }
 
 DATA_TRANSFER: {
+  data_dereferenced &= 255;
+
   const Instruction* last = instruction + instruction->value;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->offset) += (data_dereferenced % 256) * instruction->value;
+    *(data + instruction->offset) += data_dereferenced * instruction->value;
   }
 
   *data = 0;

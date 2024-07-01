@@ -70,7 +70,7 @@ using Instructions = std::vector<Instruction>;
     std::advance(current, 1);
   }
 
-  if (offset != 0 || transfers.size() > 2 || !transfers.contains(0) || transfers[0] != -1) {
+  if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
     return false;
   }
 
