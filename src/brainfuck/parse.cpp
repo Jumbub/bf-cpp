@@ -1,6 +1,8 @@
 #include "parse.h"
 
 #include <algorithm>
+#include <iostream>
+#include <map>
 #include <stack>
 #include <stdexcept>
 
@@ -33,6 +35,9 @@ using Instructions = std::vector<Instruction>;
   std::stack<Instructions::iterator> loops;
   Instructions::iterator current = begin;
   while (current < end) {
+    if (current->type == DATA_TRANSFER) {
+      current = std::next(current + current->value);  // skip metadata instructions
+    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       loops.push(current);
     } else if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
@@ -48,6 +53,61 @@ using Instructions = std::vector<Instruction>;
     current = std::next(current);
   }
   return loops.empty();  // check for brace mismatch
+}
+
+[[nodiscard]] bool findTransferInstruction(Instructions& instr) {
+  return false;
+  int ii = 0;
+  const auto open_brace = std::find_if(instr.rbegin(), instr.rend(), [&ii](const Instruction& i) {
+    if (ii == 0 && i.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      return true;
+    }
+    if (i.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+      ii++;
+    }
+    if (i.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      ii--;
+    }
+    return false;
+  });
+  if (open_brace == instr.rend()) {
+    return false;
+  }
+
+  std::map<Offset, Value> transfers;
+  int64_t offset = 0;
+
+  auto current = std::prev(open_brace);
+  while (current != instr.rbegin()) {
+    if (current->type == DATA_POINTER_ADD) {
+      offset += current->value;
+    } else if (current->type == DATA_ADD) {
+      transfers[offset] += current->value;
+    } else {
+      return false;
+    }
+    current = std::prev(current);
+  }
+
+  if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
+    return false;
+  }
+  return false;
+
+  while (instr.back().type != INSTRUCTION_POINTER_SET_IF_ZERO) {
+    instr.pop_back();
+  }
+  instr.pop_back();
+
+  instr.emplace_back(DATA_TRANSFER, transfers.size() - 1);
+  for (const auto& [offset, multiplier] : transfers) {
+    if (offset == 0) {
+      continue;
+    }
+    instr.emplace_back(offset, multiplier);
+  }
+
+  return true;
 }
 
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
@@ -82,7 +142,9 @@ using Instructions = std::vector<Instruction>;
         source_iterator = std::next(source_iterator);
         break;
       case ']':
+        // if (!findTransferInstruction(instr)) {
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        // }
         source_iterator = std::next(source_iterator);
         break;
     }

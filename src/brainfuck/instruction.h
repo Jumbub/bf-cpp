@@ -5,6 +5,7 @@
 namespace brainfuck {
 
 using Value = int64_t;
+using Offset = int64_t;
 enum Type : uint64_t {
   NOOP,                                 // foo
   DONE,                                 // EOF
@@ -14,12 +15,14 @@ enum Type : uint64_t {
   DATA_POINTER_ADD,                     // > // <
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
+  DATA_TRANSFER,                        // [->+<]
 };
 
 struct alignas(16) Instruction {
   union {
     Type type = NOOP;
-    void* jump;  // Types are converted to labelled gotos at runtime.
+    void* jump;     // Types are converted to labelled gotos at runtime.
+    Offset offset;  // Types can store offsets for DATA_TRANSFER meta instructions.
   };
   union {
     Value value = 0;
@@ -28,6 +31,7 @@ struct alignas(16) Instruction {
 
   Instruction(Type type);
   Instruction(Type type, Value value);
+  Instruction(Offset type, Value value);
 };
 
 }  // namespace brainfuck

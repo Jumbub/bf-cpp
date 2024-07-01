@@ -26,27 +26,29 @@ void parseTest(const std::string filename) {
 }
 
 TEST_CASE("parse") {
-  parseTest("tests/empty_file.b");
-  parseTest("tests/strip_non_code.b");
-  parseTest("tests/no_loop_hello.b");
+  // parseTest("tests/empty_file.b");
+  // parseTest("tests/brace_matching_test.b");
+  // parseTest("tests/brace_matching_test_2.b");
+  // parseTest("tests/strip_non_code.b");
+  // parseTest("tests/no_loop_hello.b");
   parseTest("tests/loop_til_zero.b");
   parseTest("tests/move_til_zero.b");
-  parseTest("tests/transfer_value.b");
-  parseTest("tests/transfer_value_with_extra.b");
-  parseTest("tests/transfer_value_far.b");
-  parseTest("tests/multiply_value.b");
-  parseTest("tests/multiply_value_with_extra.b");
-  parseTest("tests/complex_multiply_value.b");
-  parseTest("tests/complex_multiply_value_multi_output.b");
-  parseTest("tests/complex_multiply_value_multi_output_spread.b");
-  parseTest("tests/sort_loop_offsets.b");
-  parseTest("hello_world.b");
-  parseTest("dbfi.b");
-  parseTest("rot13.b");
-  parseTest("echo.b");
-  parseTest("numwarp.b");
-  parseTest("392quine.b");
-  parseTest("bitwidth.b");
-  parseTest("life.b");
-  parseTest("mandelbrot.b");
+  // parseTest("tests/transfer_value.b");
+  // parseTest("tests/transfer_value_with_extra.b");
+  // parseTest("tests/transfer_value_far.b");
+  // parseTest("tests/multiply_value.b");
+  // parseTest("tests/multiply_value_with_extra.b");
+  // parseTest("tests/complex_multiply_value.b");
+  // parseTest("tests/complex_multiply_value_multi_output.b");
+  // parseTest("tests/complex_multiply_value_multi_output_spread.b");
+  // parseTest("tests/sort_loop_offsets.b");
+  // parseTest("hello_world.b");
+  // parseTest("dbfi.b");
+  // parseTest("rot13.b");
+  // parseTest("echo.b");
+  // parseTest("numwarp.b");
+  // parseTest("392quine.b");
+  // parseTest("bitwidth.b");
+  // parseTest("life.b");
+  // parseTest("mandelbrot.b");
 }

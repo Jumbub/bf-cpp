@@ -23,8 +23,12 @@ static void input(int64_t* character, Value times) {
 void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
   Instruction* current = const_cast<Instruction*>(begin);
   while (current < end) {
-    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      current->next = const_cast<Instruction*>(begin + current->value);
+    if (current->type == DATA_TRANSFER) {
+      current->jump = const_cast<void*>(jumpTable[current->type]);
+      current += current->value;
+    } else if (
+        current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      current->value = current->value - std::distance(const_cast<Instruction*>(begin), current);
     }
     current->jump = const_cast<void*>(jumpTable[current->type]);
     current++;
@@ -41,6 +45,7 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&DATA_POINTER_ADD,                     // > // <
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
+      &&DATA_TRANSFER,                        // [-]
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -61,6 +66,21 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
     instruction = instruction->next;
     goto*(instruction->jump);
   }
+
+  goto NEXT;
+}
+
+DATA_TRANSFER: {
+  const auto last_transfer = instruction + instruction->value;
+
+  instruction++;
+  while (instruction <= last_transfer) {
+    *(data + instruction->offset) += instruction->value * data_dereferenced;
+    instruction++;
+  }
+
+  *data = 0;
+  data_dereferenced = 0;
 
   goto NEXT;
 }
