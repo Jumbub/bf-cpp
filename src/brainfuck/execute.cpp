@@ -76,7 +76,8 @@ DATA_POINTER_ADD: {
 DATA_TRANSFER: {
   const Instruction* last = instruction + instruction->value;
   while (instruction < last) {
-    throw new std::runtime_error("unimplemented");
+    instruction++;
+    *(data + instruction->offset) += (data_dereferenced % 256) * instruction->value;
   }
 
   *data = 0;

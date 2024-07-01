@@ -27,9 +27,11 @@ struct alignas(16) Instruction {
     Value value = 0;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
+  Offset offset = 0;  // todo: move into the type type
 
   Instruction(Type type);
   Instruction(Type type, Value value);
+  Instruction(Type type, Value value, Offset offset);  // temp
 };
 
 }  // namespace brainfuck

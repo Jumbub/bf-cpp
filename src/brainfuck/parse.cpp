@@ -70,7 +70,7 @@ using Instructions = std::vector<Instruction>;
     std::advance(current, 1);
   }
 
-  if (offset != 0 || transfers.size() > 1 || !transfers.contains(0) || transfers[0] != -1) {
+  if (offset != 0 || transfers.size() > 2 || !transfers.contains(0) || transfers[0] != -1) {
     return false;
   }
 
@@ -79,7 +79,11 @@ using Instructions = std::vector<Instruction>;
     instr.pop_back();
   }
 
-  instr.emplace_back(DATA_TRANSFER, 0);
+  transfers.erase(0);
+  instr.emplace_back(DATA_TRANSFER, transfers.size());
+  for (const auto& [offset, value] : transfers) {
+    instr.emplace_back(NOOP, value, offset);
+  }
 
   return true;
 }
