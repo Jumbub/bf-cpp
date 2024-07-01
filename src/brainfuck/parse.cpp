@@ -1,6 +1,8 @@
 #include "parse.h"
 
 #include <algorithm>
+#include <iostream>
+#include <map>
 #include <stack>
 #include <stdexcept>
 
@@ -45,9 +47,41 @@ using Instructions = std::vector<Instruction>;
       open->value = std::distance(begin, current) + 1;
       current->value = std::distance(begin, open) + 1;
     }
-    current = std::next(current);
+    std::advance(current, 1);
   }
   return loops.empty();  // check for brace mismatch
+}
+
+[[nodiscard]] bool tryOptimiseLoop(Instructions& instr) {
+  int64_t offset = 0;
+  std::map<Offset, Value> transfers;
+
+  auto current = instr.rbegin();
+  while (current != instr.rend()) {
+    if (current->type == DATA_POINTER_ADD) {
+      offset -= current->value;  // going backwards so invert the movement
+    } else if (current->type == DATA_ADD) {
+      transfers[offset] += current->value;
+    } else if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      break;  // we're at the start of the loop
+    } else {
+      return false;  // unoptimisable loop
+    }
+    std::advance(current, 1);
+  }
+
+  if (offset != 0 || transfers.size() > 1 || !transfers.contains(0) || transfers[0] != -1) {
+    return false;
+  }
+
+  const auto dist = std::distance(instr.rbegin(), current);
+  for (int i = 0; i >= -dist; i--) {
+    instr.pop_back();
+  }
+
+  instr.emplace_back(DATA_TRANSFER, 0);
+
+  return true;
 }
 
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
@@ -79,11 +113,13 @@ using Instructions = std::vector<Instruction>;
         break;
       case '[':
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
-        source_iterator = std::next(source_iterator);
+        std::advance(source_iterator, 1);
         break;
       case ']':
-        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
-        source_iterator = std::next(source_iterator);
+        if (!tryOptimiseLoop(instr)) {
+          instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        }
+        std::advance(source_iterator, 1);
         break;
     }
   }

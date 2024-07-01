@@ -4,6 +4,7 @@
 
 namespace brainfuck {
 
+using Offset = int64_t;
 using Value = int64_t;
 enum Type : uint64_t {
   NOOP,                                 // foo
@@ -14,7 +15,7 @@ enum Type : uint64_t {
   DATA_POINTER_ADD,                     // > // <
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
-  DATA_TRANSFER,                        // [-]
+  DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
 };
 
 struct alignas(16) Instruction {
