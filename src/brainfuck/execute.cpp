@@ -47,6 +47,7 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
       &&DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
+      &&DATA_POINTER_ADD_WHILE_NOT_ZERO,      // [>]
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -73,6 +74,15 @@ DATA_TRANSFER: {
 
   *data = 0;
   data_dereferenced = 0;
+
+  goto NEXT;
+}
+
+DATA_POINTER_ADD_WHILE_NOT_ZERO: {
+  while (*data != 0) {
+    data += instruction->value;
+  }
+  data_dereferenced = *data;
 
   goto NEXT;
 }

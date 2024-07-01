@@ -74,6 +74,17 @@ using Instructions = std::vector<Instruction>;
     std::advance(current, 1);
   }
 
+  if (offset != 0 && transfers.size() == 0) {
+    const auto dist = std::distance(instr.rbegin(), current);
+    for (int i = 0; i >= -dist; i--) {
+      instr.pop_back();
+    }
+
+    instr.emplace_back(DATA_POINTER_ADD_WHILE_NOT_ZERO, -offset);
+
+    return true;
+  }
+
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
     return false;
   }
