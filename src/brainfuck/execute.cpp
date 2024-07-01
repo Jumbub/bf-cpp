@@ -23,6 +23,11 @@ static void input(int64_t* character, Value times) {
 void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
   Instruction* current = const_cast<Instruction*>(begin);
   while (current < end) {
+    if (current->type == DATA_TRANSFER) {
+      current->jump = const_cast<void*>(jumpTable[current->type]);
+      current += current->value + 1;
+      continue;
+    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       current->next = const_cast<Instruction*>(begin + current->value);
     }

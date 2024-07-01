@@ -18,20 +18,20 @@ enum Type : uint64_t {
   DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
 };
 
-struct alignas(16) Instruction {
+struct Instruction {
   union {
     Type type = NOOP;
-    void* jump;  // Types are converted to labelled gotos at runtime.
+    void* jump;     // Types are converted to labelled gotos at runtime.
+    Offset offset;  // Some instructions are just containers for metadata.
   };
   union {
     Value value = 0;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
-  Offset offset = 0;  // todo: move into the type type
 
   Instruction(Type type);
   Instruction(Type type, Value value);
-  Instruction(Type type, Value value, Offset offset);  // temp
+  Instruction(Offset offset, Value value);
 };
 
 }  // namespace brainfuck
