@@ -14,6 +14,7 @@ enum Type : uint64_t {
   DATA_POINTER_ADD,                     // > // <
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
+  DATA_SET,                             // [-]
 };
 
 struct alignas(16) Instruction {

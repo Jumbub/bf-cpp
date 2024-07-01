@@ -20,6 +20,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return '[';
     case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
       return ']';
+    case DATA_SET:
+      return '=';
     default:
       return '?';
   }

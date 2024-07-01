@@ -82,7 +82,20 @@ using Instructions = std::vector<Instruction>;
         source_iterator = std::next(source_iterator);
         break;
       case ']':
-        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+
+        auto i = instr.end();
+        // throw std::runtime_error((int)i);
+        // auto last = std::next(i);
+        // auto second_last = std::next(i, 2);
+        if (std::prev(i)->type == DATA_ADD && std::prev(i)->value == -1 &&
+            std::prev(i, 2)->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+          instr.pop_back();
+          instr.pop_back();
+          instr.emplace_back(DATA_SET, 0);
+        } else {
+          instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        }
+
         source_iterator = std::next(source_iterator);
         break;
     }
