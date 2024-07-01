@@ -20,6 +20,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return '[';
     case INSTRUCTION_POINTER_SET_IF_NOT_ZERO:
       return ']';
+    case DATA_TRANSFER:
+      return 'T';
     default:
       return '?';
   }
@@ -27,6 +29,9 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
+  if (instruction.offset != 0) {
+    return std::format("{:04} {:04}", instruction.offset, instruction.value);
+  }
   return std::format("{} {:04}", type, instruction.value);
 }
 
