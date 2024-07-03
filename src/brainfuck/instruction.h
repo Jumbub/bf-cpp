@@ -28,6 +28,7 @@ struct Instruction {
     Value value = 0;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
+  int64_t _;
 
   Instruction(Type type);
   Instruction(Type type, Value value);
