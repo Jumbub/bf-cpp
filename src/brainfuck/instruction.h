@@ -18,7 +18,7 @@ enum Type : uint64_t {
   DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
 };
 
-struct alignas(16) Instruction {
+struct Instruction {
   union {
     Type type = NOOP;
     void* jump;  // Types are converted to labelled gotos at runtime.
