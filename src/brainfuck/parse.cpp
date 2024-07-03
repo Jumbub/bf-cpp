@@ -35,10 +35,6 @@ using Instructions = std::vector<Instruction>;
   std::stack<Instructions::iterator> loops;
   Instructions::iterator current = begin;
   while (current < end) {
-    if (current->type == DATA_TRANSFER) {
-      std::advance(current, current->value + 1);
-      continue;
-    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       loops.push(current);
     } else if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
@@ -86,7 +82,7 @@ using Instructions = std::vector<Instruction>;
   transfers.erase(0);
   instr.emplace_back(DATA_TRANSFER, transfers.size());
   for (const auto& [offset, value] : transfers) {
-    instr.emplace_back(offset, value);
+    instr.emplace_back(NOOP, value, offset);
   }
 
   return true;
