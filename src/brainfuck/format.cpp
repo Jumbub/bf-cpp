@@ -29,10 +29,10 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
-  if (instruction.offset != 0) {
-    return std::format("{:04} {:04}", instruction.offset, instruction.value);
+  if (instruction.type == DATA_TRANSFER_META) {
+    return std::format("({:04}) += (0)x{:04}", instruction.offset, instruction.value);
   }
-  return std::format("{} {:04}", type, instruction.value);
+  return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {

@@ -54,6 +54,10 @@ void execute(const Instruction* begin, const Instruction* end) {
 
 NEXT: {
   instruction++;
+
+  data += instruction->move;
+  data_dereferenced = *data;
+
   goto*(instruction->jump);
 }
 
@@ -64,24 +68,14 @@ DATA_TRANSFER: {
     *(data + instruction->offset) += (data_dereferenced & 255) * instruction->value;
   }
 
-  *data = 0;
-  data_dereferenced = 0;
-
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((data_dereferenced & 255) != 0) {
-    instruction = instruction->next;
-    goto*(instruction->jump);
+    instruction = instruction->next - 1;
+    goto NEXT;
   }
-
-  goto NEXT;
-}
-
-DATA_POINTER_ADD: {
-  data += instruction->value;
-  data_dereferenced = *data;
 
   goto NEXT;
 }
@@ -95,8 +89,8 @@ DATA_ADD: {
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if ((data_dereferenced & 255) == 0) {
-    instruction = instruction->next;
-    goto*(instruction->jump);
+    instruction = instruction->next - 1;
+    goto NEXT;
   }
 
   goto NEXT;
@@ -115,6 +109,7 @@ DATA_SET_FROM_INPUT: {
   goto NEXT;
 }
 
+DATA_POINTER_ADD: { throw std::runtime_error("nope"); }
 DONE:
 };
 
