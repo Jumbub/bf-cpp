@@ -175,7 +175,7 @@ void tryOptimiseDataPointerAdd(Instructions& instr) {
       case ']':
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
         tryOptimiseInstructions(instr);
-        // tryOptimiseLoop(instr);
+        tryOptimiseLoop(instr);
         std::advance(source_iterator, 1);
         break;
     }

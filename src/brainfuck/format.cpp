@@ -22,6 +22,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return ']';
     case DATA_TRANSFER:
       return 'T';
+    case DATA_TRANSFER_META:
+      return 't';
     default:
       return '?';
   }
@@ -29,9 +31,6 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
-  if (instruction.type == DATA_TRANSFER_META) {
-    return std::format("({:04}) += (0)x{:04}", instruction.offset, instruction.value);
-  }
   return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
 

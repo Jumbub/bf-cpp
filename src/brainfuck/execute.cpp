@@ -42,6 +42,7 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
       &&DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
+      &&DATA_TRANSFER_META,                   // [-] // [->+<] // [->++>+++<<]
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -109,7 +110,8 @@ DATA_SET_FROM_INPUT: {
   goto NEXT;
 }
 
-DATA_POINTER_ADD: { throw std::runtime_error("nope"); }
+DATA_TRANSFER_META: { throw std::runtime_error("invoked DATA_TRANSFER_META"); }
+DATA_POINTER_ADD: { throw std::runtime_error("invoked DATA_POINTER_ADD"); }
 DONE:
 };
 
