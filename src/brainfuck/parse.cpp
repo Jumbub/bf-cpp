@@ -82,7 +82,7 @@ using Instructions = std::vector<Instruction>;
   transfers.erase(0);
   instr.emplace_back(DATA_TRANSFER, transfers.size());
   for (const auto& [offset, value] : transfers) {
-    instr.emplace_back(NOOP, value, offset);
+    instr.emplace_back(DATA_TRANSFER_META, value, offset);
   }
 
   return true;
