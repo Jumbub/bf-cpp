@@ -68,8 +68,8 @@ void tryOptimiseLoop(Instructions& instr) {
       throw std::runtime_error("bad2");
     }
     if (current->type == DATA_ADD) {
-      offset -= current->move;
       transfers[offset] += current->value;
+      offset -= current->move;
     } else if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       break;  // we're at the start of the loop
     } else {
@@ -106,16 +106,13 @@ void tryOptimiseInstructions(Instructions& instr) {
   auto secondLast = std::prev(reverse, 2);
 
   while (last->type == DATA_TRANSFER || last->type == DATA_TRANSFER_META) {
-    return;
-    last = std::prev(last);
-    secondLast = std::prev(secondLast);
+    last = std::prev(last, 1);
+    secondLast = std::prev(secondLast, 1);
   }
 
   if (secondLast->type == DATA_POINTER_ADD) {
-    secondLast->move = secondLast->value;
-    secondLast->type = last->type;
-    secondLast->value = last->value;
-    instr.pop_back();
+    last->move = secondLast->value;
+    instr.erase(secondLast);
   }
 }
 
@@ -130,6 +127,9 @@ void tryOptimiseDataPointerAdd(Instructions& instr) {
 
   if (secondLast->type == DATA_POINTER_ADD) {
     secondLast->value += last->value;
+    if (secondLast->value == 0) {
+      instr.pop_back();
+    }
     instr.pop_back();
   }
 }
