@@ -105,7 +105,7 @@ void tryOptimiseInstructions(Instructions& instr) {
   auto last = std::prev(reverse, 1);
   auto secondLast = std::prev(reverse, 2);
 
-  while (last->type == DATA_TRANSFER || last->type == DATA_TRANSFER_META) {
+  while (last->type == DATA_TRANSFER_META) {
     last = std::prev(last, 1);
     secondLast = std::prev(secondLast, 1);
   }
