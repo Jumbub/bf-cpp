@@ -50,6 +50,9 @@ void execute(const Instruction* begin, const Instruction* end) {
   int64_t data_dereferenced = *data;
   Instruction* instruction = const_cast<Instruction*>(begin);
 
+  data += instruction->move;
+  data_dereferenced = *data;
+
   goto*(instruction->jump);
 
 NEXT: {
