@@ -50,11 +50,9 @@ void execute(const Instruction* begin, const Instruction* end) {
 
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
-  int64_t data_dereferenced = *data;
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   data += instruction->move;
-  data_dereferenced = *data;
 
   goto*(instruction->jump);
 
@@ -73,26 +71,23 @@ DATA_ADD: {
 }
 
 DATA_TRANSFER: {
-  data_dereferenced = *data;
+  const auto multiplier = *data;
   const Instruction* last = instruction + instruction->value;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->move) += (data_dereferenced & 255) * instruction->value;
+    *(data + instruction->move) += (multiplier & 255) * instruction->value;
   }
 
   *data = 0;
-  data_dereferenced = 0;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  data_dereferenced = *data;
-  if ((data_dereferenced & 255) != 0) {
+  if ((*data & 255) != 0) {
     instruction = instruction->next;
 
     data += instruction->move;
-    data_dereferenced = *data;
 
     goto*(instruction->jump);
   }
@@ -101,12 +96,10 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  data_dereferenced = *data;
-  if ((data_dereferenced & 255) == 0) {
+  if ((*data & 255) == 0) {
     instruction = instruction->next;
 
     data += instruction->move;
-    data_dereferenced = *data;
 
     goto*(instruction->jump);
   }
