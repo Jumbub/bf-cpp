@@ -72,11 +72,11 @@ DATA_ADD: {
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = *data;
+  const auto multiplier = (*data & 255);
   const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->move) += (multiplier & 255) * instruction->value;
+    *(data + instruction->move) += multiplier * instruction->value;
   }
   *data = 0;
 
