@@ -31,7 +31,7 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
-  return std::format("> {}, {} {:04}", instruction.move, type, instruction.value);
+  return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {

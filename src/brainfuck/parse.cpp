@@ -5,6 +5,7 @@
 #include <map>
 #include <stack>
 #include <stdexcept>
+#include <tuple>
 
 namespace brainfuck {
 
@@ -21,12 +22,13 @@ using Instructions = std::vector<Instruction>;
   return output;
 }
 
-[[nodiscard]] int64_t consecutiveAccumulator(Source::const_iterator& begin, const Source::const_iterator end) noexcept {
+[[nodiscard]] std::tuple<Source::const_iterator, Source::difference_type> consecutiveAccumulator(
+    const Source::const_iterator& begin,
+    const Source::const_iterator end) noexcept {
   const char check = *begin;
   const auto miss = std::find_if(begin, end, [check](char current) -> bool { return current != check; });
   const auto distance = std::distance(begin, miss);
-  begin = miss;
-  return distance;
+  return {miss, distance};
 }
 
 [[nodiscard]] bool applyInstructionPointerOffsets(
@@ -52,11 +54,41 @@ using Instructions = std::vector<Instruction>;
   return loops.empty();  // check for brace mismatch
 }
 
-[[nodiscard]] bool tryOptimiseLoop(Instructions& instr) {
+Instructions squashPointerAddInstructions(
+    Instructions::const_iterator current,
+    const Instructions::const_iterator end) {
+  Instructions instr_out;
+  instr_out.reserve(static_cast<size_t>(std::distance(current, end) / 2));
+
+  while (current < end) {
+    Move move = current->move;
+    while (current->type == DATA_POINTER_ADD) {
+      if (move != 0) {
+        throw std::runtime_error("expected move to be 0");
+      }
+      move = current->value;
+      std::advance(current, 1);
+    }
+    if (current == end) {
+      throw std::runtime_error("expected DONE to be final instruction");
+    }
+    instr_out.emplace_back(current->type, current->value, move);
+    std::advance(current, 1);
+  }
+
+  return instr_out;
+}
+
+void tryOptimiseLoop(Instructions& instr) {
   int64_t offset = 0;
-  std::map<Offset, Value> transfers;
+  std::map<Move, Value> transfers;
 
   auto current = instr.rbegin();
+  if (current->type != INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+    throw std::runtime_error("expected INSTRUCTION_POINTER_SET_IF_NOT_ZERO when running tryOptimiseLoop");
+  }
+  std::advance(current, 1);
+
   while (current != instr.rend()) {
     if (current->type == DATA_POINTER_ADD) {
       offset -= current->value;  // going backwards so invert the movement
@@ -65,13 +97,13 @@ using Instructions = std::vector<Instruction>;
     } else if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       break;  // we're at the start of the loop
     } else {
-      return false;  // unoptimisable loop
+      return;  // unoptimisable loop
     }
     std::advance(current, 1);
   }
 
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
-    return false;
+    return;
   }
 
   const auto dist = std::distance(instr.rbegin(), current);
@@ -85,7 +117,18 @@ using Instructions = std::vector<Instruction>;
     instr.emplace_back(DATA_TRANSFER_META, value, offset);
   }
 
-  return true;
+  return;
+}
+
+void addValue(Instructions& instr, const Type type, const Value value) {
+  if (instr.size() > 0 && instr.back().type == type) {
+    instr.back().value += value;
+    if (instr.back().value == 0) {
+      instr.pop_back();
+    }
+  } else {
+    instr.emplace_back(type, value);
+  }
 }
 
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
@@ -97,38 +140,51 @@ using Instructions = std::vector<Instruction>;
   Source::const_iterator source_iterator = source.cbegin();
   while (source_iterator != source.cend()) {
     switch (*source_iterator) {
-      case '+':
-        instr.emplace_back(DATA_ADD, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '-':
-        instr.emplace_back(DATA_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '>':
-        instr.emplace_back(DATA_POINTER_ADD, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '<':
-        instr.emplace_back(DATA_POINTER_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '.':
-        instr.emplace_back(DATA_PRINT, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case ',':
-        instr.emplace_back(DATA_SET_FROM_INPUT, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
+      case '+': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_ADD, value);
+        source_iterator = next_iterator;
+      } break;
+      case '-': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_ADD, -value);
+        source_iterator = next_iterator;
+      } break;
+      case '>': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_POINTER_ADD, value);
+        source_iterator = next_iterator;
+      } break;
+      case '<': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_POINTER_ADD, -value);
+        source_iterator = next_iterator;
+      } break;
+      case '.': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_PRINT, value);
+        source_iterator = next_iterator;
+      } break;
+      case ',': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_SET_FROM_INPUT, value);
+        source_iterator = next_iterator;
+      } break;
       case '[':
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
         std::advance(source_iterator, 1);
         break;
       case ']':
-        if (!tryOptimiseLoop(instr)) {
-          instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
-        }
+        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        tryOptimiseLoop(instr);
         std::advance(source_iterator, 1);
         break;
     }
   }
 
   instr.emplace_back(DONE);
+
+  instr = squashPointerAddInstructions(instr.cbegin(), instr.cend());
 
   if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;
