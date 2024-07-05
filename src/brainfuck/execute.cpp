@@ -82,7 +82,7 @@ DATA_TRANSFER: {
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((*data & 255) != 0) {
-    if (instruction->while_not_zero) {
+    if (instruction->next == instruction) {
       data += instruction->move;
       while ((*data & 255) != 0) {
         data += instruction->move;
