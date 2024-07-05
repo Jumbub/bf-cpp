@@ -23,6 +23,9 @@ static void input(int64_t* character, Value times) {
 void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
   Instruction* current = const_cast<Instruction*>(begin);
   while (current < end) {
+    if (current->type == DATA_POINTER_ADD) {
+      throw std::runtime_error("Un-implemented instruction type");
+    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       current->next = const_cast<Instruction*>(begin + current->value);
     }
@@ -33,15 +36,15 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
-      &&NEXT,                                 // foo
-      &&DONE,                                 // EOF
-      &&DATA_ADD,                             // + // -
-      &&DATA_SET_FROM_INPUT,                  // ,
-      &&DATA_PRINT,                           // .
-      &&DATA_POINTER_ADD,                     // > // <
-      &&INSTRUCTION_POINTER_SET_IF_ZERO,      // [
-      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
-      &&DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
+      &&NEXT,
+      &&DONE,
+      &&DATA_ADD,
+      &&DATA_SET_FROM_INPUT,
+      &&DATA_PRINT,
+      nullptr,
+      &&INSTRUCTION_POINTER_SET_IF_ZERO,
+      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
+      &&DATA_TRANSFER,
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -86,13 +89,6 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 
     goto*(instruction->jump);
   }
-
-  goto NEXT;
-}
-
-DATA_POINTER_ADD: {
-  data += instruction->value;
-  data_dereferenced = *data;
 
   goto NEXT;
 }
