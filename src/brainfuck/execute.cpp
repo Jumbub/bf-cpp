@@ -66,6 +66,12 @@ NEXT: {
   goto*(instruction->jump);
 }
 
+DATA_ADD: {
+  *data += instruction->value;
+
+  goto NEXT;
+}
+
 DATA_TRANSFER: {
   data_dereferenced = *data;
   const Instruction* last = instruction + instruction->value;
@@ -90,12 +96,6 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 
     goto*(instruction->jump);
   }
-
-  goto NEXT;
-}
-
-DATA_ADD: {
-  *data += instruction->value;
 
   goto NEXT;
 }
