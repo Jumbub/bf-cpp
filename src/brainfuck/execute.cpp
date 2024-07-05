@@ -1,6 +1,8 @@
 #include "execute.h"
 
 #include <iostream>
+#include <thread>
+#include <vector>
 
 namespace brainfuck {
 
@@ -51,6 +53,17 @@ void execute(const Instruction* begin, const Instruction* end) {
   int64_t datas[30000] = {0};
   int64_t* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
+
+  bool running = true;
+  std::vector<int64_t> ii;
+  ii.resize(static_cast<size_t>(end - begin));
+  std::thread debug([&running, &ii, &instruction, begin]() {
+    while (running) {
+      const auto current_instruction_offset = static_cast<size_t>(instruction - begin);
+      ii[current_instruction_offset] += 1;
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
+    }
+  });
 
   data += instruction->move;
   goto*(instruction->jump);
@@ -115,6 +128,13 @@ DATA_SET_FROM_INPUT: {
 }
 
 DONE:
+  running = false;
+  debug.join();
+
+  std::cout << "\nDEBUG\n";
+  for (size_t i = 0; i < static_cast<size_t>(end - begin); i++) {
+    std::cout << i << " " << ii[i] << "\n";
+  }
 };
 
 }  // namespace brainfuck
