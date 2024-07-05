@@ -26,6 +26,9 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
     if (current->type == DATA_POINTER_ADD) {
       throw std::runtime_error("Un-implemented instruction type");
     }
+    if (current->type == DATA_TRANSFER) {
+      current->next = current + current->value;
+    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       current->next = const_cast<Instruction*>(begin + current->value);
     }
@@ -70,7 +73,7 @@ DATA_ADD: {
 
 DATA_TRANSFER: {
   const auto multiplier = *data;
-  const Instruction* last = instruction + instruction->value;
+  const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
     *(data + instruction->move) += (multiplier & 255) * instruction->value;
