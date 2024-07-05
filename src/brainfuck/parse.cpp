@@ -5,6 +5,7 @@
 #include <map>
 #include <stack>
 #include <stdexcept>
+#include <tuple>
 
 namespace brainfuck {
 
@@ -21,12 +22,13 @@ using Instructions = std::vector<Instruction>;
   return output;
 }
 
-[[nodiscard]] int64_t consecutiveAccumulator(Source::const_iterator& begin, const Source::const_iterator end) noexcept {
+[[nodiscard]] std::tuple<Source::const_iterator, Source::difference_type> consecutiveAccumulator(
+    const Source::const_iterator& begin,
+    const Source::const_iterator end) noexcept {
   const char check = *begin;
   const auto miss = std::find_if(begin, end, [check](char current) -> bool { return current != check; });
   const auto distance = std::distance(begin, miss);
-  begin = miss;
-  return distance;
+  return {miss, distance};
 }
 
 [[nodiscard]] bool applyInstructionPointerOffsets(
@@ -105,6 +107,17 @@ void tryOptimiseInstruction(Instructions& instr) {
   instr.pop_back();
 }
 
+void addValue(Instructions& instr, const Type type, const Value value) {
+  if (instr.size() > 0 && instr.back().type == type) {
+    instr.back().value += value;
+    if (instr.back().value == 0) {
+      instr.pop_back();
+    }
+  } else {
+    instr.emplace_back(type, value);
+  }
+}
+
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
   const Source source = removeNoopCodes(plaintext);
 
@@ -114,24 +127,36 @@ void tryOptimiseInstruction(Instructions& instr) {
   Source::const_iterator source_iterator = source.cbegin();
   while (source_iterator != source.cend()) {
     switch (*source_iterator) {
-      case '+':
-        instr.emplace_back(DATA_ADD, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '-':
-        instr.emplace_back(DATA_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '>':
-        instr.emplace_back(DATA_POINTER_ADD, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '<':
-        instr.emplace_back(DATA_POINTER_ADD, -consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case '.':
-        instr.emplace_back(DATA_PRINT, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
-      case ',':
-        instr.emplace_back(DATA_SET_FROM_INPUT, consecutiveAccumulator(source_iterator, source.cend()));
-        break;
+      case '+': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_ADD, value);
+        source_iterator = next_iterator;
+      } break;
+      case '-': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_ADD, -value);
+        source_iterator = next_iterator;
+      } break;
+      case '>': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_POINTER_ADD, value);
+        source_iterator = next_iterator;
+      } break;
+      case '<': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_POINTER_ADD, -value);
+        source_iterator = next_iterator;
+      } break;
+      case '.': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_PRINT, value);
+        source_iterator = next_iterator;
+      } break;
+      case ',': {
+        const auto [next_iterator, value] = consecutiveAccumulator(source_iterator, source.end());
+        addValue(instr, DATA_SET_FROM_INPUT, value);
+        source_iterator = next_iterator;
+      } break;
       case '[':
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
         std::advance(source_iterator, 1);
