@@ -4,13 +4,13 @@
 
 namespace brainfuck {
 
-static void output(int64_t output, Value times) {
+void output(const int64_t output, const Value times) {
   for (int i = 0; i < times; i++) {
     std::cout << static_cast<char>(output % 256);
   }
 }
 
-static void input(int64_t* character, Value times) {
+void input(int64_t* character, const Value times) {
   for (int i = 0; i < times; i++) {
     char input;
     std::cin >> std::noskipws >> input;
