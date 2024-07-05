@@ -34,6 +34,7 @@ TEST_CASE("parse") {
   parseTest("tests/transfer_value.b");
   parseTest("tests/transfer_value_with_extra.b");
   parseTest("tests/transfer_value_far.b");
+  parseTest("tests/transfer_value_looping.b");
   parseTest("tests/multiply_value.b");
   parseTest("tests/multiply_value_with_extra.b");
   parseTest("tests/complex_multiply_value.b");
