@@ -53,12 +53,10 @@ void execute(const Instruction* begin, const Instruction* end) {
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   data += instruction->move;
-
   goto*(instruction->jump);
 
 NEXT: {
   instruction++;
-
   data += instruction->move;
 
   goto*(instruction->jump);
@@ -77,7 +75,6 @@ DATA_TRANSFER: {
     instruction++;
     *(data + instruction->move) += (multiplier & 255) * instruction->value;
   }
-
   *data = 0;
 
   goto NEXT;
@@ -86,7 +83,6 @@ DATA_TRANSFER: {
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((*data & 255) != 0) {
     instruction = instruction->next;
-
     data += instruction->move;
 
     goto*(instruction->jump);
@@ -98,7 +94,6 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if ((*data & 255) == 0) {
     instruction = instruction->next;
-
     data += instruction->move;
 
     goto*(instruction->jump);
