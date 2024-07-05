@@ -81,14 +81,15 @@ DATA_TRANSFER: {
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  if (instruction->while_not_zero) {
-    while (instruction->while_not_zero && (*data & 255) != 0) {
-      data += instruction->move;
-    }
-    goto NEXT;
-  }
-
   if ((*data & 255) != 0) {
+    if (instruction->while_not_zero) {
+      data += instruction->move;
+      while ((*data & 255) != 0) {
+        data += instruction->move;
+      }
+      goto NEXT;
+    }
+
     instruction = instruction->next;
     data += instruction->move;
 
