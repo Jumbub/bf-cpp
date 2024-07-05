@@ -54,6 +54,10 @@ void execute(const Instruction* begin, const Instruction* end) {
 
 NEXT: {
   instruction++;
+
+  data += instruction->move;
+  data_dereferenced = *data;
+
   goto*(instruction->jump);
 }
 
@@ -73,6 +77,10 @@ DATA_TRANSFER: {
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   if ((data_dereferenced & 255) != 0) {
     instruction = instruction->next;
+
+    data += instruction->move;
+    data_dereferenced = *data;
+
     goto*(instruction->jump);
   }
 
@@ -96,6 +104,10 @@ DATA_ADD: {
 INSTRUCTION_POINTER_SET_IF_ZERO: {
   if ((data_dereferenced & 255) == 0) {
     instruction = instruction->next;
+
+    data += instruction->move;
+    data_dereferenced = *data;
+
     goto*(instruction->jump);
   }
 

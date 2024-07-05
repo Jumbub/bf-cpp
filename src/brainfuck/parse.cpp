@@ -54,6 +54,31 @@ using Instructions = std::vector<Instruction>;
   return loops.empty();  // check for brace mismatch
 }
 
+Instructions squashPointerAddInstructions(
+    Instructions::const_iterator current,
+    const Instructions::const_iterator end) {
+  Instructions instr_out;
+  instr_out.reserve(static_cast<size_t>(std::distance(current, end) / 2));
+
+  while (current < end) {
+    Move move = current->move;
+    while (current->type == DATA_POINTER_ADD) {
+      if (move != 0) {
+        throw std::runtime_error("expected move to be 0");
+      }
+      move = current->value;
+      std::advance(current, 1);
+    }
+    if (current == end) {
+      throw std::runtime_error("expected DONE to be final instruction");
+    }
+    instr_out.emplace_back(current->type, current->value, move);
+    std::advance(current, 1);
+  }
+
+  return instr_out;
+}
+
 void tryOptimiseLoop(Instructions& instr) {
   int64_t offset = 0;
   std::map<Move, Value> transfers;
@@ -93,23 +118,6 @@ void tryOptimiseLoop(Instructions& instr) {
   }
 
   return;
-}
-
-void tryOptimiseInstruction(Instructions& instr) {
-  if (instr.size() < 2) {
-    return;
-  }
-
-  const auto reverse = instr.rbegin();
-  auto secondLast = std::next(reverse, 2);
-
-  if (secondLast->type == DATA_POINTER_ADD) {
-    const auto last = instr.back();
-    secondLast->move = secondLast->value;
-    secondLast->type = last.type;
-    secondLast->value = last.value;
-  }
-  instr.pop_back();
 }
 
 void addValue(Instructions& instr, const Type type, const Value value) {
@@ -175,6 +183,8 @@ void addValue(Instructions& instr, const Type type, const Value value) {
   }
 
   instr.emplace_back(DONE);
+
+  instr = squashPointerAddInstructions(instr.cbegin(), instr.cend());
 
   if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;
