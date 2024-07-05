@@ -5,7 +5,6 @@
 namespace brainfuck {
 
 using Move = int64_t;
-using Offset = Move;
 using Value = int64_t;
 enum Type : uint64_t {
   NOOP,                                 // foo
@@ -17,7 +16,7 @@ enum Type : uint64_t {
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
   DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
-  DATA_TRANSFER_META,                   //
+  DATA_TRANSFER_META,
 };
 
 struct Instruction {
@@ -29,10 +28,7 @@ struct Instruction {
     Value value = 0;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
-  union {
-    Move move = 0;
-    Offset offset;
-  };
+  Move move = 0;
 
   Instruction(Type type);
   Instruction(Type type, Value value);

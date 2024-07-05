@@ -54,7 +54,7 @@ using Instructions = std::vector<Instruction>;
 
 [[nodiscard]] bool tryOptimiseLoop(Instructions& instr) {
   int64_t offset = 0;
-  std::map<Offset, Value> transfers;
+  std::map<Move, Value> transfers;
 
   auto current = instr.rbegin();
   while (current != instr.rend()) {
@@ -86,6 +86,23 @@ using Instructions = std::vector<Instruction>;
   }
 
   return true;
+}
+
+void tryOptimiseInstruction(Instructions& instr) {
+  if (instr.size() < 2) {
+    return;
+  }
+
+  const auto reverse = instr.rbegin();
+  auto secondLast = std::next(reverse, 2);
+
+  if (secondLast->type == DATA_POINTER_ADD) {
+    const auto last = instr.back();
+    secondLast->move = secondLast->value;
+    secondLast->type = last.type;
+    secondLast->value = last.value;
+  }
+  instr.pop_back();
 }
 
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {

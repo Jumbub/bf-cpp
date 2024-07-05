@@ -61,7 +61,7 @@ DATA_TRANSFER: {
   const Instruction* last = instruction + instruction->value;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->offset) += (data_dereferenced & 255) * instruction->value;
+    *(data + instruction->move) += (data_dereferenced & 255) * instruction->value;
   }
 
   *data = 0;
