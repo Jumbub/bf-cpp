@@ -79,29 +79,6 @@ Instructions squashPointerAddInstructions(
   return instr_out;
 }
 
-Instructions addWhileNotZeros(Instructions::const_iterator current, const Instructions::const_iterator end) {
-  Instructions instr_out;
-  instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
-
-  const auto take = [&instr_out, &current]() {
-    instr_out.emplace_back(current->type, current->value, current->move);
-    std::advance(current, 1);
-  };
-
-  while (current < end) {
-    if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO &&
-        std::next(current)->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-      take();
-      take();
-      instr_out.back().while_not_zero = 1;
-    } else {
-      take();
-    }
-  }
-
-  return instr_out;
-}
-
 void tryOptimiseLoop(Instructions& instr) {
   int64_t offset = 0;
   std::map<Move, Value> transfers;
@@ -123,6 +100,15 @@ void tryOptimiseLoop(Instructions& instr) {
       return;  // unoptimisable loop
     }
     std::advance(current, 1);
+  }
+
+  if (offset != 0 && transfers.empty()) {
+    const auto dist = std::distance(instr.rbegin(), current);
+    for (int i = 0; i >= -dist; i--) {
+      instr.pop_back();
+    }
+    instr.emplace_back(DATA_POINTER_ADD_WHILE_NOT_ZERO, -offset);
+    return;
   }
 
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
@@ -212,8 +198,6 @@ void addValue(Instructions& instr, const Type type, const Value value) {
   if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;
   }
-
-  instr = addWhileNotZeros(instr.cbegin(), instr.cend());
 
   return instr;
 };
