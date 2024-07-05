@@ -94,6 +94,24 @@ Instructions addWhileNotZeros(Instructions::const_iterator current, const Instru
       take();
       take();
       instr_out.back().while_not_zero = 1;
+    } else if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      auto test = std::next(current);
+      while (test->type == DATA_TRANSFER || test->type == DATA_TRANSFER_META) {
+        std::advance(test, 1);
+      }
+      if (test->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+        take();
+        // instr_out.back().value -= 1; // todo: this needs to be here
+        take();
+        while (current->type == DATA_TRANSFER_META) {
+          take();
+        }
+        instr_out.back().while_not_zero = 1;
+        instr_out.back().while_not_zero_move = test->move;
+        take();  // todo: remove this
+      } else {
+        take();
+      }
     } else {
       take();
     }

@@ -30,8 +30,7 @@ struct Instruction {
   };
   Move move = 0;
   int64_t while_not_zero = 0;  // Some instructions will repeat until the dereferenced data pointer value is 0.
-
-  int64_t _;  // Performance is a _lot_ better with with an odd number of 64 byte members _on my machine_.
+  int64_t while_not_zero_move = 0;
 
   Instruction(Type type);
   Instruction(Type type, Value value);

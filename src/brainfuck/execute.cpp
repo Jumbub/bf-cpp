@@ -69,13 +69,28 @@ DATA_ADD: {
 }
 
 DATA_TRANSFER: {
+  const Instruction* start = instruction;
+  // const auto while_not_zero = instruction->while_not_zero;
+  // const auto while_not_zero_move = instruction->while_not_zero_move;
   const auto multiplier = *data;
   const Instruction* last = instruction + instruction->value;
+
   while (instruction < last) {
     instruction++;
     *(data + instruction->move) += (multiplier & 255) * instruction->value;
   }
   *data = 0;
+
+  if (instruction->while_not_zero) {
+    data += start->while_not_zero_move;
+    if ((*data & 255) != 0) {
+      instruction = const_cast<Instruction*>(start);
+      data += instruction->move;
+
+      goto*(instruction->jump);
+    }
+    data -= start->while_not_zero_move;
+  }
 
   goto NEXT;
 }
