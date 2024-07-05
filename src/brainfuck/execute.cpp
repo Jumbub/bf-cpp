@@ -62,12 +62,12 @@ NEXT: {
   instruction++;
 
   data += instruction->move;
-  data_dereferenced = *data;
 
   goto*(instruction->jump);
 }
 
 DATA_TRANSFER: {
+  data_dereferenced = *data;
   const Instruction* last = instruction + instruction->value;
   while (instruction < last) {
     instruction++;
@@ -81,6 +81,7 @@ DATA_TRANSFER: {
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+  data_dereferenced = *data;
   if ((data_dereferenced & 255) != 0) {
     instruction = instruction->next;
 
@@ -95,12 +96,12 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 
 DATA_ADD: {
   *data += instruction->value;
-  data_dereferenced += instruction->value;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
+  data_dereferenced = *data;
   if ((data_dereferenced & 255) == 0) {
     instruction = instruction->next;
 
@@ -121,7 +122,6 @@ DATA_PRINT: {
 
 DATA_SET_FROM_INPUT: {
   input(data, instruction->value);
-  data_dereferenced = *data;
 
   goto NEXT;
 }
