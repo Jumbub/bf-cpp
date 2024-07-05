@@ -31,6 +31,9 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction) {
   const char type = brainfuck::formatInstructionType(instruction.type);
+  if (instruction.while_not_zero) {
+    return std::format("> {:04}, {} {:04} (while_not_zero)", instruction.move, type, instruction.value);
+  }
   return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
 
