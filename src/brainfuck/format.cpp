@@ -24,6 +24,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return 'T';
     case DATA_TRANSFER_META:
       return 't';
+    case DATA_MOVE:
+      return 'M';
     default:
       return '?';
   }

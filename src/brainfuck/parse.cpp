@@ -117,6 +117,13 @@ void tryOptimiseLoop(Instructions& instr) {
     instr.emplace_back(DATA_TRANSFER_META, value, offset);
   }
 
+  if (transfers.size() == 1 && instr.back().value == 1) {
+    const auto last_move = instr.back().move;
+    instr.pop_back();
+    instr.back().type = DATA_MOVE;
+    instr.back().value = last_move;
+  }
+
   return;
 }
 

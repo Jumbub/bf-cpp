@@ -16,7 +16,8 @@ enum Type : uint64_t {
   INSTRUCTION_POINTER_SET_IF_ZERO,      // [
   INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
   DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
-  DATA_TRANSFER_META,
+  DATA_TRANSFER_META,                   //
+  DATA_MOVE,                            // [->+<]
 };
 
 struct Instruction {
