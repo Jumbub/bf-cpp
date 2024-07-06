@@ -27,9 +27,10 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 //
 
 using Data = int64_t;
+using Hash = Instruction*;
 
 struct Block {
-  Instruction* start;
+  Hash start;
   std::map<int16_t, char> initial_value;
   std::map<int16_t, char> mutated_value;
   std::vector<char> output;
@@ -37,6 +38,49 @@ struct Block {
 };
 
 //
+Hash makeHash(Instruction* instruction) {
+  return reinterpret_cast<Hash>(instruction);
+}
+
+Data observed(const Data* data) {
+  return *data;
+  // auto initial_values = in_progress_blocks.top().initial_values;
+  // if (!initial_values.contains(data)) {
+  //   initial_values[data] = static_cast<char>(*data);
+  // }
+}
+
+void mutated(Data* data, const Data value) {
+  *data = value;
+  // in_progress_blocks.top().initial_values[data] = static_cast<char>(*data);
+}
+
+void moved(Data*& data, const Value value) {
+  data += value;
+  // in_progress_blocks.top().final_data_pointer = data;
+}
+
+void printed(const Data* data) {
+  std::cout << static_cast<char>(*data & 255);
+  // in_progress_blocks.top().output.push_back(static_cast<char>(*data));
+}
+
+Data inputed() {
+  char input;
+  std::cin >> std::noskipws >> input;
+  return input;
+  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
+}
+
+void next(Instruction*& instruction) {
+  instruction++;
+  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
+}
+
+void next(Instruction*& instruction, Instruction* next) {
+  instruction = next;
+  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
+}
 
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
@@ -56,47 +100,45 @@ void execute(const Instruction* begin, const Instruction* end) {
   Data* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
-  //
   std::stack<Block> in_progress_blocks;
-  //
 
-  data += instruction->move;
+  moved(data, instruction->move);
   goto*(instruction->jump);
 
 NEXT: {
-  instruction++;
-  data += instruction->move;
+  next(instruction);
+  moved(data, instruction->move);
 
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  *data += instruction->value;
+  mutated(data, observed(data) + instruction->value);
 
   goto NEXT;
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = (*data & 255);
+  const auto multiplier = (observed(data) & 255);
   const auto last = instruction->next;
   while (instruction < last) {
-    instruction++;
-    *(data + instruction->move) += multiplier * instruction->value;
+    next(instruction);
+    mutated(data + instruction->move, observed(data + instruction->move) + multiplier * instruction->value);
   }
-  *data = 0;
+  mutated(data, 0);
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && (*data & 255) != 0) {
-    data += instruction->move;
+  while (while_not_zero && (observed(data) & 255) != 0) {
+    moved(data, instruction->move);
   }
 
-  if ((*data & 255) != 0) {
-    instruction = instruction->next;
-    data += instruction->move;
+  if ((observed(data) & 255) != 0) {
+    next(instruction, instruction->next);
+    moved(data, instruction->move);
 
     goto*(instruction->jump);
   }
@@ -105,9 +147,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if ((*data & 255) == 0) {
-    instruction = instruction->next;
-    data += instruction->move;
+  if ((observed(data) & 255) == 0) {
+    next(instruction, instruction->next);
+    moved(data, instruction->move);
 
     goto*(instruction->jump);
   }
@@ -117,7 +159,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 
 DATA_PRINT: {
   for (int i = 0; i < instruction->value; i++) {
-    std::cout << static_cast<char>(*data & 255);
+    printed(data);
   }
 
   goto NEXT;
@@ -125,10 +167,9 @@ DATA_PRINT: {
 
 DATA_SET_FROM_INPUT: {
   for (int i = 0; i < instruction->value; i++) {
-    char input;
-    std::cin >> std::noskipws >> input;
+    const Data input = inputed();
     if (!std::cin.eof()) {
-      *data = input;
+      mutated(data, input);
     }
   }
 
