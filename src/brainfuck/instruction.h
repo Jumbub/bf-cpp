@@ -29,6 +29,8 @@ struct Instruction {
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
   Move move = 0;
+  int64_t a = 0;
+  int64_t _ = 0;
 
   Instruction(Type type);
   Instruction(Type type, Value value);

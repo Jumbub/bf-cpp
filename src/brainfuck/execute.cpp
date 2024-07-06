@@ -30,11 +30,17 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
       current->next = current + current->value;
     }
     if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      current->a = current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
       current->next = const_cast<Instruction*>(begin + current->value);
     }
     current->jump = const_cast<void*>(jumpTable[current->type]);
     current++;
   }
+}
+
+bool check(bool conditional, const int64_t value) {
+  const auto chard = (value & 255);
+  return conditional ? chard != 0 : chard == 0;
 }
 
 void execute(const Instruction* begin, const Instruction* end) {
@@ -45,8 +51,8 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&DATA_SET_FROM_INPUT,
       &&DATA_PRINT,
       nullptr,
-      &&INSTRUCTION_POINTER_SET_IF_ZERO,
-      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
+      &&INSTRUCTION_POINTER_SET,
+      &&INSTRUCTION_POINTER_SET,
       &&DATA_TRANSFER,
   };
   setupInstructionAddresses(begin, end, jumpTable);
@@ -83,31 +89,19 @@ DATA_TRANSFER: {
   goto NEXT;
 }
 
-INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+INSTRUCTION_POINTER_SET: {
   const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && (*data & 255) != 0) {
+  while (while_not_zero && check(instruction->a, *data)) {
     data += instruction->move;
   }
 
-  if ((*data & 255) != 0) {
+  if (check(instruction->a, *data)) {
     instruction = instruction->next;
-    data += instruction->move;
-
-    goto*(instruction->jump);
+  } else {
+    instruction++;
   }
-
-  goto NEXT;
-}
-
-INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if ((*data & 255) == 0) {
-    instruction = instruction->next;
-    data += instruction->move;
-
-    goto*(instruction->jump);
-  }
-
-  goto NEXT;
+  data += instruction->move;
+  goto*(instruction->jump);
 }
 
 DATA_PRINT: {
