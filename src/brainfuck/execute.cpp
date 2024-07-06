@@ -1,24 +1,11 @@
 #include "execute.h"
 
 #include <iostream>
+#include <map>
+#include <stack>
+#include <vector>
 
 namespace brainfuck {
-
-void output(const int64_t output, const Value times) {
-  for (int i = 0; i < times; i++) {
-    std::cout << static_cast<char>(output % 256);
-  }
-}
-
-void input(int64_t* character, const Value times) {
-  for (int i = 0; i < times; i++) {
-    char input;
-    std::cin >> std::noskipws >> input;
-    if (!std::cin.eof()) {
-      *character = input;
-    }
-  }
-}
 
 void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
   Instruction* current = const_cast<Instruction*>(begin);
@@ -37,6 +24,20 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
   }
 }
 
+//
+
+using Data = int64_t;
+
+struct Block {
+  Instruction* start;
+  std::map<int16_t, char> initial_value;
+  std::map<int16_t, char> mutated_value;
+  std::vector<char> output;
+  Data* final_data_pointer;
+};
+
+//
+
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
       &&NEXT,
@@ -51,9 +52,13 @@ void execute(const Instruction* begin, const Instruction* end) {
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
-  int64_t datas[30000] = {0};
-  int64_t* data = &datas[0];
+  Data datas[30000] = {0};
+  Data* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
+
+  //
+  std::stack<Block> in_progress_blocks;
+  //
 
   data += instruction->move;
   goto*(instruction->jump);
@@ -111,13 +116,21 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  output(*data, instruction->value);
+  for (int i = 0; i < instruction->value; i++) {
+    std::cout << static_cast<char>(*data & 255);
+  }
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  input(data, instruction->value);
+  for (int i = 0; i < instruction->value; i++) {
+    char input;
+    std::cin >> std::noskipws >> input;
+    if (!std::cin.eof()) {
+      *data = input;
+    }
+  }
 
   goto NEXT;
 }
