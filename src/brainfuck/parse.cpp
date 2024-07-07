@@ -122,9 +122,18 @@ void tryOptimiseLoop(Instructions& instr) {
     std::advance(current, 1);
   }
 
-  // if (offset != 0 && transfers.size() == 0) {
-  //   instr.emplace_back(DATA_SCAN, offset, 0);
-  // }
+  const auto last = std::prev(instr.end(), 1);
+  const auto second_last = std::prev(instr.end(), 1);
+  if (last->type == DATA_POINTER_ADD && second_last->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+    const auto dist = std::distance(instr.rbegin(), current);
+    for (int i = 0; i >= -dist; i--) {
+      instr.pop_back();
+    }
+
+    instr.emplace_back(DATA_SCAN, -offset, 0);
+
+    return;
+  }
 
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
     return;

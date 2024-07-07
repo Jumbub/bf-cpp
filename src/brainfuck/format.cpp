@@ -26,6 +26,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return 't';
     case DATA_SET:
       return '=';
+    case DATA_SCAN:
+      return '^';
     default:
       return '?';
   }
