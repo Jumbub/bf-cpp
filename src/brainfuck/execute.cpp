@@ -1,7 +1,9 @@
 #include "execute.h"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <stack>
 #include <vector>
 
@@ -34,9 +36,8 @@ using Outputs = std::vector<char>;
 using Inputs = std::vector<char>;
 
 struct Block {
-  Hash start;
   InitialValues initial_value;
-  FinalValues mutated_value;
+  FinalValues final_values;
   Outputs outputs;
   Inputs inputs;
   Data* final_data_pointer;
@@ -48,14 +49,14 @@ Hash makeHash(Instruction* instruction) {
 
 //
 
-void observed(InitialValues& initial_values, Data* data) {
+void observed(InitialValues& initial_values, Data* data, const Data value) {
   if (!initial_values.contains(data)) {
-    initial_values[data] = *data;
+    initial_values[data] = value;
   }
 }
 
 Data observe(InitialValues& initial_values, Data* data) {
-  observed(initial_values, data);
+  observed(initial_values, data, *data);
 
   return *data;
 }
@@ -104,6 +105,22 @@ void move(Data*& data, const Value value) {
 
 //
 
+void next(Instruction*& instruction, Instruction* next) {
+  instruction = next;
+}
+
+using SolvedBlocks = std::map<Hash, std::vector<Block>>;
+
+bool missing_solution(const std::vector<Block>& haystack, const Block& needle) {
+  return !std::any_of(haystack.cbegin(), haystack.cend(), [&](const Block& block) {
+    return block.final_data_pointer == needle.final_data_pointer && block.initial_value == needle.initial_value &&
+           block.final_values == needle.final_values && block.inputs == needle.inputs &&
+           block.outputs == needle.outputs;
+  });
+}
+
+int ii = 0;
+
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
       &&NEXT,
@@ -122,13 +139,92 @@ void execute(const Instruction* begin, const Instruction* end) {
   Data* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
+  std::stack<Instruction*> first_instructions;
+  SolvedBlocks solved_blocks;
+  std::stack<Block> in_progress_blocks;
   InitialValues initial_values;
   FinalValues final_values;
   Outputs outputs;
   Inputs inputs;
 
-  const auto next = [](Instruction*& instruction, Instruction* next) { instruction = next; };
+  const auto start = [&]() {
+    if (solved_blocks.contains(instruction)) {
+      // std::cout << "hello?" << std::endl;
+      const auto matching_blocks = solved_blocks[instruction];
+      const auto solved = std::find_if(matching_blocks.cbegin(), matching_blocks.cend(), [&](const Block& block) {
+        return std::all_of(
+            block.initial_value.cbegin(), block.initial_value.cend(),
+            [](const std::pair<Data*, Data>& pair) { return (*pair.first) == pair.second; });
+      });
+      if (solved != matching_blocks.cend() && solved->inputs.size() == 0) {
+        for (const auto& [key, value] : solved->initial_value) {
+          observed(initial_values, key, value);
+        }
+        for (const auto& [key, value] : solved->final_values) {
+          mutated(initial_values, key, value);
+        }
+        for (const auto output : solved->outputs) {
+          printed(outputs, output);
+        }
+        return;
+      }
+    }
 
+    in_progress_blocks.emplace(Block{
+        .initial_value = {},
+        .final_values = {},
+        .outputs = {},
+        .inputs = {},
+        .final_data_pointer = data,
+    });
+
+    first_instructions.push(instruction);
+    initial_values.clear();
+    final_values.clear();
+    outputs.clear();
+    inputs.clear();
+  };
+
+  const auto finish = [&]() {
+    if (in_progress_blocks.empty()) {
+      throw std::runtime_error("ohno");
+    }
+
+    const auto solved = Block{
+        .initial_value = initial_values,
+        .final_values = final_values,
+        .outputs = outputs,
+        .inputs = inputs,
+        .final_data_pointer = data,
+    };
+
+    if (missing_solution(solved_blocks[first_instructions.top()], solved)) {
+      solved_blocks[first_instructions.top()].push_back(solved);
+    }
+
+    in_progress_blocks.pop();
+    first_instructions.pop();
+
+    initial_values = in_progress_blocks.top().initial_value;
+    final_values = in_progress_blocks.top().final_values;
+    outputs = in_progress_blocks.top().outputs;
+    inputs = in_progress_blocks.top().inputs;
+
+    for (const auto& [key, value] : solved.initial_value) {
+      observed(initial_values, key, value);
+    }
+    for (const auto& [key, value] : solved.final_values) {
+      mutated(initial_values, key, value);
+    }
+    for (const auto output : solved.outputs) {
+      printed(outputs, output);
+    }
+    for (const auto input : solved.inputs) {
+      inputed(inputs, input);
+    }
+  };
+
+  start();
   move(data, instruction->move);
   goto*(instruction->jump);
 
@@ -172,10 +268,13 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
     goto*(instruction->jump);
   }
 
+  finish();
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
+  start();
+
   if ((observe(initial_values, data) & 255) == 0) {
     next(instruction, instruction->next);
     move(data, instruction->move);
