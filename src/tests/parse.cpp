@@ -7,7 +7,9 @@
 
 using namespace brainfuck;
 
-void parseTest(const std::string filename) {
+namespace parse_suite {
+
+void test(const std::string filename) {
   CAPTURE(filename);
 
   const auto code = read("samples/" + filename);
@@ -26,28 +28,31 @@ void parseTest(const std::string filename) {
 }
 
 TEST_CASE("parse") {
-  parseTest("tests/empty_file.b");
-  parseTest("tests/strip_non_code.b");
-  parseTest("tests/no_loop_hello.b");
-  parseTest("tests/loop_til_zero.b");
-  parseTest("tests/move_til_zero.b");
-  parseTest("tests/transfer_value.b");
-  parseTest("tests/transfer_value_with_extra.b");
-  parseTest("tests/transfer_value_far.b");
-  parseTest("tests/transfer_value_looping.b");
-  parseTest("tests/multiply_value.b");
-  parseTest("tests/multiply_value_with_extra.b");
-  parseTest("tests/complex_multiply_value.b");
-  parseTest("tests/complex_multiply_value_multi_output.b");
-  parseTest("tests/complex_multiply_value_multi_output_spread.b");
-  parseTest("tests/sort_loop_offsets.b");
-  parseTest("hello_world.b");
-  parseTest("dbfi.b");
-  parseTest("rot13.b");
-  parseTest("echo.b");
-  parseTest("numwarp.b");
-  parseTest("392quine.b");
-  parseTest("bitwidth.b");
-  parseTest("life.b");
-  parseTest("mandelbrot.b");
+  test("tests/empty_file.b");
+  test("tests/strip_non_code.b");
+  test("tests/no_loop_hello.b");
+  test("tests/loop_til_zero.b");
+  test("tests/move_til_zero.b");
+  test("tests/move_til_zero_twice.b");
+  test("tests/transfer_value.b");
+  test("tests/transfer_value_with_extra.b");
+  test("tests/transfer_value_far.b");
+  test("tests/transfer_value_looping.b");
+  test("tests/multiply_value.b");
+  test("tests/multiply_value_with_extra.b");
+  test("tests/complex_multiply_value.b");
+  test("tests/complex_multiply_value_multi_output.b");
+  test("tests/complex_multiply_value_multi_output_spread.b");
+  test("tests/sort_loop_offsets.b");
+  test("hello_world.b");
+  test("dbfi.b");
+  test("rot13.b");
+  test("echo.b");
+  test("numwarp.b");
+  test("392quine.b");
+  test("bitwidth.b");
+  test("life.b");
+  test("mandelbrot.b");
 }
+
+}  // namespace parse_suite

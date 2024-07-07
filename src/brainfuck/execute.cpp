@@ -41,6 +41,7 @@ struct Block {
   Outputs outputs;
   Inputs inputs;
   Data* final_data_pointer;
+  Instruction* final_instruction_pointer;
 };
 
 Hash makeHash(Instruction* instruction) {
@@ -121,6 +122,19 @@ bool missing_solution(const std::vector<Block>& haystack, const Block& needle) {
 
 int ii = 0;
 
+std::optional<Block> find_solution(SolvedBlocks& solved_blocks, Hash hash) {
+  const auto matching_blocks = solved_blocks[hash];
+  const auto solved = std::find_if(matching_blocks.begin(), matching_blocks.end(), [&](const Block& block) {
+    return std::all_of(
+        block.initial_value.cbegin(), block.initial_value.cend(),
+        [](const std::pair<Data*, Data>& pair) { return (*pair.first) == pair.second; });
+  });
+  if (solved == matching_blocks.cend()) {
+    return std::nullopt;
+  }
+  return *solved;
+}
+
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
       &&NEXT,
@@ -148,8 +162,10 @@ void execute(const Instruction* begin, const Instruction* end) {
   Inputs inputs;
 
   const auto start = [&]() {
-    if (solved_blocks.contains(instruction)) {
-      // std::cout << "hello?" << std::endl;
+    const auto solved = find_solution(solved_blocks, instruction);
+
+    if (solved.has_value()) {
+      std::cout << instruction - begin << std::endl;
       const auto matching_blocks = solved_blocks[instruction];
       const auto solved = std::find_if(matching_blocks.cbegin(), matching_blocks.cend(), [&](const Block& block) {
         return std::all_of(
@@ -166,23 +182,32 @@ void execute(const Instruction* begin, const Instruction* end) {
         for (const auto output : solved->outputs) {
           printed(outputs, output);
         }
+        for ([[maybe_unused]] const auto input : solved->inputs) {
+          throw std::runtime_error("input unimplemented");
+        }
+        if (solved->final_data_pointer == nullptr) {
+          throw std::runtime_error("bad runtime state");
+        }
+        data = solved->final_data_pointer;
+        instruction = solved->final_instruction_pointer + 1;
         return;
       }
+    } else {
+      in_progress_blocks.emplace(Block{
+          .initial_value = {},
+          .final_values = {},
+          .outputs = {},
+          .inputs = {},
+          .final_data_pointer = nullptr,
+          .final_instruction_pointer = nullptr,
+      });
+
+      first_instructions.push(instruction);
+      initial_values.clear();
+      final_values.clear();
+      outputs.clear();
+      inputs.clear();
     }
-
-    in_progress_blocks.emplace(Block{
-        .initial_value = {},
-        .final_values = {},
-        .outputs = {},
-        .inputs = {},
-        .final_data_pointer = data,
-    });
-
-    first_instructions.push(instruction);
-    initial_values.clear();
-    final_values.clear();
-    outputs.clear();
-    inputs.clear();
   };
 
   const auto finish = [&]() {
@@ -196,6 +221,7 @@ void execute(const Instruction* begin, const Instruction* end) {
         .outputs = outputs,
         .inputs = inputs,
         .final_data_pointer = data,
+        .final_instruction_pointer = instruction,
     };
 
     if (missing_solution(solved_blocks[first_instructions.top()], solved)) {

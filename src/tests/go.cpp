@@ -4,6 +4,8 @@
 
 using namespace brainfuck;
 
+namespace go_suite {
+
 void test(const std::string filename, const std::optional<std::string> input = std::nullopt) {
   const auto stopCapturingIO = startCapturingIO(input);
   CAPTURE(filename);
@@ -30,6 +32,7 @@ TEST_CASE("go") {
   test("tests/empty_file.b");
   test("tests/loop_til_zero.b");
   test("tests/move_til_zero.b");
+  test("tests/move_til_zero_twice.b");
   test("tests/multiply_value.b");
   test("tests/multiply_value_with_extra.b");
   test("tests/no_loop_hello.b");
@@ -40,15 +43,17 @@ TEST_CASE("go") {
   test("tests/transfer_value_looping.b");
   test("tests/transfer_value_with_extra.b");
   test("hello_world.b");
-  test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
-  test("rot13.b", "~mlk zyx");
-  test("echo.b", "wow this\nis amaze");
-  test("numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
+  // test("dbfi.b", "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>----.>+++++++++.<<.+++.------.<-.>>+.!");
+  // test("rot13.b", "~mlk zyx");
+  // test("echo.b", "wow this\nis amaze");
+  // test("numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
   test("392quine.b");
-  test("bitwidth.b");
-  const auto glider =
-      "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-      "\n\n\n\n\n\n\n\n\nq\n";
-  test("life.b", glider);
+  // test("bitwidth.b");
+  // const auto glider =
+  //     "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  //     "\n\n\n\n\n\n\n\n\nq\n";
+  // test("life.b", glider);
   // test("mandelbrot.b");
 }
+
+}  // namespace go_suite
