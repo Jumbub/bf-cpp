@@ -54,7 +54,7 @@ using Instructions = std::vector<Instruction>;
   return loops.empty();  // check for brace mismatch
 }
 
-[[nodiscard]] Instructions squashPointerAddInstructions(
+[[nodiscard]] Instructions squashDataMutations(
     Instructions::const_iterator current,
     const Instructions::const_iterator end) {
   Instructions instr_out;
@@ -74,7 +74,7 @@ using Instructions = std::vector<Instruction>;
   return instr_out;
 }
 
-[[nodiscard]] Instructions squashDataMutations(
+[[nodiscard]] Instructions squashPointerAddInstructions(
     Instructions::const_iterator current,
     const Instructions::const_iterator end) {
   Instructions instr_out;
