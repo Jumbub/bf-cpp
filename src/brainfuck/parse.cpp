@@ -54,7 +54,27 @@ using Instructions = std::vector<Instruction>;
   return loops.empty();  // check for brace mismatch
 }
 
-Instructions squashPointerAddInstructions(
+[[nodiscard]] Instructions squashPointerAddInstructions(
+    Instructions::const_iterator current,
+    const Instructions::const_iterator end) {
+  Instructions instr_out;
+  instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
+
+  while (current < end) {
+    const auto next = std::next(current);
+    if (current->type == DATA_TRANSFER && next->type == DATA_ADD && next->move == 0) {
+      instr_out.emplace_back(DATA_SET, next->value, current->move);
+      std::advance(current, 2);
+    } else {
+      instr_out.emplace_back(current->type, current->value, current->move);
+      std::advance(current, 1);
+    }
+  }
+
+  return instr_out;
+}
+
+[[nodiscard]] Instructions squashDataMutations(
     Instructions::const_iterator current,
     const Instructions::const_iterator end) {
   Instructions instr_out;
@@ -101,6 +121,10 @@ void tryOptimiseLoop(Instructions& instr) {
     }
     std::advance(current, 1);
   }
+
+  // if (offset != 0 && transfers.size() == 0) {
+  //   instr.emplace_back(DATA_SCAN, offset, 0);
+  // }
 
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
     return;
@@ -185,6 +209,7 @@ void addValue(Instructions& instr, const Type type, const Value value) {
   instr.emplace_back(DONE);
 
   instr = squashPointerAddInstructions(instr.cbegin(), instr.cend());
+  instr = squashDataMutations(instr.cbegin(), instr.cend());
 
   if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;

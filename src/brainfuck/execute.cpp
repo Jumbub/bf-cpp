@@ -39,7 +39,7 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
-      &&NEXT,
+      nullptr,
       &&DONE,
       &&DATA_ADD,
       &&DATA_SET_FROM_INPUT,
@@ -48,6 +48,9 @@ void execute(const Instruction* begin, const Instruction* end) {
       &&INSTRUCTION_POINTER_SET_IF_ZERO,
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
       &&DATA_TRANSFER,
+      nullptr,
+      &&DATA_SET,
+      &&DATA_SCAN,
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -95,6 +98,18 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 
     goto*(instruction->jump);
   }
+
+  goto NEXT;
+}
+
+DATA_SET: {
+  *data = instruction->value;
+
+  goto NEXT;
+}
+
+DATA_SCAN: {
+  data += instruction->value;
 
   goto NEXT;
 }
