@@ -28,59 +28,81 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 
 using Data = int64_t;
 using Hash = Instruction*;
+using InitialValues = std::map<Data*, Data>;
+using FinalValues = std::map<Data*, Data>;
+using Outputs = std::vector<char>;
+using Inputs = std::vector<char>;
 
 struct Block {
   Hash start;
-  std::map<int16_t, char> initial_value;
-  std::map<int16_t, char> mutated_value;
-  std::vector<char> output;
+  InitialValues initial_value;
+  FinalValues mutated_value;
+  Outputs outputs;
+  Inputs inputs;
   Data* final_data_pointer;
 };
 
-//
 Hash makeHash(Instruction* instruction) {
   return reinterpret_cast<Hash>(instruction);
 }
 
-Data observed(const Data* data) {
+//
+
+void observed(InitialValues& initial_values, Data* data) {
+  if (!initial_values.contains(data)) {
+    initial_values[data] = *data;
+  }
+}
+
+Data observe(InitialValues& initial_values, Data* data) {
+  observed(initial_values, data);
+
   return *data;
-  // auto initial_values = in_progress_blocks.top().initial_values;
-  // if (!initial_values.contains(data)) {
-  //   initial_values[data] = static_cast<char>(*data);
-  // }
 }
 
-void mutated(Data* data, const Data value) {
+//
+
+void mutated(FinalValues& final_values, Data* data, const Data value) {
+  final_values[data] = value;
+}
+
+void mutate(FinalValues& final_values, Data* data, const Data value) {
+  mutated(final_values, data, value);
+
   *data = value;
-  // in_progress_blocks.top().initial_values[data] = static_cast<char>(*data);
 }
 
-void moved(Data*& data, const Value value) {
-  data += value;
-  // in_progress_blocks.top().final_data_pointer = data;
+//
+
+void printed(Outputs& outputs, const char value) {
+  outputs.emplace_back(value);
 }
 
-void printed(const Data* data) {
-  std::cout << static_cast<char>(*data & 255);
-  // in_progress_blocks.top().output.push_back(static_cast<char>(*data));
+void print(Outputs& outputs, const Data* data) {
+  const char value = static_cast<char>(*data & 255);
+  printed(outputs, value);
+  std::cout << value;
+}
+//
+
+void inputed(Inputs& inputs, const char input) {
+  inputs.emplace_back(input);
 }
 
-Data inputed() {
+char input(Inputs& inputs) {
   char input;
   std::cin >> std::noskipws >> input;
+  inputed(inputs, input);
   return input;
-  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
 }
 
-void next(Instruction*& instruction) {
-  instruction++;
-  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
+//
+
+void move(Data*& data, const Value value) {
+  data += value;
 }
 
-void next(Instruction*& instruction, Instruction* next) {
-  instruction = next;
-  // in_progress_blocks.top().input.push_back(static_cast<char>(*data));
-}
+//
 
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
@@ -100,45 +122,52 @@ void execute(const Instruction* begin, const Instruction* end) {
   Data* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
-  std::stack<Block> in_progress_blocks;
+  InitialValues initial_values;
+  FinalValues final_values;
+  Outputs outputs;
+  Inputs inputs;
 
-  moved(data, instruction->move);
+  const auto next = [](Instruction*& instruction, Instruction* next) { instruction = next; };
+
+  move(data, instruction->move);
   goto*(instruction->jump);
 
 NEXT: {
-  next(instruction);
-  moved(data, instruction->move);
+  next(instruction, instruction + 1);
+  move(data, instruction->move);
 
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  mutated(data, observed(data) + instruction->value);
+  mutate(final_values, data, observe(initial_values, data) + instruction->value);
 
   goto NEXT;
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = (observed(data) & 255);
+  const auto multiplier = (observe(initial_values, data) & 255);
   const auto last = instruction->next;
   while (instruction < last) {
-    next(instruction);
-    mutated(data + instruction->move, observed(data + instruction->move) + multiplier * instruction->value);
+    next(instruction, instruction + 1);
+    mutate(
+        final_values, data + instruction->move,
+        observe(initial_values, data + instruction->move) + multiplier * instruction->value);
   }
-  mutated(data, 0);
+  mutate(final_values, data, 0);
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && (observed(data) & 255) != 0) {
-    moved(data, instruction->move);
+  while (while_not_zero && (observe(initial_values, data) & 255) != 0) {
+    move(data, instruction->move);
   }
 
-  if ((observed(data) & 255) != 0) {
+  if ((observe(initial_values, data) & 255) != 0) {
     next(instruction, instruction->next);
-    moved(data, instruction->move);
+    move(data, instruction->move);
 
     goto*(instruction->jump);
   }
@@ -147,9 +176,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if ((observed(data) & 255) == 0) {
+  if ((observe(initial_values, data) & 255) == 0) {
     next(instruction, instruction->next);
-    moved(data, instruction->move);
+    move(data, instruction->move);
 
     goto*(instruction->jump);
   }
@@ -159,7 +188,7 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 
 DATA_PRINT: {
   for (int i = 0; i < instruction->value; i++) {
-    printed(data);
+    print(outputs, data);
   }
 
   goto NEXT;
@@ -167,9 +196,9 @@ DATA_PRINT: {
 
 DATA_SET_FROM_INPUT: {
   for (int i = 0; i < instruction->value; i++) {
-    const Data input = inputed();
+    const Data value = input(inputs);
     if (!std::cin.eof()) {
-      mutated(data, input);
+      mutate(final_values, data, value);
     }
   }
 
