@@ -34,27 +34,43 @@ using Instructions = std::vector<Instruction>;
 [[nodiscard]] bool applyInstructionPointerOffsets(
     const Instructions::iterator begin,
     const Instructions::iterator end) noexcept {
-  std::stack<Instructions::iterator> loops;
+  std::map<ssize_t, Instructions::iterator> loops;
   Instructions::iterator current = begin;
   while (current < end) {
     if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      loops.push(current);
+      loops[current->value] = current;
     } else if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-      if (loops.empty()) {  // check for brace mismatch
-        return false;
+      if (loops.contains(current->value)) {  // check for brace mismatch
+        const auto open = loops[current->value];
+        open->value = std::distance(begin, current) + 1;
+        current->value = std::distance(begin, open) + 1;
+      } else {
+        current->value = std::distance(begin, current);
       }
-      const auto open = loops.top();
-      loops.pop();
-
-      open->value = std::distance(begin, current) + 1;
-      current->value = std::distance(begin, open) + 1;
     }
     std::advance(current, 1);
   }
-  return loops.empty();  // check for brace mismatch
+  return true;
 }
 
-Instructions squashPointerAddInstructions(
+[[nodiscard]] Instructions optimize(Instructions::const_iterator current, const Instructions::const_iterator end) {
+  Instructions instr_out;
+  instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
+
+  while (current < end) {
+    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO && instr_out.back().value == current->value &&
+        instr_out.back().move == current->move) {
+      instr_out.back().type = INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
+    } else {
+      instr_out.emplace_back(current->type, current->value, current->move);
+    }
+    std::advance(current, 1);
+  }
+
+  return instr_out;
+}
+
+[[nodiscard]] Instructions squashPointerAddInstructions(
     Instructions::const_iterator current,
     const Instructions::const_iterator end) {
   Instructions instr_out;
@@ -131,11 +147,30 @@ void addValue(Instructions& instr, const Type type, const Value value) {
   }
 }
 
+struct BraceIds {
+  size_t next_brace_pair_id = 0;
+  std::stack<size_t> brace_pair_ids;
+
+  auto push() {
+    brace_pair_ids.push(next_brace_pair_id);
+    next_brace_pair_id += 1;
+    return brace_pair_ids.top();
+  };
+
+  auto pop() {
+    const auto value = brace_pair_ids.top();
+    brace_pair_ids.pop();
+    return value;
+  };
+};
+
 [[nodiscard]] std::optional<std::vector<Instruction>> parse(const std::vector<char> plaintext) {
   const Source source = removeNoopCodes(plaintext);
 
   std::vector<Instruction> instr;
   instr.reserve(source.size());
+
+  BraceIds braceIds;
 
   Source::const_iterator source_iterator = source.cbegin();
   while (source_iterator != source.cend()) {
@@ -171,20 +206,25 @@ void addValue(Instructions& instr, const Type type, const Value value) {
         source_iterator = next_iterator;
       } break;
       case '[':
-        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO);
+        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_ZERO, braceIds.push());
         std::advance(source_iterator, 1);
         break;
       case ']':
-        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO);
+        instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, braceIds.pop());
         tryOptimiseLoop(instr);
         std::advance(source_iterator, 1);
         break;
     }
   }
 
+  if (!braceIds.brace_pair_ids.empty()) {
+    throw std::runtime_error("nope!");
+  }
+
   instr.emplace_back(DONE);
 
   instr = squashPointerAddInstructions(instr.cbegin(), instr.cend());
+  instr = optimize(instr.cbegin(), instr.cend());
 
   if (!applyInstructionPointerOffsets(instr.begin(), instr.end())) {
     return std::nullopt;

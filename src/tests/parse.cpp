@@ -31,6 +31,7 @@ TEST_CASE("parse") {
   parseTest("tests/no_loop_hello.b");
   parseTest("tests/loop_til_zero.b");
   parseTest("tests/move_til_zero.b");
+  parseTest("tests/move_til_zero_other.b");
   parseTest("tests/transfer_value.b");
   parseTest("tests/transfer_value_with_extra.b");
   parseTest("tests/transfer_value_far.b");
