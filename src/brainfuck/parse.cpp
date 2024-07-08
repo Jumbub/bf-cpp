@@ -61,25 +61,26 @@ using Instructions = std::vector<Instruction>;
   instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
 
   while (current < end) {
-    auto next = std::next(current);
-    if (current->type == DATA_TRANSFER && next->type == DATA_TRANSFER && next->value == 0 && next->move == 1) {
-      instr_out.emplace_back(DATA_RESET_MANY, 1, current->move);
+    bool inserted = false;
 
-      // next = std::next(next);
-      // while (next->type == DATA_TRANSFER && next->value == 0 && next->move == 1) {
-      //   instr_out.back().value += 1;
-      //   std::advance(current, 1);
-      //   next = std::next(next);
-      // }
+    if (current->type == DATA_TRANSFER && current->value == 0) {
+      instr_out.emplace_back(DATA_RESET_MANY, 0, current->move);
 
-      std::advance(current, 2);
-    } else if (current->type == DATA_TRANSFER && next->type == DATA_ADD && next->move == 0) {
-      instr_out.emplace_back(DATA_SET, next->value, current->move);
-      std::advance(current, 2);
-    } else {
-      instr_out.emplace_back(current->type, current->value, current->move);
-      std::advance(current, 1);
+      inserted = true;
     }
+
+    // if (instr_out.back().type == DATA_RESET_MANY && instr_out.back().value == 0 && current->type == DATA_ADD &&
+    //     current->move == 0) {
+    //   instr_out.pop_back();
+    //   instr_out.emplace_back(DATA_SET, current->value, current->move);
+
+    //   inserted = true;
+    // }
+
+    if (!inserted) {
+      instr_out.emplace_back(current->type, current->value, current->move);
+    }
+    std::advance(current, 1);
   }
 
   return instr_out;
