@@ -51,6 +51,7 @@ void execute(const Instruction* begin, const Instruction* end) {
       nullptr,
       &&DATA_SET,
       &&DATA_SCAN,
+      &&DATA_RESET_MANY,
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
@@ -110,6 +111,18 @@ DATA_SET: {
 
 DATA_SCAN: {
   data += instruction->value;
+
+  goto NEXT;
+}
+
+DATA_RESET_MANY: {
+  *data = 0;
+
+  const auto last_data_pointer = data + instruction->value;
+  while (data < last_data_pointer) {
+    data += 1;
+    *data = 0;
+  }
 
   goto NEXT;
 }

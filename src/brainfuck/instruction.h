@@ -19,6 +19,7 @@ enum Type : uint64_t {
   DATA_TRANSFER_META,                   //
   DATA_SET,                             // [-]+
   DATA_SCAN,                            // [>]
+  DATA_RESET_MANY,                      // [-][-][-][-]
 };
 
 struct Instruction {

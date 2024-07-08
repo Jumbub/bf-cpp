@@ -62,7 +62,10 @@ using Instructions = std::vector<Instruction>;
 
   while (current < end) {
     const auto next = std::next(current);
-    if (current->type == DATA_TRANSFER && next->type == DATA_ADD && next->move == 0) {
+    if (current->type == DATA_TRANSFER && next->type == DATA_TRANSFER && next->value == 0 && next->move == 1) {
+      instr_out.emplace_back(DATA_RESET_MANY, 1, current->move);
+      std::advance(current, 2);
+    } else if (current->type == DATA_TRANSFER && next->type == DATA_ADD && next->move == 0) {
       instr_out.emplace_back(DATA_SET, next->value, current->move);
       std::advance(current, 2);
     } else {

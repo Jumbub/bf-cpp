@@ -38,6 +38,10 @@ std::string brainfuck::formatInstruction(const brainfuck::Instruction instructio
   return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
 
-std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instructionPointer) {
-  return std::format("({:04}) ", instructionPointer) + brainfuck::formatInstruction(instruction);
+std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instruction_pointer) {
+  const char type = brainfuck::formatInstructionType(instruction.type);
+  if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+    return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value - instruction_pointer);
+  }
+  return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);
 }
