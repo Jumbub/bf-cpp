@@ -64,18 +64,14 @@ using Instructions = std::vector<Instruction>;
     bool inserted = false;
 
     if (current->type == DATA_TRANSFER && current->value == 0) {
-      instr_out.emplace_back(DATA_RESET_MANY, 0, current->move);
+      if (instr_out.back().type == DATA_RESET_MANY && current->move == 1) {
+        instr_out.back().value += 1;
+      } else {
+        instr_out.emplace_back(DATA_RESET_MANY, 0, current->move);
+      }
 
       inserted = true;
     }
-
-    // if (instr_out.back().type == DATA_RESET_MANY && instr_out.back().value == 0 && current->type == DATA_ADD &&
-    //     current->move == 0) {
-    //   instr_out.pop_back();
-    //   instr_out.emplace_back(DATA_SET, current->value, current->move);
-
-    //   inserted = true;
-    // }
 
     if (!inserted) {
       instr_out.emplace_back(current->type, current->value, current->move);
@@ -132,19 +128,6 @@ void tryOptimiseLoop(Instructions& instr) {
       return;  // unoptimisable loop
     }
     std::advance(current, 1);
-  }
-
-  const auto last = std::prev(instr.end(), 1);
-  const auto second_last = std::prev(instr.end(), 1);
-  if (last->type == DATA_POINTER_ADD && second_last->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-    const auto dist = std::distance(instr.rbegin(), current);
-    for (int i = 0; i >= -dist; i--) {
-      instr.pop_back();
-    }
-
-    instr.emplace_back(DATA_SCAN, -offset, 0);
-
-    return;
   }
 
   if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
