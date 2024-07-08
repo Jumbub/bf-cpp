@@ -110,7 +110,9 @@ DATA_SET: {
 }
 
 DATA_SCAN: {
-  data += instruction->value;
+  while (*data != 0) {
+    data += instruction->value;
+  }
 
   goto NEXT;
 }

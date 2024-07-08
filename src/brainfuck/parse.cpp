@@ -61,19 +61,18 @@ using Instructions = std::vector<Instruction>;
   instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
 
   while (current < end) {
-    bool inserted = false;
-
     if (current->type == DATA_TRANSFER && current->value == 0) {
       if (instr_out.back().type == DATA_RESET_MANY && current->move == 1) {
         instr_out.back().value += 1;
       } else {
         instr_out.emplace_back(DATA_RESET_MANY, 0, current->move);
       }
-
-      inserted = true;
-    }
-
-    if (!inserted) {
+      } else if (
+          current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO &&
+          instr_out.back().type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+        instr_out.back().type = DATA_SCAN;
+        instr_out.back().value = current->move;
+    } else {
       instr_out.emplace_back(current->type, current->value, current->move);
     }
     std::advance(current, 1);
