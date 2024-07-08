@@ -28,6 +28,8 @@ char brainfuck::formatInstructionType(const brainfuck::Type type) {
       return '=';
     case DATA_SCAN:
       return '^';
+    case DATA_RESET_MANY:
+      return 'R';
     default:
       return '?';
   }
@@ -40,7 +42,7 @@ std::string brainfuck::formatInstruction(const brainfuck::Instruction instructio
 
 std::string brainfuck::formatInstruction(const brainfuck::Instruction instruction, const int instruction_pointer) {
   const char type = brainfuck::formatInstructionType(instruction.type);
-  if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
+  if (instruction.type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || instruction.type == INSTRUCTION_POINTER_SET_IF_ZERO) {
     return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value - instruction_pointer);
   }
   return std::format("> {:04}, {} {:04}", instruction.move, type, instruction.value);

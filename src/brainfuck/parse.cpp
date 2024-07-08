@@ -61,9 +61,17 @@ using Instructions = std::vector<Instruction>;
   instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
 
   while (current < end) {
-    const auto next = std::next(current);
+    auto next = std::next(current);
     if (current->type == DATA_TRANSFER && next->type == DATA_TRANSFER && next->value == 0 && next->move == 1) {
       instr_out.emplace_back(DATA_RESET_MANY, 1, current->move);
+
+      // next = std::next(next);
+      // while (next->type == DATA_TRANSFER && next->value == 0 && next->move == 1) {
+      //   instr_out.back().value += 1;
+      //   std::advance(current, 1);
+      //   next = std::next(next);
+      // }
+
       std::advance(current, 2);
     } else if (current->type == DATA_TRANSFER && next->type == DATA_ADD && next->move == 0) {
       instr_out.emplace_back(DATA_SET, next->value, current->move);
