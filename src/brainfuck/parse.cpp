@@ -67,11 +67,11 @@ using Instructions = std::vector<Instruction>;
       } else {
         instr_out.emplace_back(DATA_RESET_MANY, 0, current->move);
       }
-      } else if (
-          current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO &&
-          instr_out.back().type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-        instr_out.back().type = DATA_SCAN;
-        instr_out.back().value = current->move;
+    } else if (
+        current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO &&
+        instr_out.back().type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      instr_out.back().type = DATA_SCAN;
+      instr_out.back().value = current->move;
     } else {
       instr_out.emplace_back(current->type, current->value, current->move);
     }
