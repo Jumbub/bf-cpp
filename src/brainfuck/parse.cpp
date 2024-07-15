@@ -61,7 +61,9 @@ using Instructions = std::vector<Instruction>;
   while (current < end) {
     if (current->type == DATA_TRANSFER_META) {
       instr_out.emplace_back(current->type, current->value, acc + current->move);
-    } else if (current->type == DONE || current->type == DATA_TRANSFER) {
+    } else if (
+        current->type == DONE || current->type == DATA_TRANSFER || current->type == DATA_ADD ||
+        current->type == DATA_PRINT || current->type == DATA_SET_FROM_INPUT) {
       acc += current->move;
       instr_out.emplace_back(current->type, current->value, acc);
     } else {

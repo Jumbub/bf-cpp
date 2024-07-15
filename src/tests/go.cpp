@@ -41,10 +41,10 @@ TEST_CASE("go") {
   test("echo.b", "wow this\nis amaze");
   test("numwarp.b", "()-./0123456789abcdef()-./0123456789abcdef");
   test("392quine.b");
-  // test("bitwidth.b");
+  test("bitwidth.b");
   const auto glider =
       "ac\nbc\ncc\ncb\nba\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
       "\n\n\n\n\n\n\n\n\nq\n";
   test("life.b", glider);
-  // test("mandelbrot.b");
+  test("mandelbrot.b");
 }

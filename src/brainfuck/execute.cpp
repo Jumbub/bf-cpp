@@ -55,7 +55,6 @@ void execute(const Instruction* begin, const Instruction* end) {
   int64_t* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
-  data += instruction->move;
   goto*(instruction->jump);
 
 NEXT: {
@@ -65,8 +64,7 @@ NEXT: {
 }
 
 DATA_ADD: {
-  data += instruction->move;
-  *data += instruction->value;
+  *(data + instruction->move) += instruction->value;
 
   goto NEXT;
 }
@@ -113,15 +111,13 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  data += instruction->move;
-  output(*data, instruction->value);
+  output(*(data + instruction->move), instruction->value);
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  data += instruction->move;
-  input(data, instruction->value);
+  input(data + instruction->move, instruction->value);
 
   goto NEXT;
 }
