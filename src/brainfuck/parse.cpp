@@ -57,18 +57,34 @@ using Instructions = std::vector<Instruction>;
   Instructions instr_out;
   instr_out.reserve(static_cast<size_t>(std::distance(current, end)));
 
+  int64_t acc = 0;
   while (current < end) {
-    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO && instr_out.back().value == current->value &&
-        instr_out.back().move == current->move) {
-      instr_out.back().type = INSTRUCTION_POINTER_SET_IF_NOT_ZERO;
+    if (current->type == DATA_TRANSFER_META) {
+      instr_out.emplace_back(current->type, current->value, acc + current->move);
+    } else if (current->type == DONE || current->type == DATA_TRANSFER) {
+      acc += current->move;
+      instr_out.emplace_back(current->type, current->value, acc);
     } else {
-      instr_out.emplace_back(current->type, current->value, current->move);
+      acc += current->move;
+      instr_out.emplace_back(current->type, current->value, acc);
+      acc = 0;
     }
     std::advance(current, 1);
   }
 
   return instr_out;
 }
+
+// NOOP,                                 // foo
+// DONE,                                 // EOF
+// DATA_ADD,                             // + // -
+// DATA_SET_FROM_INPUT,                  // ,
+// DATA_PRINT,                           // .
+// DATA_POINTER_ADD,                     // > // <
+// INSTRUCTION_POINTER_SET_IF_ZERO,      // [
+// INSTRUCTION_POINTER_SET_IF_NOT_ZERO,  // ]
+// DATA_TRANSFER,                        // [-] // [->+<] // [->++>+++<<]
+// DATA_TRANSFER_META,
 
 [[nodiscard]] Instructions squashPointerAddInstructions(
     Instructions::const_iterator current,

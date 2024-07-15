@@ -60,30 +60,33 @@ void execute(const Instruction* begin, const Instruction* end) {
 
 NEXT: {
   instruction++;
-  data += instruction->move;
 
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
+  data += instruction->move;
   *data += instruction->value;
 
   goto NEXT;
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = (*data & 255);
+  auto start = (data + instruction->move);
+  const auto multiplier = (*start & 255);
+  *start = 0;
+
   const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
     *(data + instruction->move) += multiplier * instruction->value;
   }
-  *data = 0;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
+  data += instruction->move;
   const auto while_not_zero = instruction->next == instruction;
   while (while_not_zero && (*data & 255) != 0) {
     data += instruction->move;
@@ -91,7 +94,6 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 
   if ((*data & 255) != 0) {
     instruction = instruction->next;
-    data += instruction->move;
 
     goto*(instruction->jump);
   }
@@ -100,9 +102,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
+  data += instruction->move;
   if ((*data & 255) == 0) {
     instruction = instruction->next;
-    data += instruction->move;
 
     goto*(instruction->jump);
   }
@@ -111,12 +113,14 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
+  data += instruction->move;
   output(*data, instruction->value);
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
+  data += instruction->move;
   input(data, instruction->value);
 
   goto NEXT;
