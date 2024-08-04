@@ -7,7 +7,7 @@
   },
   "configurePresets": [
     {
-      "name": "all",
+      "name": "release",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
@@ -21,12 +21,12 @@
   "buildPresets": [
     {
       "name": "all",
-      "configurePreset": "all"
+      "configurePreset": "release"
     },
     {
       "name": "standalone",
       "targets": "standalone",
-      "configurePreset": "all"
+      "configurePreset": "release"
     }
   ]
 }
