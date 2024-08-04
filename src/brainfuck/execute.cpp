@@ -10,7 +10,6 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
   std::unordered_map<int64_t, int64_t[TAPE_SIZE]> tapes;
   int64_t tapeIndex = 1000;
   int64_t cellIndex = 0;
-
   void moveCellAndTape(int64_t move, int64_t& cellIndex, int64_t& tapeIndex) {
     cellIndex += move;
     while (cellIndex < 0) {
@@ -25,12 +24,6 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
 
  public:
   int64_t& reference() { return tapes[tapeIndex][cellIndex]; }
-  int64_t& referenceAt(const int64_t offset) {
-    auto localCellIndex = cellIndex;
-    auto localTapeIndex = tapeIndex;
-    moveCellAndTape(offset, localCellIndex, localTapeIndex);
-    return tapes[localTapeIndex][localCellIndex];
-  }
   char value() { return static_cast<char>(tapes[tapeIndex][cellIndex] & 255); }
   void move(int64_t move) { moveCellAndTape(move, cellIndex, tapeIndex); }
 };
@@ -57,9 +50,6 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
     if (current->type == DATA_POINTER_ADD) {
       throw std::runtime_error("Un-implemented instruction type");
     }
-    if (current->type == DATA_TRANSFER) {
-      current->next = current + current->value;
-    }
     if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
       current->next = const_cast<Instruction*>(begin + current->value);
     }
@@ -78,13 +68,10 @@ void execute(const Instruction* begin, const Instruction* end) {
       nullptr,
       &&INSTRUCTION_POINTER_SET_IF_ZERO,
       &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
-      &&DATA_TRANSFER,
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
   InfiniteTape tape;
-  // int64_t datas[30000] = {0};
-  // int64_t* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   tape.move(instruction->move);
@@ -99,18 +86,6 @@ NEXT: {
 
 DATA_ADD: {
   tape.reference() += instruction->value;
-
-  goto NEXT;
-}
-
-DATA_TRANSFER: {
-  const auto multiplier = tape.value();
-  const auto last = instruction->next;
-  while (instruction < last) {
-    instruction++;
-    tape.referenceAt(instruction->move) += multiplier * instruction->value;
-  }
-  tape.reference() = 0;
 
   goto NEXT;
 }

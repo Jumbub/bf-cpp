@@ -95,47 +95,6 @@ using Instructions = std::vector<Instruction>;
   return instr_out;
 }
 
-void tryOptimiseLoop(Instructions& instr) {
-  int64_t offset = 0;
-  std::map<Move, Value> transfers;
-
-  auto current = instr.rbegin();
-  if (current->type != INSTRUCTION_POINTER_SET_IF_NOT_ZERO) {
-    throw std::runtime_error("expected INSTRUCTION_POINTER_SET_IF_NOT_ZERO when running tryOptimiseLoop");
-  }
-  std::advance(current, 1);
-
-  while (current != instr.rend()) {
-    if (current->type == DATA_POINTER_ADD) {
-      offset -= current->value;  // going backwards so invert the movement
-    } else if (current->type == DATA_ADD) {
-      transfers[offset] += current->value;
-    } else if (current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      break;  // we're at the start of the loop
-    } else {
-      return;  // unoptimisable loop
-    }
-    std::advance(current, 1);
-  }
-
-  if (offset != 0 || !transfers.contains(0) || transfers[0] != -1) {
-    return;
-  }
-
-  const auto dist = std::distance(instr.rbegin(), current);
-  for (int i = 0; i >= -dist; i--) {
-    instr.pop_back();
-  }
-
-  transfers.erase(0);
-  instr.emplace_back(DATA_TRANSFER, transfers.size());
-  for (const auto& [offset, value] : transfers) {
-    instr.emplace_back(DATA_TRANSFER_META, value, offset);
-  }
-
-  return;
-}
-
 void addValue(Instructions& instr, const Type type, const Value value) {
   if (instr.size() > 0 && instr.back().type == type) {
     instr.back().value += value;
@@ -211,7 +170,6 @@ struct BraceIds {
         break;
       case ']':
         instr.emplace_back(INSTRUCTION_POINTER_SET_IF_NOT_ZERO, braceIds.pop());
-        tryOptimiseLoop(instr);
         std::advance(source_iterator, 1);
         break;
     }
