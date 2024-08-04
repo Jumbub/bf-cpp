@@ -11,20 +11,8 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
   int64_t tapeIndex = 1000;
   int64_t cellIndex = 0;
 
- public:
-  int64_t& reference() { return tapes[tapeIndex][cellIndex]; }
-  int64_t& referenceAt(const int64_t offset) {
-    auto localCellIndex = cellIndex + offset;
-    auto localTapeIndex = tapeIndex;
-    moveCellAndTape(localCellIndex, localTapeIndex);
-    return tapes[localTapeIndex][localCellIndex];
-  }
-  char value() { return static_cast<char>(tapes[tapeIndex][cellIndex] & 255); }
-  void move(int64_t move) {
+  void moveCellAndTape(int64_t move, int64_t& cellIndex, int64_t& tapeIndex) {
     cellIndex += move;
-    moveCellAndTape(cellIndex, tapeIndex);
-  }
-  void moveCellAndTape(int64_t& cellIndex, int64_t& tapeIndex) {
     while (cellIndex < 0) {
       cellIndex += TAPE_SIZE;
       tapeIndex -= 1;
@@ -34,6 +22,17 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
       tapeIndex += 1;
     }
   }
+
+ public:
+  int64_t& reference() { return tapes[tapeIndex][cellIndex]; }
+  int64_t& referenceAt(const int64_t offset) {
+    auto localCellIndex = cellIndex;
+    auto localTapeIndex = tapeIndex;
+    moveCellAndTape(offset, localCellIndex, localTapeIndex);
+    return tapes[localTapeIndex][localCellIndex];
+  }
+  char value() { return static_cast<char>(tapes[tapeIndex][cellIndex] & 255); }
+  void move(int64_t move) { moveCellAndTape(move, cellIndex, tapeIndex); }
 };
 
 void output(const char output, const Value times) {
