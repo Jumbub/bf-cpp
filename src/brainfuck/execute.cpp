@@ -1,21 +1,53 @@
 #include "execute.h"
 
 #include <iostream>
+#include <unordered_map>
 
 namespace brainfuck {
 
-void output(const int64_t output, const Value times) {
+class InfiniteTape /* ~37 zettabytes in each direction */ {
+  static constexpr int64_t TAPE_SIZE = 4096;
+  std::unordered_map<int64_t, int64_t[TAPE_SIZE]> tapes;
+  int64_t tapeIndex = 1000;
+  int64_t cellIndex = 0;
+
+ public:
+  int64_t& reference() { return tapes[tapeIndex][cellIndex]; }
+  int64_t& referenceAt(const int64_t offset) {
+    auto localCellIndex = cellIndex + offset;
+    auto localTapeIndex = tapeIndex;
+    moveCellAndTape(localCellIndex, localTapeIndex);
+    return tapes[localTapeIndex][localCellIndex];
+  }
+  char value() { return static_cast<char>(tapes[tapeIndex][cellIndex] & 255); }
+  void move(int64_t move) {
+    cellIndex += move;
+    moveCellAndTape(cellIndex, tapeIndex);
+  }
+  void moveCellAndTape(int64_t& cellIndex, int64_t& tapeIndex) {
+    while (cellIndex < 0) {
+      cellIndex += TAPE_SIZE;
+      tapeIndex -= 1;
+    }
+    while (cellIndex >= TAPE_SIZE) {
+      cellIndex -= TAPE_SIZE;
+      tapeIndex += 1;
+    }
+  }
+};
+
+void output(const char output, const Value times) {
   for (int i = 0; i < times; i++) {
-    std::cout << static_cast<char>(output % 256);
+    std::cout << static_cast<char>(output);
   }
 }
 
-void input(int64_t* character, const Value times) {
+void input(int64_t& character, const Value times) {
   for (int i = 0; i < times; i++) {
     char input;
     std::cin >> std::noskipws >> input;
     if (!std::cin.eof()) {
-      *character = input;
+      character = input;
     }
   }
 }
@@ -51,47 +83,48 @@ void execute(const Instruction* begin, const Instruction* end) {
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
-  int64_t datas[30000] = {0};
-  int64_t* data = &datas[0];
+  InfiniteTape tape;
+  // int64_t datas[30000] = {0};
+  // int64_t* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
-  data += instruction->move;
+  tape.move(instruction->move);
   goto*(instruction->jump);
 
 NEXT: {
   instruction++;
-  data += instruction->move;
+  tape.move(instruction->move);
 
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  *data += instruction->value;
+  tape.reference() += instruction->value;
 
   goto NEXT;
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = (*data & 255);
+  const auto multiplier = tape.value();
   const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->move) += multiplier * instruction->value;
+    tape.referenceAt(instruction->move) += multiplier * instruction->value;
   }
-  *data = 0;
+  tape.reference() = 0;
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && (*data & 255) != 0) {
-    data += instruction->move;
+  while (while_not_zero && tape.value() != 0) {
+    tape.move(instruction->move);
   }
 
-  if ((*data & 255) != 0) {
+  if (tape.value() != 0) {
     instruction = instruction->next;
-    data += instruction->move;
+    tape.move(instruction->move);
 
     goto*(instruction->jump);
   }
@@ -100,9 +133,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if ((*data & 255) == 0) {
+  if (tape.value() == 0) {
     instruction = instruction->next;
-    data += instruction->move;
+    tape.move(instruction->move);
 
     goto*(instruction->jump);
   }
@@ -111,13 +144,13 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  output(*data, instruction->value);
+  output(tape.value(), instruction->value);
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  input(data, instruction->value);
+  input(tape.reference(), instruction->value);
 
   goto NEXT;
 }
