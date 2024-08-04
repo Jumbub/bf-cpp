@@ -5,9 +5,23 @@
 
 namespace brainfuck {
 
+void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
+  Instruction* current = const_cast<Instruction*>(begin);
+  while (current < end) {
+    if (current->type == DATA_POINTER_ADD) {
+      throw std::runtime_error("Un-implemented instruction type");
+    }
+    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
+      current->next = const_cast<Instruction*>(begin + current->value);
+    }
+    current->jump = const_cast<void*>(jumpTable[current->type]);
+    current++;
+  }
+}
+
 class InfiniteTape /* ~37 zettabytes in each direction */ {
   static constexpr int64_t TAPE_SIZE = 4096;
-  std::unordered_map<int64_t, int64_t[TAPE_SIZE]> tapes;
+  std::unordered_map<int64_t, char[TAPE_SIZE]> tapes;
   int64_t tapeIndex = 1000;
   int64_t cellIndex = 0;
   void moveCellAndTape(int64_t move, int64_t& cellIndex, int64_t& tapeIndex) {
@@ -23,40 +37,18 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
   }
 
  public:
-  int64_t& reference() { return tapes[tapeIndex][cellIndex]; }
+  char& reference() { return tapes[tapeIndex][cellIndex]; }
   char value() { return static_cast<char>(tapes[tapeIndex][cellIndex] & 255); }
   void move(int64_t move) { moveCellAndTape(move, cellIndex, tapeIndex); }
 };
 
-void output(const char output, const Value times) {
-  for (int i = 0; i < times; i++) {
-    std::cout << static_cast<char>(output);
-  }
-}
-
-void input(int64_t& character, const Value times) {
-  for (int i = 0; i < times; i++) {
-    char input;
-    std::cin >> std::noskipws >> input;
-    if (!std::cin.eof()) {
-      character = input;
-    }
-  }
-}
-
-void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
-  Instruction* current = const_cast<Instruction*>(begin);
-  while (current < end) {
-    if (current->type == DATA_POINTER_ADD) {
-      throw std::runtime_error("Un-implemented instruction type");
-    }
-    if (current->type == INSTRUCTION_POINTER_SET_IF_NOT_ZERO || current->type == INSTRUCTION_POINTER_SET_IF_ZERO) {
-      current->next = const_cast<Instruction*>(begin + current->value);
-    }
-    current->jump = const_cast<void*>(jumpTable[current->type]);
-    current++;
-  }
-}
+class TapeRecorder /* record actions to hash output */ : InfiniteTape {
+ public:
+  char& set(char value) { return InfiniteTape::reference() = value; }
+  char& add(char value) { return InfiniteTape::reference() += value; }
+  char value() { return InfiniteTape::value(); }
+  void move(int64_t move) { InfiniteTape::move(move); }
+};
 
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
@@ -71,7 +63,7 @@ void execute(const Instruction* begin, const Instruction* end) {
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
-  InfiniteTape tape;
+  TapeRecorder tape;
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   tape.move(instruction->move);
@@ -85,7 +77,7 @@ NEXT: {
 }
 
 DATA_ADD: {
-  tape.reference() += instruction->value;
+  tape.add(instruction->cValue);
 
   goto NEXT;
 }
@@ -118,13 +110,21 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  output(tape.value(), instruction->value);
+  for (int i = 0; i < instruction->value; i++) {
+    std::cout << tape.value();
+  }
 
   goto NEXT;
 }
 
 DATA_SET_FROM_INPUT: {
-  input(tape.reference(), instruction->value);
+  for (int i = 0; i < instruction->value; i++) {
+    char input;
+    std::cin >> std::noskipws >> input;
+    if (!std::cin.eof()) {
+      tape.set(input);
+    }
+  }
 
   goto NEXT;
 }

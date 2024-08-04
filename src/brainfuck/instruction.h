@@ -24,6 +24,7 @@ struct Instruction {
   };
   union {
     Value value = 0;
+    char cValue;
     Instruction* next;  // Some values are converted to instruction pointers at runtime.
   };
   Move move = 0;
