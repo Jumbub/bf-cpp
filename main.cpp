@@ -63,31 +63,32 @@ int main(int argc, char** argv) {
 
     {  // app "loop"
       hashes.push("");
-      loopIds.push(nextLoopId);
-      nextLoopId += 1;
     }
 
     for (size_t codeIndex = 0; codeIndex < code.size(); codeIndex++) {
       switch (code[codeIndex]) {
         case '[': {
-          hashes.top() += std::to_string(nextLoopId);
           hashes.push("");
           startCodeIndexes.push(codeIndex);
           loopIds.push(nextLoopId);
-          nextLoopId += 1;
         } break;
         case ']': {
           startCodeIndexForEndCodeIndex[codeIndex] = startCodeIndexes.top();
           endCodeIndexForStartCodeIndex[startCodeIndexes.top()] = codeIndex;
 
           const auto hash = hashes.top();
+          std::optional<size_t> currentLoopId = std::nullopt;  // unitialized value
           if (loopIdForHash.contains(hash)) {
-            loopIdForCodeIndex[startCodeIndexes.top()] = loopIdForHash[hash];
+            loopIdForCodeIndex[startCodeIndexes.top()] = loopIdForHash.at(hash);
+            currentLoopId.emplace(loopIdForHash.at(hash));
           } else {
             loopIdForHash[hash] = loopIds.top();
             loopIdForCodeIndex[startCodeIndexes.top()] = loopIds.top();
+            nextLoopId += 1;
           }
           hashes.pop();
+          hashes.top() += "[" + std::to_string(loopIds.top()) + "]";
+
           startCodeIndexes.pop();
           loopIds.pop();
         } break;
@@ -102,11 +103,9 @@ int main(int argc, char** argv) {
     }
 
     {  // app "loop"
-      loopIdForHash[hashes.top()] = loopIds.top();
-      loopIdForCodeIndex[0] = loopIds.top();
-      hashes.pop();
-      startCodeIndexes.pop();
-      loopIds.pop();
+      loopIdForHash[hashes.top()] = nextLoopId;
+      loopIdForCodeIndex[0] = nextLoopId;
+      nextLoopId += 1;
     }
   }
 
