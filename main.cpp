@@ -52,30 +52,44 @@ int main(int argc, char** argv) {
   const auto code = *maybeCode;
 
   size_t nextLoopId = 0;
-  std::map<std::string, size_t> loopIdForHash;
-  std::map<size_t, size_t> loopIdForCodeIndex;
+  std::unordered_map<std::string, size_t> loopIdForHash;
+  std::unordered_map<size_t, size_t> loopIdForCodeIndex;
+  std::unordered_map<size_t, size_t> endCodeIndexForStartCodeIndex;
+  std::unordered_map<size_t, size_t> startCodeIndexForEndCodeIndex;
   {
     std::stack<std::string> hashes;
-    std::stack<size_t> codeIndexes;
+    std::stack<size_t> startCodeIndexes;
+    std::stack<size_t> loopIds;
+
+    {  // app "loop"
+      hashes.push("");
+      loopIds.push(nextLoopId);
+      nextLoopId += 1;
+    }
 
     for (size_t codeIndex = 0; codeIndex < code.size(); codeIndex++) {
       switch (code[codeIndex]) {
         case '[': {
+          hashes.top() += std::to_string(nextLoopId);
           hashes.push("");
-          codeIndexes.push(codeIndex);
+          startCodeIndexes.push(codeIndex);
+          loopIds.push(nextLoopId);
+          nextLoopId += 1;
         } break;
         case ']': {
+          startCodeIndexForEndCodeIndex[codeIndex] = startCodeIndexes.top();
+          endCodeIndexForStartCodeIndex[startCodeIndexes.top()] = codeIndex;
+
           const auto hash = hashes.top();
           if (loopIdForHash.contains(hash)) {
-            loopIdForCodeIndex[codeIndexes.top()] = loopIdForHash[hash];
+            loopIdForCodeIndex[startCodeIndexes.top()] = loopIdForHash[hash];
           } else {
-            loopIdForHash[hash] = nextLoopId;
-            loopIdForCodeIndex[codeIndexes.top()] = nextLoopId;
-            nextLoopId += 1;
+            loopIdForHash[hash] = loopIds.top();
+            loopIdForCodeIndex[startCodeIndexes.top()] = loopIds.top();
           }
           hashes.pop();
-          hashes.top().append(hash);
-          codeIndexes.pop();
+          startCodeIndexes.pop();
+          loopIds.pop();
         } break;
         case '+':
         case '-':
@@ -86,11 +100,26 @@ int main(int argc, char** argv) {
           break;
       }
     }
+
+    {  // app "loop"
+      loopIdForHash[hashes.top()] = loopIds.top();
+      loopIdForCodeIndex[0] = loopIds.top();
+      hashes.pop();
+      startCodeIndexes.pop();
+      loopIds.pop();
+    }
   }
 
-  for (const auto& [key, value] : loopIdForHash) {
-    std::cout << key << " " << value << "\n";
+  std::cout << "start:\n\n\n";
+  for (size_t i = 0; i < nextLoopId; i++) {
+    for (const auto& [hash, loopId] : loopIdForHash) {
+      if (loopId == i) {
+        std::cout << loopId << " " << hash << "\n";
+      }
+    }
   }
+  std::cout << nextLoopId << "\n";
+  std::cout << "\n\n\n";
 
   size_t codeIndex = 0;
   InfiniteTape tape;
@@ -98,30 +127,12 @@ int main(int argc, char** argv) {
     switch (code[codeIndex]) {
       case '[':
         if (tape.get() == 0) {
-          auto depth = 0;
-          codeIndex += 1;
-          while (code[codeIndex] != ']' || depth > 0) {
-            if (code[codeIndex] == '[') {
-              depth += 1;
-            } else if (code[codeIndex] == ']') {
-              depth -= 1;
-            }
-            codeIndex += 1;
-          }
+          codeIndex = endCodeIndexForStartCodeIndex[codeIndex];
         }
         break;
       case ']':
         if (tape.get() != 0) {
-          auto depth = 0;
-          codeIndex -= 1;
-          while (code[codeIndex] != '[' || depth > 0) {
-            if (code[codeIndex] == '[') {
-              depth -= 1;
-            } else if (code[codeIndex] == ']') {
-              depth += 1;
-            }
-            codeIndex -= 1;
-          }
+          codeIndex = startCodeIndexForEndCodeIndex[codeIndex];
         }
         break;
       case '+':
