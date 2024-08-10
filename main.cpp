@@ -36,6 +36,7 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
       tapeIndex += 1;
     }
   }
+  std::pair<int64_t, int64_t> index() { return {tapeIndex, cellIndex}; };
 };
 
 int main(int argc, char** argv) {
@@ -115,32 +116,52 @@ int main(int argc, char** argv) {
 
   std::unordered_map<size_t, size_t> executionsOfLoop;
 
+  std::map<std::pair<int64_t, int64_t>, char> input;
+  std::map<std::pair<int64_t, int64_t>, char> output;
+  std::vector<char> print;
+
   size_t codeIndex = 0;
   InfiniteTape tape;
   int i = 0;
+
+  const auto read = [&]() {
+    auto& value = tape.get();
+    const auto tapeIndex = tape.index();
+    if (!input.contains(tapeIndex)) {
+      input[tapeIndex] = value;
+    }
+    return value;
+  };
+
+  const auto increment = [&](char increment) {
+    auto& value = tape.get();
+    value += increment;
+    output.insert_or_assign(tape.index(), value);
+  };
+
   while (codeIndex < code.size()) {
     if (i++ > 500000000) {
       break;
     }
     switch (code[codeIndex]) {
-      case '[': {
-        if (tape.get() == 0) {
+      case '[':
+        if (read() == 0) {
           codeIndex = endCodeIndexForStartCodeIndex[codeIndex];
         } else {
           const auto loopId = loopIdForStartIndex.at(codeIndex);
           executionsOfLoop[loopId] += 1;
         }
-      } break;
+        break;
       case ']':
-        if (tape.get() != 0) {
+        if (read() != 0) {
           codeIndex = startCodeIndexForEndCodeIndex[codeIndex];
         }
         break;
       case '+':
-        tape.get() += 1;
+        increment(1);
         break;
       case '-':
-        tape.get() -= 1;
+        increment(-1);
         break;
       case '>':
         tape.move(1);
@@ -157,6 +178,9 @@ int main(int argc, char** argv) {
 
   std::cout << "start:\n\n\n";
   for (size_t i = 0; i < nextLoopId; i++) {
+    if (!executionsOfLoop.contains(i)) {
+      continue;
+    }
     for (const auto& [hash, loopId] : loopIdForHash) {
       if (loopId == i) {
         std::cout << loopId << " " << hash << "\n";
