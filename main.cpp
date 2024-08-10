@@ -97,9 +97,6 @@ int main(int argc, char** argv) {
       case '.':
         std::cout << tape.get();
         break;
-      case ',':
-        std::cin >> tape.get();
-        break;
     }
     codeIndex += 1;
   }
