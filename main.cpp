@@ -88,6 +88,10 @@ int main(int argc, char** argv) {
     }
   }
 
+  for (const auto& [key, value] : loopIdForHash) {
+    std::cout << key << " " << value << "\n";
+  }
+
   size_t codeIndex = 0;
   InfiniteTape tape;
   while (codeIndex < code.size()) {
