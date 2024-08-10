@@ -16,7 +16,7 @@ std::optional<std::vector<char>> load(const std::string filename) {
 }
 
 class InfiniteTape /* ~37 zettabytes in each direction */ {
-  static constexpr size_t TAPE_SIZE = 4096;
+  static constexpr int64_t TAPE_SIZE = 4096;
   std::unordered_map<int64_t, char[TAPE_SIZE]> tapes;
   int64_t tapeIndex = 0;
   int64_t cellIndex = 0;
