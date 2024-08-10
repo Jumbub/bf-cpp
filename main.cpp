@@ -17,6 +17,7 @@ std::optional<std::vector<char>> load(const std::string filename) {
   return buffer;
 }
 
+// todo: simplify this to just use int64_t cell index with modulus of TAPE_SIZE
 class InfiniteTape /* ~37 zettabytes in each direction */ {
   static constexpr int64_t TAPE_SIZE = 4096;
   std::unordered_map<int64_t, char[TAPE_SIZE]> tapes;
@@ -116,15 +117,20 @@ int main(int argc, char** argv) {
 
   std::unordered_map<size_t, size_t> executionsOfLoop;
 
-  std::map<std::pair<int64_t, int64_t>, char> input;
-  std::map<std::pair<int64_t, int64_t>, char> output;
-  std::vector<char> print;
+  struct Tracker {
+    std::map<std::pair<int64_t, int64_t>, char> input;
+    std::map<std::pair<int64_t, int64_t>, char> output;
+    std::vector<char> print;
+    int64_t moved;
+  };
+  std::stack<Tracker> trackers;
 
   size_t codeIndex = 0;
   InfiniteTape tape;
   int i = 0;
 
   const auto read = [&]() {
+    auto& input = trackers.top().input;
     auto& value = tape.get();
     const auto tapeIndex = tape.index();
     if (!input.contains(tapeIndex)) {
@@ -134,10 +140,26 @@ int main(int argc, char** argv) {
   };
 
   const auto increment = [&](char increment) {
+    auto& output = trackers.top().output;
     auto& value = tape.get();
     value += increment;
     output.insert_or_assign(tape.index(), value);
   };
+
+  const auto move = [&](int64_t move) {
+    auto& moved = trackers.top().moved;
+    moved += move;
+    tape.move(move);
+  };
+
+  const auto print = [&]() {
+    auto& print = trackers.top().print;
+    const auto value = read();
+    std::cout << value;
+    print.push_back(value);
+  };
+
+  trackers.push({});
 
   while (codeIndex < code.size()) {
     if (i++ > 500000000) {
@@ -146,6 +168,7 @@ int main(int argc, char** argv) {
     switch (code[codeIndex]) {
       case '[':
         if (read() == 0) {
+          // skip
           codeIndex = endCodeIndexForStartCodeIndex[codeIndex];
         } else {
           const auto loopId = loopIdForStartIndex.at(codeIndex);
@@ -154,7 +177,9 @@ int main(int argc, char** argv) {
         break;
       case ']':
         if (read() != 0) {
+          // reloop
           codeIndex = startCodeIndexForEndCodeIndex[codeIndex];
+        } else {
         }
         break;
       case '+':
@@ -164,13 +189,13 @@ int main(int argc, char** argv) {
         increment(-1);
         break;
       case '>':
-        tape.move(1);
+        move(1);
         break;
       case '<':
-        tape.move(-1);
+        move(-1);
         break;
       case '.':
-        std::cout << tape.get();
+        print();
         break;
     }
     codeIndex += 1;
