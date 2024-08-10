@@ -53,13 +53,12 @@ int main(int argc, char** argv) {
 
   size_t nextLoopId = 0;
   std::unordered_map<std::string, size_t> loopIdForHash;
-  std::unordered_map<size_t, size_t> loopIdForCodeIndex;
+  std::unordered_map<size_t, size_t> loopIdForStartIndex;
   std::unordered_map<size_t, size_t> endCodeIndexForStartCodeIndex;
   std::unordered_map<size_t, size_t> startCodeIndexForEndCodeIndex;
   {
     std::stack<std::string> hashes;
     std::stack<size_t> startCodeIndexes;
-    std::stack<size_t> loopIds;
 
     {  // app "loop"
       hashes.push("");
@@ -70,27 +69,32 @@ int main(int argc, char** argv) {
         case '[': {
           hashes.push("");
           startCodeIndexes.push(codeIndex);
-          loopIds.push(nextLoopId);
         } break;
         case ']': {
-          startCodeIndexForEndCodeIndex[codeIndex] = startCodeIndexes.top();
-          endCodeIndexForStartCodeIndex[startCodeIndexes.top()] = codeIndex;
+          const auto startCodeIndex = startCodeIndexes.top();
+          startCodeIndexes.pop();
+
+          startCodeIndexForEndCodeIndex[codeIndex] = startCodeIndex;
+          endCodeIndexForStartCodeIndex[startCodeIndex] = codeIndex;
 
           const auto hash = hashes.top();
-          std::optional<size_t> currentLoopId = std::nullopt;  // unitialized value
+          size_t currentLoopId;
           if (loopIdForHash.contains(hash)) {
-            loopIdForCodeIndex[startCodeIndexes.top()] = loopIdForHash.at(hash);
-            currentLoopId.emplace(loopIdForHash.at(hash));
-          } else {
-            loopIdForHash[hash] = loopIds.top();
-            loopIdForCodeIndex[startCodeIndexes.top()] = loopIds.top();
-            nextLoopId += 1;
-          }
-          hashes.pop();
-          hashes.top() += "[" + std::to_string(loopIds.top()) + "]";
+            const auto loopId = loopIdForHash.at(hash);
 
-          startCodeIndexes.pop();
-          loopIds.pop();
+            loopIdForStartIndex[startCodeIndex] = loopId;
+            currentLoopId = loopId;
+          } else {
+            const auto loopId = nextLoopId;
+            nextLoopId += 1;
+
+            loopIdForHash[hash] = loopId;
+            loopIdForStartIndex[startCodeIndex] = loopId;
+            currentLoopId = loopId;
+          }
+
+          hashes.pop();
+          hashes.top() += "[" + std::to_string(currentLoopId) + "]";
         } break;
         case '+':
         case '-':
@@ -104,31 +108,29 @@ int main(int argc, char** argv) {
 
     {  // app "loop"
       loopIdForHash[hashes.top()] = nextLoopId;
-      loopIdForCodeIndex[0] = nextLoopId;
+      loopIdForStartIndex[nextLoopId] = nextLoopId;
       nextLoopId += 1;
     }
   }
 
-  std::cout << "start:\n\n\n";
-  for (size_t i = 0; i < nextLoopId; i++) {
-    for (const auto& [hash, loopId] : loopIdForHash) {
-      if (loopId == i) {
-        std::cout << loopId << " " << hash << "\n";
-      }
-    }
-  }
-  std::cout << nextLoopId << "\n";
-  std::cout << "\n\n\n";
+  std::unordered_map<size_t, size_t> executionsOfLoop;
 
   size_t codeIndex = 0;
   InfiniteTape tape;
+  int i = 0;
   while (codeIndex < code.size()) {
+    if (i++ > 500000000) {
+      break;
+    }
     switch (code[codeIndex]) {
-      case '[':
+      case '[': {
         if (tape.get() == 0) {
           codeIndex = endCodeIndexForStartCodeIndex[codeIndex];
+        } else {
+          const auto loopId = loopIdForStartIndex.at(codeIndex);
+          executionsOfLoop[loopId] += 1;
         }
-        break;
+      } break;
       case ']':
         if (tape.get() != 0) {
           codeIndex = startCodeIndexForEndCodeIndex[codeIndex];
@@ -152,4 +154,21 @@ int main(int argc, char** argv) {
     }
     codeIndex += 1;
   }
+
+  std::cout << "start:\n\n\n";
+  for (size_t i = 0; i < nextLoopId; i++) {
+    for (const auto& [hash, loopId] : loopIdForHash) {
+      if (loopId == i) {
+        std::cout << loopId << " " << hash << "\n";
+      }
+    }
+    for (const auto& [startIndex, loopId] : loopIdForStartIndex) {
+      if (loopId == i) {
+        std::cout << startIndex << ",";
+      }
+    }
+    std::cout << "\nexecutions: " << executionsOfLoop[i] << "\n";
+  }
+  std::cout << nextLoopId << "\n";
+  std::cout << "\n\n\n";
 };
