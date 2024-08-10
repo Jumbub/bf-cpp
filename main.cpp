@@ -166,22 +166,41 @@ int main(int argc, char** argv) {
       break;
     }
     switch (code[codeIndex]) {
-      case '[':
+      case '[': {
         if (read() == 0) {
-          // skip
-          codeIndex = endCodeIndexForStartCodeIndex[codeIndex];
-        } else {
-          const auto loopId = loopIdForStartIndex.at(codeIndex);
-          executionsOfLoop[loopId] += 1;
+          // skip loop
+          codeIndex = endCodeIndexForStartCodeIndex[codeIndex] + 1;
+          continue;
         }
-        break;
-      case ']':
+
+        const auto loopId = loopIdForStartIndex.at(codeIndex);
+        executionsOfLoop[loopId] += 1;
+
+        trackers.push({});
+      } break;
+      case ']': {
         if (read() != 0) {
-          // reloop
-          codeIndex = startCodeIndexForEndCodeIndex[codeIndex];
-        } else {
+          // restart loop
+          codeIndex = startCodeIndexForEndCodeIndex[codeIndex] + 1;
+          continue;
         }
-        break;
+
+        const auto thisTracker = trackers.top();
+        trackers.pop();
+        auto& previousTracker = trackers.top();
+        for (const auto& [key, value] : thisTracker.input) {
+          if (!previousTracker.input.contains(key)) {
+            previousTracker.input[key] = value;
+          }
+        }
+        for (const auto& [key, value] : thisTracker.output) {
+          previousTracker.output[key] = value;
+        }
+        for (const auto value : thisTracker.print) {
+          previousTracker.print.push_back(value);
+        }
+        previousTracker.moved += thisTracker.moved;
+      } break;
       case '+':
         increment(1);
         break;
