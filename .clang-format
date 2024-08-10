@@ -1,4 +1,0 @@
----
-BasedOnStyle: Chromium
-AlignAfterOpenBracket: AlwaysBreak
-ColumnLimit: 120
