@@ -27,6 +27,7 @@ class InfiniteTape /* ~37 zettabytes in each direction */ {
 
  public:
   auto& get() { return tapes[tapeIndex][cellIndex]; }
+  auto& get(std::pair<int64_t, int64_t> value) { return tapes[value.first][value.second]; };
   void move(auto move) {
     cellIndex += move;
     while (cellIndex < 0) {
@@ -197,6 +198,36 @@ int main(int argc, char** argv) {
         const auto loopId = loopIdForStartIndex.at(codeIndex);
         executionsOfLoop[loopId] += 1;
 
+        for (const auto& [solve, output] : loopIdSolves.at(loopId)) {
+          bool matches = true;
+          for (const auto& [index, value] : solve.input) {
+            if (tape.get(index) != value) {
+              matches = false;
+              break;
+            }
+          }
+          if (matches) {
+            std::cout << "?";
+            for (const auto& [index, value] : solve.input) {
+              std::cout << " C[" << index.first << "," << index.second << "]=" << (int)value << "?"
+                        << (int)tape.get(index);
+            }
+            std::cout << "\n!";
+            for (const auto& [key, value] : output.output) {
+              tape.get(key) = value;
+              std::cout << " S[" << key.first << "," << key.second << "]=" << (int)value;
+            }
+            for (const auto value : output.print) {
+              std::cout << " P:" << value;
+            }
+            std::cout << " M+=" << output.moved;
+            tape.move(output.moved);
+            codeIndex = endCodeIndexForStartCodeIndex.at(codeIndex) + 1;
+            std::cout << "\n";
+            continue;
+          }
+        }
+
         trackers.push({});
       } break;
       case ']': {
@@ -250,23 +281,23 @@ int main(int argc, char** argv) {
     codeIndex += 1;
   }
 
-  std::cout << "start:\n\n\n";
-  for (size_t i = 0; i < nextLoopId; i++) {
-    if (!executionsOfLoop.contains(i)) {
-      continue;
-    }
-    for (const auto& [hash, loopId] : loopIdForHash) {
-      if (loopId == i) {
-        std::cout << loopId << " " << hash << "\n";
-      }
-    }
-    for (const auto& [startIndex, loopId] : loopIdForStartIndex) {
-      if (loopId == i) {
-        std::cout << startIndex << ",";
-      }
-    }
-    std::cout << "\nexecutions: " << executionsOfLoop[i] << "\n";
-  }
-  std::cout << nextLoopId << "\n";
-  std::cout << "\n\n\n";
+  // std::cout << "start:\n\n\n";
+  // for (size_t i = 0; i < nextLoopId; i++) {
+  //   if (!executionsOfLoop.contains(i)) {
+  //     continue;
+  //   }
+  //   for (const auto& [hash, loopId] : loopIdForHash) {
+  //     if (loopId == i) {
+  //       std::cout << loopId << " " << hash << "\n";
+  //     }
+  //   }
+  //   for (const auto& [startIndex, loopId] : loopIdForStartIndex) {
+  //     if (loopId == i) {
+  //       std::cout << startIndex << ",";
+  //     }
+  //   }
+  //   std::cout << "\nexecutions: " << executionsOfLoop[i] << "\n";
+  // }
+  // std::cout << nextLoopId << "\n";
+  // std::cout << "\n\n\n";
 };
