@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <stack>
 #include <unordered_map>
 #include <vector>
 
@@ -49,9 +51,45 @@ int main(int argc, char** argv) {
   }
   const auto code = *maybeCode;
 
+  size_t nextLoopId = 0;
+  std::map<std::string, size_t> loopIdForHash;
+  std::map<size_t, size_t> loopIdForCodeIndex;
+  {
+    std::stack<std::string> hashes;
+    std::stack<size_t> codeIndexes;
+
+    for (size_t codeIndex = 0; codeIndex < code.size(); codeIndex++) {
+      switch (code[codeIndex]) {
+        case '[': {
+          hashes.push("");
+          codeIndexes.push(codeIndex);
+        } break;
+        case ']': {
+          const auto hash = hashes.top();
+          if (loopIdForHash.contains(hash)) {
+            loopIdForCodeIndex[codeIndexes.top()] = loopIdForHash[hash];
+          } else {
+            loopIdForHash[hash] = nextLoopId;
+            loopIdForCodeIndex[codeIndexes.top()] = nextLoopId;
+            nextLoopId += 1;
+          }
+          hashes.pop();
+          hashes.top().append(hash);
+          codeIndexes.pop();
+        } break;
+        case '+':
+        case '-':
+        case '>':
+        case '<':
+        case '.':
+          hashes.top().push_back(code[codeIndex]);
+          break;
+      }
+    }
+  }
+
   size_t codeIndex = 0;
   InfiniteTape tape;
-
   while (codeIndex < code.size()) {
     switch (code[codeIndex]) {
       case '[':
