@@ -133,15 +133,6 @@ int main(int argc, char** argv) {
     }
   }
 
-  for (size_t i = 0; i < nextLoopId; i++) {
-    for (const auto& [hash, loopId] : loopIdForHash) {
-      if (loopId == i) {
-        std::cerr << loopId << " " << hash << "\n";
-      }
-    }
-  }
-  std::cerr << "\n\n\n";
-
   std::stack<Hash> wipHashes;
 
   size_t codeIndex = 0;
@@ -206,51 +197,13 @@ int main(int argc, char** argv) {
 
   std::vector<std::unordered_map<HashQuery, HashSolution>> solvesForLoopId(nextLoopId);
 
-  [[maybe_unused]] const auto ddd = [](HashQuery in, HashSolution out) {
-    std::cerr << "input: ";
-    for (const auto& [relativeOffset, value] : in.input) {
-      std::cerr << "[" << (int)relativeOffset << "]=" << (int)value;
-    }
-    std::cerr << "\noutput: ";
-    for (const auto& [relativeOffset, value] : out.output) {
-      std::cerr << "[" << (int)relativeOffset << "]=" << (int)value;
-    }
-    std::cerr << "\nprint: ";
-    for (const auto value : out.print) {
-      std::cerr << (int)value;
-    }
-    std::cerr << "\nmoved: " << out.moved;
-    std::cerr << "\n\n";
-  };
-
-  [[maybe_unused]] const auto dd = [&]() {
-    for (size_t loopId = 0; loopId < solvesForLoopId.size(); loopId++) {
-      std::cerr << "(" << loopId << ")\n\n" << "";
-      for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
-        ddd(in, out);
-      }
-    }
-    std::cerr << std::endl;
-  };
-
   const auto checkIfSolved = [&](const size_t loopId) -> std::optional<std::pair<HashQuery, HashSolution>> {
-    // std::cerr << "checking!" << loopId << " " << solvesForLoopId.at(loopId).size() << std::endl;
     for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
-      // ddd(in, out);
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto item) {
         const auto& [relativeOffset, value] = item;
-        // std::cerr << "SPAM" << std::endl;
-        // std::cerr << (int)relativeOffset << " " << (int)value << std::endl;
-        // std::cerr << (int)tape.dataAtRelativeOffset(relativeOffset) << std::endl;
         return tape.relativeCell(relativeOffset) == value;
       });
       if (matches) {
-        std::cerr << "SOLVED ALREADY!" << loopId << std::endl;
-        ddd(in, out);
-        for (const auto& [relativeOffset, value] : in.input) {
-          std::cerr << relativeOffset << " " << (int)value << " " << (int)tape.relativeCell(relativeOffset)
-                    << std::endl;
-        }
         return std::pair{in, out};
       }
     }
@@ -289,7 +242,6 @@ int main(int argc, char** argv) {
 
   wipHashes.emplace();
   while (codeIndex < code.size()) {
-    // std::cerr << codeIndex << std::endl;
     switch (code[codeIndex]) {
       case '[': {
         if (read() == 0) {
@@ -336,8 +288,4 @@ int main(int argc, char** argv) {
     }
     codeIndex += 1;
   }
-
-  std::cerr << "\n\n";
-
-  // dd();
 };
