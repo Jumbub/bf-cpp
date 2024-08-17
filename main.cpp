@@ -272,12 +272,12 @@ int main(int argc, char** argv) {
 
     for (const auto& [relativeOffset, value] : solvedHash.input) {
       if (!wipHash.input.contains(relativeOffset)) {
-        wipHash.input[relativeOffset] = value;
+        wipHash.input[wipHash.moved + relativeOffset] = value;
       }
     }
 
-    for (const auto& [key, value] : solvedHash.output) {
-      wipHash.output[key] = value;
+    for (const auto& [relativeOffset, value] : solvedHash.output) {
+      wipHash.output[wipHash.moved + relativeOffset] = value;
     }
 
     for (const auto value : solvedHash.print) {
