@@ -241,7 +241,12 @@ int main(int argc, char** argv) {
   };
 
   wipHashes.emplace();
+  int i = 0;
   while (codeIndex < code.size()) {
+    if (i++ > 10000000) {
+      break;
+    }
+
     switch (code[codeIndex]) {
       case '[': {
         if (read() == 0) {
