@@ -28,56 +28,49 @@ class Tape {
   Index position = 0;
 
  public:
-  auto& dataAtRelativeOffset(Index relativeOffset) {
+  auto& relativeCell(Index relativeOffset) {
     return chunks[static_cast<uint64_t>(position + relativeOffset) / CHUNK_SIZE]
                  [static_cast<uint64_t>(position + relativeOffset) % CHUNK_SIZE];
   };
-  auto& dataAtCurrentPosition() { return dataAtRelativeOffset(0); }
   void relativeMove(Index relativeOffset) { position += relativeOffset; }
-  Index getAbsolutePosition() const { return position; };
 };
 
-struct TrackerIn {
+struct HashQuery {
   std::map<Tape::Index, char> input;
 
-  bool operator==(const TrackerIn& rhs) const {
+  bool operator==(const HashQuery& rhs) const {
     return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
   }
 };
 
-struct TrackerOut {
+struct HashSolution {
   std::map<Tape::Index, char> output;
   std::vector<char> print;
   int64_t moved;
 
-  bool operator==(const TrackerOut& rhs) const {
+  bool operator==(const HashSolution& rhs) const {
     return this->moved == rhs.moved &&
            std::equal(this->print.begin(), this->print.end(), rhs.print.begin(), rhs.print.end()) &&
            std::equal(this->output.begin(), this->output.end(), rhs.output.begin(), rhs.output.end());
   }
 };
 
-struct Tracker : public TrackerIn, public TrackerOut {
-  Tape::Index startAbsolutePosition;
-
-  Tracker() = delete;
-  Tracker(auto startAbsolutePosition) : startAbsolutePosition(startAbsolutePosition) {};
-};
+struct Hash : public HashQuery, public HashSolution {};
 
 template <>
-struct std::hash<TrackerIn> {
-  std::size_t operator()(const TrackerIn& s) const noexcept { return s.input.size(); }
+struct std::hash<HashQuery> {
+  std::size_t operator()(const HashQuery& s) const noexcept { return s.input.size(); }
 };
 
 int main(int argc, char** argv) {
   if (argc != 2) {
-    std::cout << "Usage: ./brainfuck <program.b>\n";
+    std::cerr << "Usage: ./brainfuck <program.b>\n";
     return 1;
   }
 
   const auto maybeCode = load(argv[1]);
   if (!maybeCode) {
-    std::cout << "Error: unable to read '" << argv[1] << "'\n";
+    std::cerr << "Error: unable to read '" << argv[1] << "'\n";
     return 2;
   }
   const auto code = *maybeCode;
@@ -143,127 +136,143 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < nextLoopId; i++) {
     for (const auto& [hash, loopId] : loopIdForHash) {
       if (loopId == i) {
-        std::cout << loopId << " " << hash << "\n";
+        std::cerr << loopId << " " << hash << "\n";
       }
     }
   }
-  std::cout << "\n\n\n";
+  std::cerr << "\n\n\n";
 
-  std::stack<Tracker> trackers;
+  std::stack<Hash> trackers;
 
   size_t codeIndex = 0;
   Tape tape;
 
-  const auto relativePosition = [&]() { return tape.getAbsolutePosition() - trackers.top().startAbsolutePosition; };
-
   const auto read = [&]() -> auto& {
-    auto& value = tape.dataAtCurrentPosition();
+    auto& cell = tape.relativeCell(0);
 
-    if (!trackers.top().input.contains(relativePosition())) {
-      trackers.top().input[relativePosition()] = value;
+    auto& tracker = trackers.top();
+    if (!tracker.input.contains(tracker.moved)) {
+      trackers.top().input[tracker.moved] = cell;
     }
 
-    return value;
+    return cell;
   };
 
-  const auto increment = [&](char increment) {
-    read() += increment;
+  const auto add = [&](char increment) {
+    auto& cell = read();
+    cell += increment;
 
-    trackers.top().output[relativePosition()] = tape.dataAtCurrentPosition();
+    auto& tracker = trackers.top();
+    tracker.output[tracker.moved] = cell;
   };
 
-  const auto move = [&](int64_t relativeOffset) {
-    tape.relativeMove(relativeOffset);
+  const auto move = [&](int64_t increment) {
+    tape.relativeMove(increment);
 
-    trackers.top().moved += relativeOffset;
+    auto& tracker = trackers.top();
+    tracker.moved += increment;
   };
 
   const auto print = [&]() {
     const auto value = read();
     std::cout << value;
 
-    trackers.top().print.push_back(value);
+    auto& tracker = trackers.top();
+    tracker.print.push_back(value);
   };
 
-  const auto execute = [&](const TrackerOut& output) {
-    for (const auto& [relativeIndex, value] : output.output) {
-      tape.dataAtRelativeOffset(relativeIndex) = value;
-    }
-    for (const char value : output.print) {
+  const auto execute = [&](const HashQuery& query, const HashSolution& solution) {
+    auto& tracker = trackers.top();
+
+    for (const char value : solution.print) {
       std::cout << value;
+      tracker.print.push_back(value);
     }
-    tape.relativeMove(output.moved);
+
+    for (const auto& [relativeOffset, value] : query.input) {
+      if (!tracker.input.contains(tracker.moved + relativeOffset)) {
+        tracker.input[tracker.moved + relativeOffset] = value;
+      }
+    }
+
+    for (const auto& [relativeOffset, value] : solution.output) {
+      tape.relativeCell(relativeOffset) = value;
+      tracker.output[tracker.moved + relativeOffset] = value;
+    }
+
+    tape.relativeMove(solution.moved);
+    tracker.moved += solution.moved;
   };
 
-  std::vector<std::unordered_map<TrackerIn, TrackerOut>> solvesForLoopId(nextLoopId);
+  std::vector<std::unordered_map<HashQuery, HashSolution>> solvesForLoopId(nextLoopId);
 
-  const auto ddd = [](TrackerIn in, TrackerOut out) {
-    std::cout << "input: ";
+  [[maybe_unused]] const auto ddd = [](HashQuery in, HashSolution out) {
+    std::cerr << "input: ";
     for (const auto& [relativeOffset, value] : in.input) {
-      std::cout << "[" << (int)relativeOffset << "]=" << (int)value;
+      std::cerr << "[" << (int)relativeOffset << "]=" << (int)value;
     }
-    std::cout << "\noutput: ";
+    std::cerr << "\noutput: ";
     for (const auto& [relativeOffset, value] : out.output) {
-      std::cout << "[" << (int)relativeOffset << "]=" << (int)value;
+      std::cerr << "[" << (int)relativeOffset << "]=" << (int)value;
     }
-    std::cout << "\nprint: ";
+    std::cerr << "\nprint: ";
     for (const auto value : out.print) {
-      std::cout << (int)value;
+      std::cerr << (int)value;
     }
-    std::cout << "\nmoved: " << out.moved;
-    std::cout << "\n\n";
+    std::cerr << "\nmoved: " << out.moved;
+    std::cerr << "\n\n";
   };
 
-  const auto dd = [&]() {
+  [[maybe_unused]] const auto dd = [&]() {
     for (size_t loopId = 0; loopId < solvesForLoopId.size(); loopId++) {
-      std::cout << "(" << loopId << ")\n\n" << "";
+      std::cerr << "(" << loopId << ")\n\n" << "";
       for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
         ddd(in, out);
       }
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
   };
 
-  const auto checkIfSolved = [&](const size_t loopId) -> std::optional<TrackerOut> {
-    // std::cout << "checking!" << loopId << " " << solvesForLoopId.at(loopId).size() << std::endl;
+  const auto checkIfSolved = [&](const size_t loopId) -> std::optional<std::pair<HashQuery, HashSolution>> {
+    // std::cerr << "checking!" << loopId << " " << solvesForLoopId.at(loopId).size() << std::endl;
     for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
       // ddd(in, out);
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto item) {
         const auto& [relativeOffset, value] = item;
-        // std::cout << "SPAM" << std::endl;
-        // std::cout << (int)relativeOffset << " " << (int)value << std::endl;
-        // std::cout << (int)tape.dataAtRelativeOffset(relativeOffset) << std::endl;
-        return tape.dataAtRelativeOffset(relativeOffset) == value;
+        // std::cerr << "SPAM" << std::endl;
+        // std::cerr << (int)relativeOffset << " " << (int)value << std::endl;
+        // std::cerr << (int)tape.dataAtRelativeOffset(relativeOffset) << std::endl;
+        return tape.relativeCell(relativeOffset) == value;
       });
       if (matches) {
-        // for (const auto& [relativeOffset, value] : solve.input) {
-        //   std::cout << relativeOffset << " " << (int)value << " " << (int)tape.readRelativeOffset(relativeOffset)
-        //             << std::endl;
-        // }
-        return out;
+        std::cerr << "SOLVED ALREADY!" << loopId << std::endl;
+        ddd(in, out);
+        for (const auto& [relativeOffset, value] : in.input) {
+          std::cerr << relativeOffset << " " << (int)value << " " << (int)tape.relativeCell(relativeOffset)
+                    << std::endl;
+        }
+        return std::pair{in, out};
       }
     }
     return std::nullopt;
   };
 
   const auto storeSolvedTracker = [&]() {
-    const auto tracker = trackers.top();
+    const Hash tracker = trackers.top();
 
     const auto loopId = loopIdForStartIndex.at(startCodeIndexForEndCodeIndex.at(codeIndex));
     if (solvesForLoopId.at(loopId).contains(tracker)) {
       throw std::runtime_error("what the heck");
     }
 
-    // std::cout << "stored!" << loopId << std::endl;
-    // ddd(tracker, tracker);
-
     solvesForLoopId.at(loopId)[tracker] = tracker;
 
     trackers.pop();
+
     auto& parentTracker = trackers.top();
-    for (const auto& [key, value] : tracker.input) {
-      if (!parentTracker.input.contains(key)) {
-        parentTracker.input[key] = value;
+    for (const auto& [relativeOffset, value] : tracker.input) {
+      if (!parentTracker.input.contains(relativeOffset)) {
+        parentTracker.input[relativeOffset] = value;
       }
     }
     for (const auto& [key, value] : tracker.output) {
@@ -275,9 +284,9 @@ int main(int argc, char** argv) {
     parentTracker.moved += tracker.moved;
   };
 
-  trackers.emplace(tape.getAbsolutePosition());
+  trackers.emplace();
   while (codeIndex < code.size()) {
-    // std::cout << codeIndex << std::endl;
+    // std::cerr << codeIndex << std::endl;
     switch (code[codeIndex]) {
       case '[': {
         if (read() == 0) {
@@ -290,13 +299,12 @@ int main(int argc, char** argv) {
 
         const auto solved = checkIfSolved(loopId);
         if (solved.has_value()) {
-          // std::cout << "SOLVED ALREADY!" << std::endl;
-          execute(solved.value());
+          execute(solved.value().first, solved.value().second);
           codeIndex = endCodeIndexForStartCodeIndex.at(codeIndex) + 1;
           continue;
         }
 
-        trackers.emplace(tape.getAbsolutePosition());
+        trackers.emplace();
       } break;
       case ']': {
         if (read() != 0) {
@@ -308,10 +316,10 @@ int main(int argc, char** argv) {
         storeSolvedTracker();
       } break;
       case '+':
-        increment(1);
+        add(1);
         break;
       case '-':
-        increment(-1);
+        add(-1);
         break;
       case '>':
         move(1);
@@ -326,7 +334,7 @@ int main(int argc, char** argv) {
     codeIndex += 1;
   }
 
-  // std::cout << "\n\n";
+  std::cerr << "\n\n";
 
   // dd();
 };
