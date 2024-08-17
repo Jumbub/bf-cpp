@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
 
   const auto print = [&]() {
     const auto value = read();
-    std::cout << value;
+    std::cout << value << std::flush;  // todo remove when faster
 
     auto& wipHash = wipHashes.top();
     wipHash.print.push_back(value);
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     auto& wipHash = wipHashes.top();
 
     for (const char value : solution.print) {
-      std::cout << value;
+      std::cout << value << std::flush; // todo remove when faster
       wipHash.print.push_back(value);
     }
 
