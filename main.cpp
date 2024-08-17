@@ -21,14 +21,16 @@ std::optional<std::vector<char>> load(const std::string filename) {
 class Tape {
  public:
   using Index = int64_t;
+  using Data = char;
+  using Cell = std::pair<Index, Data>;
 
  private:
   static constexpr uint64_t CHUNK_SIZE = 4096;
-  std::unordered_map<uint64_t, char[CHUNK_SIZE]> chunks;
+  std::unordered_map<uint64_t, Data[CHUNK_SIZE]> chunks;
   Index position = 0;
 
  public:
-  auto& relativeCell(Index relativeOffset) {
+  Data& relativeData(Index relativeOffset) {
     return chunks[static_cast<uint64_t>(position + relativeOffset) / CHUNK_SIZE]
                  [static_cast<uint64_t>(position + relativeOffset) % CHUNK_SIZE];
   };
@@ -36,7 +38,7 @@ class Tape {
 };
 
 struct HashQuery {
-  std::map<Tape::Index, char> input;
+  std::vector<std::pair<Tape::Index, char>> input;
 
   bool operator==(const HashQuery& rhs) const {
     return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
@@ -139,22 +141,24 @@ int main(int argc, char** argv) {
   Tape tape;
 
   const auto read = [&]() -> auto& {
-    auto& cell = tape.relativeCell(0);
+    auto& data = tape.relativeData(0);
 
     auto& wipHash = wipHashes.top();
-    if (!wipHash.input.contains(wipHash.moved)) {
-      wipHashes.top().input[wipHash.moved] = cell;
+    if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](Tape::Cell cell) {
+          return cell.first != wipHash.moved;
+        })) {
+      wipHashes.top().input.push_back({wipHash.moved, data});
     }
 
-    return cell;
+    return data;
   };
 
   const auto add = [&](char increment) {
-    auto& cell = read();
-    cell += increment;
+    auto& data = read();
+    data += increment;
 
     auto& wipHash = wipHashes.top();
-    wipHash.output[wipHash.moved] = cell;
+    wipHash.output[wipHash.moved] = data;
   };
 
   const auto move = [&](int64_t increment) {
@@ -176,18 +180,20 @@ int main(int argc, char** argv) {
     auto& wipHash = wipHashes.top();
 
     for (const char value : solution.print) {
-      std::cout << value << std::flush; // todo remove when faster
+      std::cout << value << std::flush;  // todo remove when faster
       wipHash.print.push_back(value);
     }
 
-    for (const auto& [relativeOffset, value] : query.input) {
-      if (!wipHash.input.contains(wipHash.moved + relativeOffset)) {
-        wipHash.input[wipHash.moved + relativeOffset] = value;
+    for (const auto& [relativeOffset, data] : query.input) {
+      if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](Tape::Cell cell) {
+            return cell.first != wipHash.moved + relativeOffset;
+          })) {
+        wipHash.input.push_back({wipHash.moved + relativeOffset, data});
       }
     }
 
     for (const auto& [relativeOffset, value] : solution.output) {
-      tape.relativeCell(relativeOffset) = value;
+      tape.relativeData(relativeOffset) = value;
       wipHash.output[wipHash.moved + relativeOffset] = value;
     }
 
@@ -201,7 +207,7 @@ int main(int argc, char** argv) {
     for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto item) {
         const auto& [relativeOffset, value] = item;
-        return tape.relativeCell(relativeOffset) == value;
+        return tape.relativeData(relativeOffset) == value;
       });
       if (matches) {
         return std::pair{in, out};
@@ -223,9 +229,11 @@ int main(int argc, char** argv) {
     wipHashes.pop();
     auto& wipHash = wipHashes.top();
 
-    for (const auto& [relativeOffset, value] : solvedHash.input) {
-      if (!wipHash.input.contains(wipHash.moved + relativeOffset)) {
-        wipHash.input[wipHash.moved + relativeOffset] = value;
+    for (const auto& [relativeOffset, data] : solvedHash.input) {
+      if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](Tape::Cell cell) {
+            return cell.first != wipHash.moved + relativeOffset;
+          })) {
+        wipHash.input.push_back({wipHash.moved + relativeOffset, data});
       }
     }
 
