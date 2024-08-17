@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
   }
   std::cerr << "\n\n\n";
 
-  std::stack<Hash> trackers;
+  std::stack<Hash> wipHashes;
 
   size_t codeIndex = 0;
   Tape tape;
@@ -150,9 +150,9 @@ int main(int argc, char** argv) {
   const auto read = [&]() -> auto& {
     auto& cell = tape.relativeCell(0);
 
-    auto& tracker = trackers.top();
-    if (!tracker.input.contains(tracker.moved)) {
-      trackers.top().input[tracker.moved] = cell;
+    auto& wipHash = wipHashes.top();
+    if (!wipHash.input.contains(wipHash.moved)) {
+      wipHashes.top().input[wipHash.moved] = cell;
     }
 
     return cell;
@@ -162,46 +162,46 @@ int main(int argc, char** argv) {
     auto& cell = read();
     cell += increment;
 
-    auto& tracker = trackers.top();
-    tracker.output[tracker.moved] = cell;
+    auto& wipHash = wipHashes.top();
+    wipHash.output[wipHash.moved] = cell;
   };
 
   const auto move = [&](int64_t increment) {
     tape.relativeMove(increment);
 
-    auto& tracker = trackers.top();
-    tracker.moved += increment;
+    auto& wipHash = wipHashes.top();
+    wipHash.moved += increment;
   };
 
   const auto print = [&]() {
     const auto value = read();
     std::cout << value;
 
-    auto& tracker = trackers.top();
-    tracker.print.push_back(value);
+    auto& wipHash = wipHashes.top();
+    wipHash.print.push_back(value);
   };
 
   const auto execute = [&](const HashQuery& query, const HashSolution& solution) {
-    auto& tracker = trackers.top();
+    auto& wipHash = wipHashes.top();
 
     for (const char value : solution.print) {
       std::cout << value;
-      tracker.print.push_back(value);
+      wipHash.print.push_back(value);
     }
 
     for (const auto& [relativeOffset, value] : query.input) {
-      if (!tracker.input.contains(tracker.moved + relativeOffset)) {
-        tracker.input[tracker.moved + relativeOffset] = value;
+      if (!wipHash.input.contains(wipHash.moved + relativeOffset)) {
+        wipHash.input[wipHash.moved + relativeOffset] = value;
       }
     }
 
     for (const auto& [relativeOffset, value] : solution.output) {
       tape.relativeCell(relativeOffset) = value;
-      tracker.output[tracker.moved + relativeOffset] = value;
+      wipHash.output[wipHash.moved + relativeOffset] = value;
     }
 
     tape.relativeMove(solution.moved);
-    tracker.moved += solution.moved;
+    wipHash.moved += solution.moved;
   };
 
   std::vector<std::unordered_map<HashQuery, HashSolution>> solvesForLoopId(nextLoopId);
@@ -257,34 +257,37 @@ int main(int argc, char** argv) {
     return std::nullopt;
   };
 
-  const auto storeSolvedTracker = [&]() {
-    const Hash tracker = trackers.top();
+  const auto storeSolution = [&]() {
+    const Hash solvedHash = wipHashes.top();
 
     const auto loopId = loopIdForStartIndex.at(startCodeIndexForEndCodeIndex.at(codeIndex));
-    if (solvesForLoopId.at(loopId).contains(tracker)) {
+    if (solvesForLoopId.at(loopId).contains(solvedHash)) {
       throw std::runtime_error("what the heck");
     }
 
-    solvesForLoopId.at(loopId)[tracker] = tracker;
+    solvesForLoopId.at(loopId)[solvedHash] = solvedHash;
 
-    trackers.pop();
+    wipHashes.pop();
+    auto& wipHash = wipHashes.top();
 
-    auto& parentTracker = trackers.top();
-    for (const auto& [relativeOffset, value] : tracker.input) {
-      if (!parentTracker.input.contains(relativeOffset)) {
-        parentTracker.input[relativeOffset] = value;
+    for (const auto& [relativeOffset, value] : solvedHash.input) {
+      if (!wipHash.input.contains(relativeOffset)) {
+        wipHash.input[relativeOffset] = value;
       }
     }
-    for (const auto& [key, value] : tracker.output) {
-      parentTracker.output[key] = value;
+
+    for (const auto& [key, value] : solvedHash.output) {
+      wipHash.output[key] = value;
     }
-    for (const auto value : tracker.print) {
-      parentTracker.print.push_back(value);
+
+    for (const auto value : solvedHash.print) {
+      wipHash.print.push_back(value);
     }
-    parentTracker.moved += tracker.moved;
+
+    wipHash.moved += solvedHash.moved;
   };
 
-  trackers.emplace();
+  wipHashes.emplace();
   while (codeIndex < code.size()) {
     // std::cerr << codeIndex << std::endl;
     switch (code[codeIndex]) {
@@ -304,7 +307,7 @@ int main(int argc, char** argv) {
           continue;
         }
 
-        trackers.emplace();
+        wipHashes.emplace();
       } break;
       case ']': {
         if (read() != 0) {
@@ -313,7 +316,7 @@ int main(int argc, char** argv) {
           continue;
         }
 
-        storeSolvedTracker();
+        storeSolution();
       } break;
       case '+':
         add(1);
