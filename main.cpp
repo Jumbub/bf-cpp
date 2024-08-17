@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
     auto& wipHash = wipHashes.top();
 
     for (const auto& [relativeOffset, value] : solvedHash.input) {
-      if (!wipHash.input.contains(relativeOffset)) {
+      if (!wipHash.input.contains(wipHash.moved + relativeOffset)) {
         wipHash.input[wipHash.moved + relativeOffset] = value;
       }
     }
