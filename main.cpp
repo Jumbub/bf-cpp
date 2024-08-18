@@ -37,31 +37,31 @@ class Tape {
   void relativeMove(Index relativeOffset) { position += relativeOffset; }
 };
 
-struct HashQuery {
+struct LoopInput {
   std::vector<std::pair<Tape::Index, char>> input;
 
-  bool operator==(const HashQuery& rhs) const {
+  bool operator==(const LoopInput& rhs) const {
     return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
   }
 };
 
-struct HashSolution {
+struct LoopOutput {
   std::map<Tape::Index, char> output;
   std::vector<char> print;
   int64_t moved;
 
-  bool operator==(const HashSolution& rhs) const {
+  bool operator==(const LoopOutput& rhs) const {
     return this->moved == rhs.moved &&
            std::equal(this->print.begin(), this->print.end(), rhs.print.begin(), rhs.print.end()) &&
            std::equal(this->output.begin(), this->output.end(), rhs.output.begin(), rhs.output.end());
   }
 };
 
-struct Hash : public HashQuery, public HashSolution {};
+struct Hash : public LoopInput, public LoopOutput {};
 
 template <>
-struct std::hash<HashQuery> {
-  std::size_t operator()(const HashQuery& s) const noexcept { return s.input.size(); }
+struct std::hash<LoopInput> {
+  std::size_t operator()(const LoopInput& s) const noexcept { return s.input.size(); }
 };
 
 int main(int argc, char** argv) {
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     wipHash.print.push_back(data);
   };
 
-  const auto execute = [&](const HashQuery& query, const HashSolution& solution) {
+  const auto execute = [&](const LoopInput& query, const LoopOutput& solution) {
     auto& wipHash = wipHashes.top();
 
     for (const char data : solution.print) {
@@ -201,9 +201,9 @@ int main(int argc, char** argv) {
     wipHash.moved += solution.moved;
   };
 
-  std::vector<std::unordered_map<HashQuery, HashSolution>> solvesForLoopId(nextLoopId);
+  std::vector<std::unordered_map<LoopInput, LoopOutput>> solvesForLoopId(nextLoopId);
 
-  const auto checkIfSolved = [&](const size_t loopId) -> std::optional<std::pair<HashQuery, HashSolution>> {
+  const auto checkIfSolved = [&](const size_t loopId) -> std::optional<std::pair<LoopInput, LoopOutput>> {
     for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto item) {
         const auto& [relativeOffset, data] = item;
