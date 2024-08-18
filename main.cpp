@@ -169,19 +169,19 @@ int main(int argc, char** argv) {
   };
 
   const auto print = [&]() {
-    const auto value = read();
-    std::cout << value << std::flush;  // todo remove when faster
+    const auto data = read();
+    std::cout << data << std::flush;  // todo remove when faster
 
     auto& wipHash = wipHashes.top();
-    wipHash.print.push_back(value);
+    wipHash.print.push_back(data);
   };
 
   const auto execute = [&](const HashQuery& query, const HashSolution& solution) {
     auto& wipHash = wipHashes.top();
 
-    for (const char value : solution.print) {
-      std::cout << value << std::flush;  // todo remove when faster
-      wipHash.print.push_back(value);
+    for (const char data : solution.print) {
+      std::cout << data << std::flush;  // todo remove when faster
+      wipHash.print.push_back(data);
     }
 
     for (const auto& [relativeOffset, data] : query.input) {
@@ -192,9 +192,9 @@ int main(int argc, char** argv) {
       }
     }
 
-    for (const auto& [relativeOffset, value] : solution.output) {
-      tape.relativeData(relativeOffset) = value;
-      wipHash.output[wipHash.moved + relativeOffset] = value;
+    for (const auto& [relativeOffset, data] : solution.output) {
+      tape.relativeData(relativeOffset) = data;
+      wipHash.output[wipHash.moved + relativeOffset] = data;
     }
 
     tape.relativeMove(solution.moved);
@@ -206,8 +206,8 @@ int main(int argc, char** argv) {
   const auto checkIfSolved = [&](const size_t loopId) -> std::optional<std::pair<HashQuery, HashSolution>> {
     for (const auto& [in, out] : solvesForLoopId.at(loopId)) {
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto item) {
-        const auto& [relativeOffset, value] = item;
-        return tape.relativeData(relativeOffset) == value;
+        const auto& [relativeOffset, data] = item;
+        return tape.relativeData(relativeOffset) == data;
       });
       if (matches) {
         return std::pair{in, out};
@@ -237,12 +237,12 @@ int main(int argc, char** argv) {
       }
     }
 
-    for (const auto& [relativeOffset, value] : solvedHash.output) {
-      wipHash.output[wipHash.moved + relativeOffset] = value;
+    for (const auto& [relativeOffset, data] : solvedHash.output) {
+      wipHash.output[wipHash.moved + relativeOffset] = data;
     }
 
-    for (const auto value : solvedHash.print) {
-      wipHash.print.push_back(value);
+    for (const auto data : solvedHash.print) {
+      wipHash.print.push_back(data);
     }
 
     wipHash.moved += solvedHash.moved;
