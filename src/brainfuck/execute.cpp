@@ -1,6 +1,11 @@
 #include "execute.h"
 
+#include <algorithm>
 #include <iostream>
+#include <map>
+#include <stack>
+#include <unordered_map>
+#include <vector>
 
 namespace brainfuck {
 
@@ -27,6 +32,28 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
   }
 }
 
+struct LoopInput {
+  std::vector<std::pair<size_t, char>> input;
+
+  bool operator==(const LoopInput& rhs) const {
+    return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
+  }
+};
+
+struct LoopOutput {
+  std::map<size_t, char> output;
+  std::vector<char> print;
+  int64_t moved;
+
+  bool operator==(const LoopOutput& rhs) const {
+    return this->moved == rhs.moved &&
+           std::equal(this->print.begin(), this->print.end(), rhs.print.begin(), rhs.print.end()) &&
+           std::equal(this->output.begin(), this->output.end(), rhs.output.begin(), rhs.output.end());
+  }
+};
+
+struct Hash : public LoopInput, public LoopOutput {};
+
 void execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
       &&NEXT,
@@ -44,6 +71,20 @@ void execute(const Instruction* begin, const Instruction* end) {
   char datas[30000] = {0};
   char* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
+
+  std::stack<Hash> wipHashes;
+  wipHashes.push({});
+
+  //--------------------------------------------------------------------------------------
+  const auto read = [&](int64_t offset) {
+    const auto value = *(data + offset);
+    return value;
+  };
+  const auto print = [&](char value) {
+    std::cout << value;
+    wipHashes.top().print.push_back(value);
+  };
+  //--------------------------------------------------------------------------------------
 
   data += instruction->move;
   goto*(instruction->jump);
@@ -101,7 +142,10 @@ INSTRUCTION_POINTER_SET_IF_ZERO: {
 }
 
 DATA_PRINT: {
-  output(*data, instruction->value);
+  const auto value = read(0);
+  for (int i = 0; i < instruction->value; i++) {
+    print(value);
+  }
 
   goto NEXT;
 }
@@ -113,3 +157,8 @@ DONE:
 };
 
 }  // namespace brainfuck
+
+template <>
+struct std::hash<brainfuck::LoopInput> {
+  std::size_t operator()(const brainfuck::LoopInput& s) const noexcept { return s.input.size(); }
+};
