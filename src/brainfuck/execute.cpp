@@ -10,16 +10,6 @@ void output(const char output, const Value times) {
   }
 }
 
-void input(char* character, const Value times) {
-  for (int i = 0; i < times; i++) {
-    char input;
-    std::cin >> std::noskipws >> input;
-    if (!std::cin.eof()) {
-      *character = input;
-    }
-  }
-}
-
 void setupInstructionAddresses(const Instruction* begin, const Instruction* end, const void* jumpTable[]) {
   Instruction* current = const_cast<Instruction*>(begin);
   while (current < end) {
@@ -116,11 +106,8 @@ DATA_PRINT: {
   goto NEXT;
 }
 
-DATA_SET_FROM_INPUT: {
-  input(data, instruction->value);
-
-  goto NEXT;
-}
+DATA_SET_FROM_INPUT:
+  throw std::runtime_error("unsupported");
 
 DONE:
 };
