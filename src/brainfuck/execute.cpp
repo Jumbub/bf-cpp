@@ -33,7 +33,7 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 }
 
 struct LoopInput {
-  std::vector<std::pair<size_t, char>> input;
+  std::vector<std::pair<int64_t, char>> input;
 
   bool operator==(const LoopInput& rhs) const {
     return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
@@ -41,7 +41,7 @@ struct LoopInput {
 };
 
 struct LoopOutput {
-  std::map<size_t, char> output;
+  std::map<int64_t, char> output;
   std::vector<char> print;
   int64_t moved;
 
@@ -76,53 +76,73 @@ void execute(const Instruction* begin, const Instruction* end) {
   wipHashes.push({});
 
   //--------------------------------------------------------------------------------------
-  const auto read = [&](int64_t offset) {
-    const auto value = *(data + offset);
+  const auto read = [&](const int64_t offset) -> auto& {
+    auto& value = *(data + offset);
+    auto& wipHash = wipHashes.top();
+    if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](std::pair<int64_t, char> cell) {
+          return cell.first != (wipHash.moved + offset);
+        })) {
+      wipHashes.top().input.push_back({wipHash.moved + offset, value});
+    }
     return value;
   };
-  const auto print = [&](char value) {
+  const auto print = [&](const char value) {
     std::cout << value;
     wipHashes.top().print.push_back(value);
   };
+  const auto move = [&](const int64_t offset) {
+    data += offset;
+    wipHashes.top().moved += offset;
+  };
+  const auto add = [&](const int64_t offset, const char increment) {
+    auto& value = read(offset);
+    value += increment;
+    wipHashes.top().output[wipHashes.top().moved + offset] = value;
+  };
+  const auto reset = [&]() {
+    auto& value = read(0);  // todo: this really shouldnt be necessary surely, because it's unconditional
+    value = 0;
+    wipHashes.top().output[wipHashes.top().moved] = value;
+  };
   //--------------------------------------------------------------------------------------
 
-  data += instruction->move;
+  move(instruction->move);
   goto*(instruction->jump);
 
 NEXT: {
   instruction++;
-  data += instruction->move;
+  move(instruction->move);
 
   goto*(instruction->jump);
 }
 
 DATA_ADD: {
-  *data += static_cast<char>(instruction->value);
+  add(0, static_cast<char>(instruction->value));
 
   goto NEXT;
 }
 
 DATA_TRANSFER: {
-  const auto multiplier = *data;
+  const auto multiplier = read(0);
   const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->move) += static_cast<char>(multiplier * instruction->value);
+    add(instruction->move, static_cast<char>(multiplier * instruction->value));
   }
-  *data = 0;
+  reset();
 
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
   const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && *data != 0) {
-    data += instruction->move;
+  while (while_not_zero && read(0) != 0) {
+    move(instruction->move);
   }
 
-  if (*data != 0) {
+  if (read(0) != 0) {
     instruction = instruction->next;
-    data += instruction->move;
+    move(instruction->move);
 
     goto*(instruction->jump);
   }
@@ -131,9 +151,9 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if (*data == 0) {
+  if (read(0) == 0) {
     instruction = instruction->next;
-    data += instruction->move;
+    move(instruction->move);
 
     goto*(instruction->jump);
   }
