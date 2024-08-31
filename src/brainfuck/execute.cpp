@@ -33,7 +33,7 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
 }
 
 struct LoopInput {
-  std::vector<std::pair<int64_t, char>> input;
+  std::vector<std::pair<int64_t, char>> input = {};
 
   bool operator==(const LoopInput& rhs) const {
     return std::equal(this->input.begin(), this->input.end(), rhs.input.begin(), rhs.input.end());
@@ -41,9 +41,9 @@ struct LoopInput {
 };
 
 struct LoopOutput {
-  std::map<int64_t, char> output;
-  std::vector<char> print;
-  int64_t moved;
+  std::map<int64_t, char> output = {};
+  std::vector<char> print = {};
+  int64_t moved = 0;
 
   bool operator==(const LoopOutput& rhs) const {
     return this->moved == rhs.moved &&
@@ -54,7 +54,14 @@ struct LoopOutput {
 
 struct Hash : public LoopInput, public LoopOutput {};
 
-void execute(const Instruction* begin, const Instruction* end) {
+}  // namespace brainfuck
+
+template <>
+struct std::hash<brainfuck::LoopInput> {
+  std::size_t operator()(const brainfuck::LoopInput& s) const noexcept { return s.input.size(); }
+};
+
+void brainfuck::execute(const Instruction* begin, const Instruction* end) {
   const void* jumpTable[] = {
       &&NEXT,
       &&DONE,
@@ -72,10 +79,9 @@ void execute(const Instruction* begin, const Instruction* end) {
   char* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
+  //--------------------------------------------------------------------------------------
   std::stack<Hash> wipHashes;
   wipHashes.push({});
-
-  //--------------------------------------------------------------------------------------
   const auto read = [&](const int64_t offset) -> auto& {
     auto& value = *(data + offset);
     auto& wipHash = wipHashes.top();
@@ -103,6 +109,83 @@ void execute(const Instruction* begin, const Instruction* end) {
     auto& value = read(0);  // todo: this really shouldnt be necessary surely, because it's unconditional
     value = 0;
     wipHashes.top().output[wipHashes.top().moved] = value;
+  };
+  const auto execute = [&](const LoopInput& query, const LoopOutput& solution) {
+    auto& wipHash = wipHashes.top();
+
+    for (const char character : solution.print) {
+      std::cout << character << std::flush;  // TODO: remove flush after done debugging
+      wipHash.print.push_back(character);
+    }
+
+    for (const auto& [relativeOffset, character] : query.input) {
+      if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](std::pair<int64_t, char> cell) {
+            return cell.first != wipHash.moved + relativeOffset;
+          })) {
+        wipHash.input.push_back({wipHash.moved + relativeOffset, character});
+      }
+    }
+
+    for (const auto& [relativeOffset, character] : solution.output) {
+      *(data + relativeOffset) = character;
+      wipHash.output[wipHash.moved + relativeOffset] = character;
+    }
+
+    data += solution.moved;
+    wipHash.moved += solution.moved;
+  };
+
+  std::unordered_map<const Instruction*, std::unordered_map<LoopInput, LoopOutput>> solves;
+  const auto checkIfSolved = [&]() -> std::optional<std::pair<const LoopInput, const LoopOutput>> {
+    std::cout << "hi" << std::endl;
+    for (const auto& [in, out] : solves[instruction]) {
+      const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto cell) {
+        const auto& [relativeOffset, character] = cell;
+        return *(data + relativeOffset) == character;
+      });
+      if (matches) {
+        return std::pair{in, out};  // TODO: simplify to a std::find
+      }
+    }
+    return std::nullopt;
+  };
+  const auto maybeExecuteLoopInCache = [&]() -> bool {
+    const auto solution = checkIfSolved();
+    if (solution.has_value()) {
+      execute(solution.value().first, solution.value().second);
+      return true;
+    }
+    return false;
+  };
+  const auto maybeStoreLoopCache = [&]() {
+    const Hash solvedHash = wipHashes.top();
+
+    if (solves[instruction->next].contains(solvedHash)) {
+      throw std::runtime_error("cache was not used");
+    }
+    solves[instruction->next][solvedHash] = solvedHash;
+
+    wipHashes.pop();
+    auto& wipHash = wipHashes.top();
+
+    for (const auto& [relativeOffset, character] : solvedHash.input) {
+      if (std::all_of(wipHash.input.cbegin(), wipHash.input.cend(), [&](std::pair<int64_t, char> cell) {
+            return cell.first != wipHash.moved + relativeOffset;
+          })) {
+        wipHash.input.push_back({wipHash.moved + relativeOffset, character});
+      }
+    }
+
+    for (const auto& [relativeOffset, character] : solvedHash.output) {
+      std::cout << wipHash.output.size() << std::endl;
+      wipHash.output[wipHash.moved + relativeOffset] = character;
+    }
+
+    for (const auto character : solvedHash.print) {
+      wipHash.print.push_back(character);
+    }
+
+    wipHash.moved += solvedHash.moved;
   };
   //--------------------------------------------------------------------------------------
 
@@ -147,11 +230,15 @@ INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
     goto*(instruction->jump);
   }
 
+  maybeStoreLoopCache();
+
   goto NEXT;
 }
 
 INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if (read(0) == 0) {
+  const auto skip = read(0) == 0 || maybeExecuteLoopInCache();
+
+  if (skip) {
     instruction = instruction->next;
     move(instruction->move);
 
@@ -174,11 +261,4 @@ DATA_SET_FROM_INPUT:
   throw std::runtime_error("unsupported");
 
 DONE:
-};
-
-}  // namespace brainfuck
-
-template <>
-struct std::hash<brainfuck::LoopInput> {
-  std::size_t operator()(const brainfuck::LoopInput& s) const noexcept { return s.input.size(); }
 };

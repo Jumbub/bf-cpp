@@ -33,6 +33,7 @@ struct Instruction {
   Instruction(Type type);
   Instruction(Type type, Value value);
   Instruction(Type type, Value value, Move move);
+  bool operator==(const Instruction& rhs) const;
 };
 
 }  // namespace brainfuck
