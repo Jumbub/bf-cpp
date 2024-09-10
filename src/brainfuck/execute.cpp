@@ -137,7 +137,6 @@ void brainfuck::execute(const Instruction* begin, const Instruction* end) {
 
   std::unordered_map<const Instruction*, std::unordered_map<LoopInput, LoopOutput>> solves;
   const auto checkIfSolved = [&]() -> std::optional<std::pair<const LoopInput, const LoopOutput>> {
-    std::cout << "hi" << std::endl;
     for (const auto& [in, out] : solves[instruction]) {
       const auto matches = std::all_of(in.input.cbegin(), in.input.cend(), [&](auto cell) {
         const auto& [relativeOffset, character] = cell;
@@ -155,9 +154,16 @@ void brainfuck::execute(const Instruction* begin, const Instruction* end) {
       execute(solution.value().first, solution.value().second);
       return true;
     }
+
+    wipHashes.push({});
     return false;
   };
   const auto maybeStoreLoopCache = [&]() {
+    if (instruction->next == instruction) {
+      // skip move loops which only contain a close brace
+      return;
+    }
+
     const Hash solvedHash = wipHashes.top();
 
     if (solves[instruction->next].contains(solvedHash)) {
@@ -165,6 +171,9 @@ void brainfuck::execute(const Instruction* begin, const Instruction* end) {
     }
     solves[instruction->next][solvedHash] = solvedHash;
 
+    if (wipHashes.size() == 1) {
+      throw std::runtime_error("called maybeStoreLoopCache too many times");
+    }
     wipHashes.pop();
     auto& wipHash = wipHashes.top();
 
@@ -177,7 +186,6 @@ void brainfuck::execute(const Instruction* begin, const Instruction* end) {
     }
 
     for (const auto& [relativeOffset, character] : solvedHash.output) {
-      std::cout << wipHash.output.size() << std::endl;
       wipHash.output[wipHash.moved + relativeOffset] = character;
     }
 
