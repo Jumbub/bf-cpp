@@ -54,9 +54,16 @@ genuinely my favourite part of C++ programming.
 - [Brainf***](http://www.iwriteiam.nl/Ha_BF.html)
 - [Computed goto for efficient dispatch tables](https://eli.thegreenplace.net/2012/07/12/computed-goto-for-efficient-dispatch-tables)
 
-### Notable Competitors
+### Other interpreter implemenations
 
-- [Tritium "This is the fastest brainfuck interpreter around"](https://github.com/rdebath/Brainfuck/tree/master/tritium)
+- https://github.com/rdebath/Brainfuck (
+- https://github.com/baris-inandi/bfgo#readme
+- https://copy.sh/brainfuck/?file=https://copy.sh/brainfuck/prog/mandelbrot.b
+- https://github.com/alexprengere/PythonBrainFuck
+- https://github.com/dmitmel/brainwhat
+- git@github.com:Rodrigodd/bf-compiler.git
+- https://github.com/prat-man/Brainfuck
+- https://github.com/phunanon/Barebrain
 
 ### Random References
 
