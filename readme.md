@@ -15,7 +15,6 @@ cmake --build --preset all
 
 ```
 ./build/src/standalone/brainfuck samples/mandelbrot.b
-./build/src/benchmarks/benchmarks
 ./build/src/tests/tests
 ```
 
