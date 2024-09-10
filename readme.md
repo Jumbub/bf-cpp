@@ -7,14 +7,14 @@ this is my attempt
 #### Build
 
 ```sh
-cmake --preset all
+cmake --preset release
 cmake --build --preset all
 ```
 
 #### Run
 
 ```
-./build/src/standalone/brainfuck
+./build/src/standalone/brainfuck samples/mandelbrot.b
 ./build/src/benchmarks/benchmarks
 ./build/src/tests/tests
 ```
