@@ -2,7 +2,9 @@
 
 it's possible that this is the fastest non-jit interpreter (see [the competition](#the-competition))
 
-it's also possible that this is just tuned to my system and won't be fast for anyone else
+> it's also possible that this is just tuned to my system and won't be fast for anyone else
+
+see the [notable micro-optimisations](#notable-micro-optimisations) for fun insights
 
 <br>
 
@@ -44,7 +46,7 @@ run:
 
 <br>
 
-### notable micro-optimizations
+### notable micro-optimisations
 
 - The interpreter loop is a good reminder that C++ is still actually a relatively high level language
   - 5% performance gains by using branchless looping
@@ -74,12 +76,11 @@ run:
     - https://github.com/Jumbub/bf-cpp/commit/53e31164d85d45b4e94c394c210fa60a00ca58c5
     - https://github.com/Jumbub/bf-cpp/commit/1bc35a79799e14713de64ab7d2dec016060afd1c
     - Current generation CPUs are just much faster when operating on 64 bit data
-- 13% performance gains by ensuring an odd multiple of 64 bits in the Instruction struct
-  - https://github.com/Jumbub/bf-cpp/commit/0f2aa88c0d0a37dcc314bc111f6ad272ebbab2f2
-  - I have literally no idea what is going on here, data locality? instruction locality changes?
-- 12% performance gains by using pointer arithmetic rather than using a dynamic index
-  - https://github.com/Jumbub/bf-cpp/commit/113145cbb590eae8c62cbd1c2affc44d3ebce265
-  - Who knew indexing could be so slow
+- It's unclear to me if the following performance increases are from data locality, instruction locality or something else
+  - 13% performance gains by ensuring an odd multiple of 64 bits in the Instruction struct
+    - https://github.com/Jumbub/bf-cpp/commit/0f2aa88c0d0a37dcc314bc111f6ad272ebbab2f2
+  - 12% performance gains by using pointer arithmetic rather than using a dynamic index
+    - https://github.com/Jumbub/bf-cpp/commit/113145cbb590eae8c62cbd1c2affc44d3ebce265
 
 <br>
 
