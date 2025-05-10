@@ -1,6 +1,6 @@
 # a pretty fast brainfuck interpreter
 
-it's possible that this is the fastest non-jit interpreter (see [the competition](#the competition))
+it's possible that this is the fastest non-jit interpreter (see [the competition](#the-competition))
 
 it's also possible that this is just tuned to my system and won't be fast for anyone else
 
