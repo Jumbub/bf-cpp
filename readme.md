@@ -1,26 +1,8 @@
 # a pretty fast brainfuck interpreter
 
-it's possible that this is the fastest non-jit interpreter (at time of writing)
+it's possible that this is the fastest non-jit interpreter (see [the competition](#the competition))
 
 it's also possible that this is just tuned to my system and won't be fast for anyone else
-
-<br>
-
-### running the interpreter
-
-build:
-
-```sh
-cmake --preset release
-cmake --build --preset all
-```
-
-run:
-
-```
-./build/src/standalone/brainfuck samples/mandelbrot.b
-./build/src/tests/tests
-```
 
 <br>
 
@@ -41,6 +23,24 @@ other non-jit entries:
 
 the fastest jit implementation for reference:
 - (0.30s) https://github.com/rdebath/Brainfuck `./tritium/bfi.out ../bf-cpp/samples/mandelbrot.b  0.30s user 0.00s system 99% cpu 0.304 total`
+
+<br>
+
+### running the interpreter
+
+build:
+
+```sh
+cmake --preset release
+cmake --build --preset all
+```
+
+run:
+
+```
+./build/src/standalone/brainfuck samples/mandelbrot.b
+./build/src/tests/tests
+```
 
 <br>
 
