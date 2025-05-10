@@ -12,7 +12,7 @@ namespace brainfuck {
 using Source = std::vector<char>;
 using Instructions = std::vector<Instruction>;
 
-[[nodiscard]] inline Source removeNoopCodes(const Source input) noexcept {
+[[nodiscard]] inline Source removeNoopCodes(const Source& input) noexcept {
   Source output;
   output.reserve(input.size());
   std::copy_if(input.begin(), input.end(), std::back_inserter(output), [](const char output) {
