@@ -4,13 +4,13 @@
 
 namespace brainfuck {
 
-void output(const int64_t output, const Value times) {
+void output(const int8_t output, const Value times) {
   for (int i = 0; i < times; i++) {
-    std::cout << static_cast<char>(output % 256);
+    std::cout << static_cast<char>(output);
   }
 }
 
-void input(int64_t* character, const Value times) {
+void input(int8_t* character, const Value times) {
   for (int i = 0; i < times; i++) {
     char input;
     std::cin >> std::noskipws >> input;
@@ -51,8 +51,8 @@ void execute(const Instruction* begin, const Instruction* end) {
   };
   setupInstructionAddresses(begin, end, jumpTable);
 
-  int64_t datas[30000] = {0};
-  int64_t* data = &datas[0];
+  int8_t datas[30000] = {0};
+  int8_t* data = &datas[0];
   Instruction* instruction = const_cast<Instruction*>(begin);
 
   data += instruction->move;
@@ -66,7 +66,7 @@ NEXT: {
 }
 
 DATA_ADD: {
-  *data += instruction->value;
+  *data += static_cast<int8_t>(instruction->value);
 
   goto NEXT;
 }
@@ -76,7 +76,7 @@ DATA_TRANSFER: {
   const auto last = instruction->next;
   while (instruction < last) {
     instruction++;
-    *(data + instruction->move) += multiplier * instruction->value;
+    *(data + instruction->move) += static_cast<int8_t>(multiplier * instruction->value);
   }
   *data = 0;
 
