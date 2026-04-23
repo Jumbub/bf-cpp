@@ -1,6 +1,7 @@
 #include "execute.h"
 
 #include <iostream>
+#include <stdexcept>
 
 namespace brainfuck {
 
@@ -37,92 +38,37 @@ void setupInstructionAddresses(const Instruction* begin, const Instruction* end,
   }
 }
 
+}  // namespace brainfuck
+
+// ---------------------------------------------------------------------------
+// Bridge between the C++ interpreter and the hand-written assembly loop in
+// execute_asm.S. The assembly exports:
+//   - brainfuck_jump_table : handler addresses indexed by Type
+//   - brainfuck_execute_asm(Instruction* begin, int8_t* data)
+// and calls back into the two shims below for I/O.
+// ---------------------------------------------------------------------------
+extern "C" {
+
+extern const void* brainfuck_jump_table[];
+void brainfuck_execute_asm(const brainfuck::Instruction* begin, int8_t* data);
+
+void bf_output_c(int8_t c, int64_t times) {
+  brainfuck::output(c, times);
+}
+
+void bf_input_c(int8_t* p, int64_t times) {
+  brainfuck::input(p, times);
+}
+
+}  // extern "C"
+
+namespace brainfuck {
+
 void execute(const Instruction* begin, const Instruction* end) {
-  const void* jumpTable[] = {
-      &&NEXT,
-      &&DONE,
-      &&DATA_ADD,
-      &&DATA_SET_FROM_INPUT,
-      &&DATA_PRINT,
-      nullptr,
-      &&INSTRUCTION_POINTER_SET_IF_ZERO,
-      &&INSTRUCTION_POINTER_SET_IF_NOT_ZERO,
-      &&DATA_TRANSFER,
-  };
-  setupInstructionAddresses(begin, end, jumpTable);
+  setupInstructionAddresses(begin, end, brainfuck_jump_table);
 
   int8_t datas[30000] = {0};
-  int8_t* data = &datas[0];
-  Instruction* instruction = const_cast<Instruction*>(begin);
-
-  data += instruction->move;
-  goto*(instruction->jump);
-
-NEXT: {
-  instruction++;
-  data += instruction->move;
-
-  goto*(instruction->jump);
+  brainfuck_execute_asm(begin, &datas[0]);
 }
-
-DATA_ADD: {
-  *data += static_cast<int8_t>(instruction->value);
-
-  goto NEXT;
-}
-
-DATA_TRANSFER: {
-  const auto multiplier = (*data & 255);
-  const auto last = instruction->next;
-  while (instruction < last) {
-    instruction++;
-    *(data + instruction->move) += static_cast<int8_t>(multiplier * instruction->value);
-  }
-  *data = 0;
-
-  goto NEXT;
-}
-
-INSTRUCTION_POINTER_SET_IF_NOT_ZERO: {
-  const auto while_not_zero = instruction->next == instruction;
-  while (while_not_zero && (*data & 255) != 0) {
-    data += instruction->move;
-  }
-
-  if ((*data & 255) != 0) {
-    instruction = instruction->next;
-    data += instruction->move;
-
-    goto*(instruction->jump);
-  }
-
-  goto NEXT;
-}
-
-INSTRUCTION_POINTER_SET_IF_ZERO: {
-  if ((*data & 255) == 0) {
-    instruction = instruction->next;
-    data += instruction->move;
-
-    goto*(instruction->jump);
-  }
-
-  goto NEXT;
-}
-
-DATA_PRINT: {
-  output(*data, instruction->value);
-
-  goto NEXT;
-}
-
-DATA_SET_FROM_INPUT: {
-  input(data, instruction->value);
-
-  goto NEXT;
-}
-
-DONE:
-};
 
 }  // namespace brainfuck
