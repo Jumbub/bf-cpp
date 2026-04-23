@@ -1,5 +1,4 @@
 add_compile_options(-Wall -Wextra -Werror -Wsign-conversion -Wconversion -march=native -Ofast)
-enable_language(ASM)
-add_library(brainfuck-execute SHARED execute.cpp execute_asm.S)
+add_library(brainfuck-execute SHARED execute.cpp)
 add_library(brainfuck SHARED instruction.cpp format.cpp file.cpp parse.cpp go.cpp)
 target_link_libraries(brainfuck brainfuck-execute)
